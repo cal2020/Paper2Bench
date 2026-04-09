@@ -106,7 +106,7 @@ def cmd_plan(args):
 
 
 def cmd_run(args):
-    """Full pipeline: download -> parse -> extract -> render -> plan."""
+    """Full pipeline: download/locate PDF -> parse -> extract -> render -> plan."""
     from .downloader import find_and_download
     from .tree_parser import parse_paper_to_tree
     from .instruction_generator import extract_yaml_from_pdf, render_instruction
@@ -120,16 +120,27 @@ def cmd_run(args):
     trees_dir = out / "trees"
     tasks_dir = out / "tasks" / task_id
 
-    # Step 1: Download PDF
-    print(f"\n{'='*50}\nStep 1: Downloading paper\n{'='*50}")
-    pdf_path = find_and_download(
-        query=args.query,
-        task_id=task_id,
-        output_dir=str(papers_dir),
-        auto=args.auto,
-    )
-    if not pdf_path:
-        sys.exit("Failed to download paper.")
+    # Step 1: Get PDF (either from local path or arXiv search)
+    if args.pdf:
+        # Mode: local PDF upload
+        pdf_path = str(Path(args.pdf).resolve())
+        if not Path(pdf_path).exists():
+            sys.exit(f"PDF not found: {pdf_path}")
+        print(f"\n{'='*50}\nStep 1: Using local PDF\n{'='*50}")
+        print(f"  {pdf_path}")
+    elif args.query:
+        # Mode: arXiv search
+        print(f"\n{'='*50}\nStep 1: Downloading paper from arXiv\n{'='*50}")
+        pdf_path = find_and_download(
+            query=args.query,
+            task_id=task_id,
+            output_dir=str(papers_dir),
+            auto=args.auto,
+        )
+        if not pdf_path:
+            sys.exit("Failed to download paper.")
+    else:
+        sys.exit("Provide either --pdf (local file) or --query (arXiv search).")
 
     # Step 2: Parse tree
     print(f"\n{'='*50}\nStep 2: Parsing problem tree\n{'='*50}")
@@ -249,9 +260,10 @@ def main():
     pl.set_defaults(func=cmd_plan)
 
     # --- run (full pipeline) ---
-    rp = subparsers.add_parser("run", help="Run full pipeline: download -> parse -> extract -> render -> plan")
+    rp = subparsers.add_parser("run", help="Run full pipeline: PDF -> parse -> extract -> render -> plan")
     rp.add_argument("--task-id", required=True)
-    rp.add_argument("--query", required=True, help="arXiv search query")
+    rp.add_argument("--pdf", default=None, help="Path to a local PDF (skips download)")
+    rp.add_argument("--query", default=None, help="arXiv search query (downloads PDF)")
     rp.add_argument("--research-question", required=True)
     rp.add_argument("--output-dir", default="./output", help="Base output directory")
     rp.add_argument("--model", default="gpt-4o")

@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "paper2bench"
+version = "0.1.0"
+description = "Convert academic papers into benchmark tasks for evaluating AI agents."
+readme = "README.md"
+requires-python = ">=3.9"
+license = {text = "MIT"}
+authors = [
+    {name = "Abhay Anand"},
+]
+dependencies = [
+    "arxiv>=2.0",
+    "openai>=1.0",
+    "pymupdf>=1.23",
+    "pyyaml>=6.0",
+    "python-dotenv>=1.0",
+]
+
+[project.scripts]
+paper2bench = "paper2bench.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["paper2bench*"]
+
+[tool.setuptools.package-data]
+paper2bench = ["templates/*.txt"]

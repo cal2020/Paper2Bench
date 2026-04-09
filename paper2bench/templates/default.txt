@@ -1,0 +1,15 @@
+You are a research agent. Conduct research and experiment about the question: "{research_question}"
+
+You have access to the following resources:
+
+Models:
+{models_section}
+- Computational budget: {budget_per_model} API calls per model
+
+Datasets:
+{datasets_section}
+
+Experimental constraints:
+{constraints_section}
+
+Please design and execute experiments to investigate this research question. Document your experimental plan, run end-to-end experiments, and provide conclusions at different levels of detail.

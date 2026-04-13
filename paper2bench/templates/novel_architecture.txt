@@ -1,0 +1,21 @@
+You are a research agent. Conduct research about the question: "{research_question}"
+
+Your central task is to **implement a proposed method from scratch** and evaluate whether it answers the research question. Do NOT import a library that bundles the paper's exact code; the benchmark value comes from your own implementation.
+
+Proposed method to implement:
+{models_section}
+
+Datasets for training and evaluation:
+{datasets_section}
+
+Experimental constraints:
+{constraints_section}
+- Computational budget: {budget_per_model} training runs / evaluations total
+
+Deliverables:
+1. A working implementation of the proposed method in Python.
+2. Training and evaluation runs on the specified datasets.
+3. Quantitative results (metrics of your choice, justified against the research question).
+4. A written conclusion tying the results back to the research question.
+
+Design your own experimental protocol, metrics, and baselines. Run end-to-end experiments and report results honestly.

@@ -39,6 +39,20 @@ def cmd_parse(args):
     print(f"Tree saved to {output_path}")
 
 
+def cmd_classify(args):
+    from .paper_classifier import classify_paper
+    import json
+    pdf_path = Path(args.pdf)
+    if not pdf_path.exists():
+        sys.exit(f"PDF not found: {pdf_path}")
+    result = classify_paper(str(pdf_path), model=args.model)
+    print(json.dumps(result, indent=2))
+    if args.output:
+        Path(args.output).parent.mkdir(parents=True, exist_ok=True)
+        Path(args.output).write_text(json.dumps(result, indent=2), encoding="utf-8")
+        print(f"Classification saved to {args.output}")
+
+
 def cmd_extract(args):
     from .instruction_generator import extract_yaml_from_pdf
     import yaml
@@ -55,6 +69,8 @@ def cmd_extract(args):
         max_tokens=args.max_tokens,
         temperature=args.temperature,
         tree_json_path=args.tree,
+        paper_type=args.paper_type,
+        validate_hf_loaders=not args.skip_hf_validation,
     )
     try:
         parsed = yaml.safe_load(yaml_content)
@@ -105,31 +121,257 @@ def cmd_plan(args):
     print(f"\ninstruction_gt.txt saved to {output_path}")
 
 
-def cmd_run(args):
-    """Full pipeline: download/locate PDF -> parse -> extract -> render -> plan."""
-    from .downloader import find_and_download
-    from .tree_parser import parse_paper_to_tree
+def cmd_specextract(args):
+    from .paper_spec import extract_paper_spec
+    import json
+
+    pdf_path = Path(args.pdf)
+    if not pdf_path.exists():
+        sys.exit(f"PDF not found: {pdf_path}")
+
+    spec = extract_paper_spec(
+        str(pdf_path),
+        model=args.model,
+        max_tokens=args.max_tokens,
+        temperature=args.temperature,
+    )
+
+    output_path = Path(args.output)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(
+        json.dumps(spec, indent=2, ensure_ascii=False), encoding="utf-8",
+    )
+    print(f"\nPaper spec saved to {output_path}")
+
+
+def cmd_generate(args):
+    from .benchmark_generator import generate_variants
+    import json
+
+    spec_path = Path(args.spec)
+    if not spec_path.exists():
+        sys.exit(f"Spec not found: {spec_path}")
+    pdf_path = Path(args.pdf)
+    if not pdf_path.exists():
+        sys.exit(f"PDF not found: {pdf_path}")
+
+    instances = generate_variants(
+        str(spec_path),
+        str(pdf_path),
+        paper_type=args.paper_type,
+        model=args.model,
+        max_tokens=args.max_tokens,
+        temperature=args.temperature,
+    )
+
+    output_dir = Path(args.output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    # Write the full manifest
+    manifest_path = output_dir / "instances.json"
+    manifest_path.write_text(
+        json.dumps(instances, indent=2, ensure_ascii=False), encoding="utf-8",
+    )
+    print(f"\nManifest saved to {manifest_path}")
+
+    # Write each instance's instruction as a separate file
+    clean_count = 0
+    leaked_count = 0
+    for inst in instances:
+        inst_id = inst.get("id", "unknown")
+        inst_dir = output_dir / inst_id
+        inst_dir.mkdir(parents=True, exist_ok=True)
+
+        # instruction.txt (rendered from task_config by the generator)
+        (inst_dir / "instruction.txt").write_text(
+            inst.get("instruction", ""), encoding="utf-8",
+        )
+        # task_config.yaml -- the resource spec used to render the instruction
+        cfg = inst.get("task_config")
+        if cfg:
+            try:
+                import yaml as _yaml
+                (inst_dir / "task_config.yaml").write_text(
+                    _yaml.safe_dump(cfg, sort_keys=False), encoding="utf-8",
+                )
+            except Exception as e:
+                print(f"  [{inst_id}] failed to write task_config.yaml: {e}")
+        # metadata.json (everything except the rendered instruction text)
+        meta = {k: v for k, v in inst.items() if k != "instruction"}
+        (inst_dir / "metadata.json").write_text(
+            json.dumps(meta, indent=2, ensure_ascii=False), encoding="utf-8",
+        )
+
+        leaked = inst.get("leakage_check", {}).get("leaked", False)
+        if leaked:
+            leaked_count += 1
+        else:
+            clean_count += 1
+
+    print(f"\n{len(instances)} instance(s) written to {output_dir}/")
+    print(f"  Clean: {clean_count}  |  Leaked: {leaked_count}")
+    if leaked_count:
+        print("  [warn] Leaked instances need manual review or regeneration.")
+
+
+def cmd_verify(args):
+    from .verify import verify_instruction_gt
+    import json
+
+    instruction_gt_path = Path(args.instruction_gt)
+    if not instruction_gt_path.exists():
+        sys.exit(f"instruction_gt not found: {instruction_gt_path}")
+    pdf_path = Path(args.pdf)
+    if not pdf_path.exists():
+        sys.exit(f"PDF not found: {pdf_path}")
+
+    gt_text = None
+    if args.ground_truth:
+        gt_path = Path(args.ground_truth)
+        if gt_path.exists():
+            gt_text = gt_path.read_text(encoding="utf-8").strip()
+        else:
+            # treat as inline text
+            gt_text = args.ground_truth
+
+    metrics = verify_instruction_gt(
+        str(instruction_gt_path),
+        str(pdf_path),
+        data_dir=args.data_dir,
+        agent_model=args.agent_model,
+        eval_model=args.eval_model,
+        max_turns=args.max_turns,
+        ground_truth=gt_text,
+    )
+
+    # Persist results
+    output_path = Path(args.output)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(json.dumps(metrics, indent=2), encoding="utf-8")
+    print(f"\nVerification results saved to {output_path}")
+
+    if not metrics["pass"]:
+        sys.exit(1)
+
+
+def _run_pipeline_for_rq(
+    pdf_path, task_id, rq_text, tree_json_path, tasks_dir, args, subtree=None,
+    paper_type="llm_evaluation",
+):
+    """Run steps 3-6 (extract → render → plan → verify) for a single research question.
+
+    When *subtree* is provided the per-RQ subtree JSON is written next to the
+    main tree so that downstream LLM calls only see the relevant branch.
+    """
     from .instruction_generator import extract_yaml_from_pdf, render_instruction
     from .plan_generator import generate_supplementary_plan, build_instruction_gt
     import json
     import yaml
 
+    tasks_dir = Path(tasks_dir)
+    tasks_dir.mkdir(parents=True, exist_ok=True)
+
+    # If a subtree was given, persist it so extract/plan prompts see only this RQ
+    if subtree is not None:
+        rq_tree_path = str(tasks_dir / "subtree.json")
+        Path(rq_tree_path).write_text(
+            json.dumps(subtree, indent=2, ensure_ascii=False), encoding="utf-8",
+        )
+    else:
+        rq_tree_path = tree_json_path
+
+    # Step 3: Extract YAML
+    print(f"\n{'='*50}\nStep 3: Extracting task config YAML (paper_type={paper_type})\n{'='*50}")
+    yaml_path = str(tasks_dir / "task_config.yaml")
+    yaml_content = extract_yaml_from_pdf(
+        pdf_path,
+        research_question=rq_text,
+        task_id=task_id,
+        model=args.model,
+        tree_json_path=rq_tree_path,
+        paper_type=paper_type,
+        validate_hf_loaders=not getattr(args, "skip_hf_validation", False),
+    )
+    Path(yaml_path).write_text(yaml_content, encoding="utf-8")
+    print(f"Config saved to {yaml_path}")
+
+    # Validate YAML
+    try:
+        config = yaml.safe_load(yaml_content)
+        if not isinstance(config, dict):
+            raise ValueError("YAML did not parse to a dict")
+    except Exception as e:
+        print(f"[warn] YAML may need manual editing: {e}")
+        print(f"Edit {yaml_path} then run: paper2bench render --config {yaml_path} -o {tasks_dir}/instruction.txt")
+        return None
+
+    # Step 4: Render instruction.txt
+    print(f"\n{'='*50}\nStep 4: Rendering instruction.txt\n{'='*50}")
+    instruction_path = tasks_dir / "instruction.txt"
+    instruction = render_instruction(config, template_path=args.template)
+    instruction_path.write_text(instruction, encoding="utf-8")
+    print(f"instruction.txt saved to {instruction_path}")
+
+    # Step 5: Generate instruction_gt.txt
+    print(f"\n{'='*50}\nStep 5: Generating instruction_gt.txt\n{'='*50}")
+    supplement = generate_supplementary_plan(
+        pdf_path,
+        base_instruction=instruction,
+        model=args.model,
+        tree_json_path=rq_tree_path,
+    )
+    instruction_gt = build_instruction_gt(instruction, supplement)
+    gt_path = tasks_dir / "instruction_gt.txt"
+    gt_path.write_text(instruction_gt, encoding="utf-8")
+    print(f"instruction_gt.txt saved to {gt_path}")
+
+    # Step 6: (optional) Verify instruction_gt.txt
+    metrics = None
+    if args.verify:
+        from .verify import verify_instruction_gt
+        print(f"\n{'='*50}\nStep 6: Verifying instruction_gt.txt\n{'='*50}")
+        verify_output = tasks_dir / "verify_results.json"
+        metrics = verify_instruction_gt(
+            str(gt_path),
+            pdf_path,
+            data_dir=str(tasks_dir / "data") if (tasks_dir / "data").exists() else None,
+            agent_model=args.model,
+            eval_model=args.model,
+        )
+        verify_output.write_text(
+            json.dumps(metrics, indent=2), encoding="utf-8",
+        )
+        print(f"Verification results saved to {verify_output}")
+
+    return {
+        "task_id": task_id,
+        "rq": rq_text,
+        "yaml": yaml_path,
+        "instruction": str(instruction_path),
+        "instruction_gt": str(gt_path),
+        "verify": metrics,
+    }
+
+
+def cmd_run(args):
+    """Full pipeline: download/locate PDF -> parse -> extract -> render -> plan."""
+    from .downloader import find_and_download
+    from .tree_parser import parse_paper_to_tree, extract_rqs_from_tree
+    import json
+
     out = Path(args.output_dir)
     task_id = args.task_id
     papers_dir = out / "papers"
     trees_dir = out / "trees"
-    tasks_dir = out / "tasks" / task_id
 
     # Step 1: Get PDF (either from local path or arXiv search)
     if args.pdf:
-        # Mode: local PDF upload
         pdf_path = str(Path(args.pdf).resolve())
         if not Path(pdf_path).exists():
             sys.exit(f"PDF not found: {pdf_path}")
         print(f"\n{'='*50}\nStep 1: Using local PDF\n{'='*50}")
         print(f"  {pdf_path}")
     elif args.query:
-        # Mode: arXiv search
         print(f"\n{'='*50}\nStep 1: Downloading paper from arXiv\n{'='*50}")
         pdf_path = find_and_download(
             query=args.query,
@@ -151,57 +393,76 @@ def cmd_run(args):
         json.dump(tree, f, indent=2, ensure_ascii=False)
     print(f"Tree saved to {tree_path}")
 
-    # Step 3: Extract YAML
-    print(f"\n{'='*50}\nStep 3: Extracting task config YAML\n{'='*50}")
-    tasks_dir.mkdir(parents=True, exist_ok=True)
-    yaml_path = str(tasks_dir / "task_config.yaml")
-    yaml_content = extract_yaml_from_pdf(
-        pdf_path,
-        research_question=args.research_question,
-        task_id=task_id,
-        model=args.model,
-        tree_json_path=tree_path,
-    )
-    Path(yaml_path).write_text(yaml_content, encoding="utf-8")
-    print(f"Config saved to {yaml_path}")
+    # Step 2b: Classify paper type (drives extraction prompt + template)
+    if args.paper_type:
+        paper_type = args.paper_type
+        print(f"\n[classify] Using user-specified paper_type: {paper_type}")
+    else:
+        from .paper_classifier import classify_paper
+        print(f"\n{'='*50}\nStep 2b: Classifying paper type\n{'='*50}")
+        classification = classify_paper(pdf_path, model=args.model)
+        paper_type = classification["type"]
+        print(f"[classify] type={paper_type}  confidence={classification.get('confidence')}")
+        print(f"[classify] rationale: {classification.get('rationale')}")
 
-    # Validate YAML
-    try:
-        config = yaml.safe_load(yaml_content)
-        if not isinstance(config, dict):
-            raise ValueError("YAML did not parse to a dict")
-    except Exception as e:
-        print(f"[warn] YAML may need manual editing: {e}")
-        print(f"Edit {yaml_path} then run: paper2bench render --config {yaml_path} -o {tasks_dir}/instruction.txt")
-        return
+    # ----- combined (default) vs split-rqs mode -----
+    if not args.split_rqs and not args.research_question:
+        sys.exit("--research-question is required unless --split-rqs is used.")
 
-    # Step 4: Render instruction.txt
-    print(f"\n{'='*50}\nStep 4: Rendering instruction.txt\n{'='*50}")
-    instruction_path = tasks_dir / "instruction.txt"
-    instruction = render_instruction(config, template_path=args.template)
-    instruction_path.write_text(instruction, encoding="utf-8")
-    print(f"instruction.txt saved to {instruction_path}")
+    if args.split_rqs:
+        rqs = extract_rqs_from_tree(tree)
+        if not rqs:
+            sys.exit("No research questions found in the problem tree.")
+        print(f"\n[split-rqs] Found {len(rqs)} research question(s). "
+              "Generating separate tasks per RQ.\n")
 
-    # Step 5: Generate instruction_gt.txt
-    print(f"\n{'='*50}\nStep 5: Generating instruction_gt.txt\n{'='*50}")
-    supplement = generate_supplementary_plan(
-        pdf_path,
-        base_instruction=instruction,
-        model=args.model,
-        tree_json_path=tree_path,
-    )
-    instruction_gt = build_instruction_gt(instruction, supplement)
-    gt_path = tasks_dir / "instruction_gt.txt"
-    gt_path.write_text(instruction_gt, encoding="utf-8")
-    print(f"instruction_gt.txt saved to {gt_path}")
+        results = []
+        for rq in rqs:
+            rq_label = f"rq{rq['index']}"
+            sub_task_id = f"{task_id}_{rq_label}"
+            sub_tasks_dir = out / "tasks" / sub_task_id
+            print(f"\n{'#'*50}")
+            print(f"# {sub_task_id}: {rq['rq_text'][:70]}")
+            print(f"{'#'*50}")
+            result = _run_pipeline_for_rq(
+                pdf_path, sub_task_id, rq["rq_text"],
+                tree_path, sub_tasks_dir, args,
+                subtree=rq["subtree"],
+                paper_type=paper_type,
+            )
+            if result:
+                results.append(result)
 
-    # Summary
-    print(f"\n{'='*50}\nPipeline complete for: {task_id}\n{'='*50}")
-    print(f"  PDF:              {pdf_path}")
-    print(f"  Tree:             {tree_path}")
-    print(f"  Config:           {yaml_path}")
-    print(f"  instruction.txt:  {instruction_path}")
-    print(f"  instruction_gt:   {gt_path}")
+        # Summary
+        print(f"\n{'='*50}\nPipeline complete for: {task_id} "
+              f"({len(results)} RQ task(s))\n{'='*50}")
+        print(f"  PDF:   {pdf_path}")
+        print(f"  Tree:  {tree_path}")
+        for r in results:
+            v = ""
+            if r["verify"] is not None:
+                status = "PASS" if r["verify"]["pass"] else "FAIL"
+                v = f"  F1={r['verify']['f1']:.1f}% ({status})"
+            print(f"  [{r['task_id']}] {r['instruction_gt']}{v}")
+    else:
+        # Combined mode -- all RQs in one prompt (original behaviour)
+        tasks_dir = out / "tasks" / task_id
+        result = _run_pipeline_for_rq(
+            pdf_path, task_id, args.research_question,
+            tree_path, tasks_dir, args,
+            paper_type=paper_type,
+        )
+
+        print(f"\n{'='*50}\nPipeline complete for: {task_id}\n{'='*50}")
+        print(f"  PDF:              {pdf_path}")
+        print(f"  Tree:             {tree_path}")
+        if result:
+            print(f"  Config:           {result['yaml']}")
+            print(f"  instruction.txt:  {result['instruction']}")
+            print(f"  instruction_gt:   {result['instruction_gt']}")
+            if result["verify"] is not None:
+                status = "PASS" if result["verify"]["pass"] else "FAIL"
+                print(f"  Verify F1:        {result['verify']['f1']:.1f}% ({status})")
 
 
 def main():
@@ -229,6 +490,13 @@ def main():
     ps.add_argument("--temperature", type=float, default=0.0)
     ps.set_defaults(func=cmd_parse)
 
+    # --- classify ---
+    cl = subparsers.add_parser("classify", help="Classify a paper into a benchmark archetype")
+    cl.add_argument("--pdf", required=True)
+    cl.add_argument("--model", default="gpt-4o")
+    cl.add_argument("-o", "--output", default=None, help="Optional JSON output path")
+    cl.set_defaults(func=cmd_classify)
+
     # --- extract ---
     ex = subparsers.add_parser("extract", help="Extract task config YAML from a paper PDF")
     ex.add_argument("--pdf", required=True)
@@ -238,6 +506,11 @@ def main():
     ex.add_argument("--model", default="gpt-4o")
     ex.add_argument("--max-tokens", type=int, default=4096)
     ex.add_argument("--temperature", type=float, default=0.0)
+    ex.add_argument("--paper-type", default="llm_evaluation",
+                     choices=["llm_evaluation", "novel_architecture", "empirical_study"],
+                     help="Benchmark archetype (defaults to llm_evaluation)")
+    ex.add_argument("--skip-hf-validation", action="store_true",
+                     help="Skip HuggingFace loader verification")
     ex.add_argument("-o", "--output", required=True)
     ex.set_defaults(func=cmd_extract)
 
@@ -259,16 +532,61 @@ def main():
     pl.add_argument("-o", "--output", required=True)
     pl.set_defaults(func=cmd_plan)
 
+    # --- verify ---
+    vf = subparsers.add_parser("verify", help="Verify instruction_gt.txt by running an agent and checking F1 >= 80")
+    vf.add_argument("--instruction-gt", required=True, help="Path to instruction_gt.txt")
+    vf.add_argument("--pdf", required=True, help="Path to the paper PDF")
+    vf.add_argument("--data-dir", default=None, help="Directory with task data files")
+    vf.add_argument("--ground-truth", default=None, help="Ground-truth conclusion text or file path (auto-extracted from PDF if omitted)")
+    vf.add_argument("--agent-model", default="gpt-4o", help="Model for the agent")
+    vf.add_argument("--eval-model", default="gpt-4o", help="Model for evaluation")
+    vf.add_argument("--max-turns", type=int, default=30, help="Max agent turns")
+    vf.add_argument("-o", "--output", default="./verify_results.json", help="Output JSON path")
+    vf.set_defaults(func=cmd_verify)
+
+    # --- specextract ---
+    se = subparsers.add_parser("specextract",
+                               help="Extract 7-component paper specification from a PDF")
+    se.add_argument("--pdf", required=True, help="Path to the paper PDF")
+    se.add_argument("--model", default="gpt-4o")
+    se.add_argument("--max-tokens", type=int, default=16384)
+    se.add_argument("--temperature", type=float, default=0.0)
+    se.add_argument("-o", "--output", required=True, help="Output JSON path for paper spec")
+    se.set_defaults(func=cmd_specextract)
+
+    # --- generate ---
+    gn = subparsers.add_parser("generate",
+                               help="Generate benchmark variant instances from a paper spec")
+    gn.add_argument("--spec", required=True, help="Path to paper spec JSON (from specextract)")
+    gn.add_argument("--pdf", required=True, help="Path to the paper PDF")
+    gn.add_argument("--paper-type", default=None,
+                     choices=["llm_evaluation", "novel_architecture", "empirical_study"],
+                     help="Skip auto-classification and force a benchmark archetype")
+    gn.add_argument("--model", default="gpt-4o")
+    gn.add_argument("--max-tokens", type=int, default=16384)
+    gn.add_argument("--temperature", type=float, default=0.3)
+    gn.add_argument("-o", "--output-dir", default="./variants", help="Output directory for instances")
+    gn.set_defaults(func=cmd_generate)
+
     # --- run (full pipeline) ---
     rp = subparsers.add_parser("run", help="Run full pipeline: PDF -> parse -> extract -> render -> plan")
     rp.add_argument("--task-id", required=True)
     rp.add_argument("--pdf", default=None, help="Path to a local PDF (skips download)")
     rp.add_argument("--query", default=None, help="arXiv search query (downloads PDF)")
-    rp.add_argument("--research-question", required=True)
+    rp.add_argument("--research-question", default=None,
+                     help="Research question (required unless --split-rqs is used)")
     rp.add_argument("--output-dir", default="./output", help="Base output directory")
     rp.add_argument("--model", default="gpt-4o")
     rp.add_argument("--template", default=None, help="Custom instruction template")
     rp.add_argument("--auto", action="store_true", help="Auto-select first arXiv result")
+    rp.add_argument("--paper-type", default=None,
+                     choices=["llm_evaluation", "novel_architecture", "empirical_study"],
+                     help="Skip auto-classification and force a benchmark archetype")
+    rp.add_argument("--skip-hf-validation", action="store_true",
+                     help="Skip HuggingFace loader verification in the extract step")
+    rp.add_argument("--split-rqs", action="store_true",
+                     help="Generate a separate task per research question instead of one combined task")
+    rp.add_argument("--verify", action="store_true", help="Run verification step (requires computer-executable experiments)")
     rp.set_defaults(func=cmd_run)
 
     args = parser.parse_args()

@@ -150,6 +150,37 @@ def parse_paper_to_tree(
     return tree
 
 
+def extract_rqs_from_tree(tree: dict) -> list[dict]:
+    """Return a list of (rq_text, subtree) pairs from a parsed problem tree.
+
+    Each subtree is a full tree dict with the same ``paper`` metadata but with
+    ``problem_tree.children`` containing only the single RQ and its leaves.
+    """
+    problem_tree = tree.get("problem_tree", {})
+    children = problem_tree.get("children", [])
+    if not children:
+        return []
+
+    paper_meta = tree.get("paper", {})
+    root_fields = {k: v for k, v in problem_tree.items() if k != "children"}
+
+    rqs = []
+    for i, rq_node in enumerate(children):
+        # Derive a short RQ label from the node text (e.g. "RQ1: Does X …")
+        rq_text = rq_node.get("node", rq_node.get("description", f"RQ{i + 1}"))
+
+        subtree = {
+            "paper": paper_meta,
+            "problem_tree": {
+                **root_fields,
+                "children": [rq_node],
+            },
+        }
+        rqs.append({"index": i, "rq_text": rq_text, "subtree": subtree})
+
+    return rqs
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Parse a research paper (PDF) into a problem tree via LLM."

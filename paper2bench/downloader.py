@@ -3,6 +3,7 @@
 import argparse
 import os
 import sys
+import time
 import urllib.request
 from typing import Optional
 
@@ -12,25 +13,50 @@ except ImportError:
     sys.exit("Missing dependency: pip install arxiv")
 
 
+# Backoff schedule for arxiv HTTP 429 rate-limits.
+_BACKOFF_SECONDS = (5, 20, 60)
+
+
 def search_arxiv(query: str, max_results: int = 5) -> list:
-    """Search arXiv by title/author and return a list of result dicts."""
+    """Search arXiv by title/author and return a list of result dicts.
+
+    Retries with exponential backoff on HTTP 429 (rate limit) errors from
+    the arxiv API, which are common when multiple jobs query in parallel.
+    """
     client = arxiv.Client()
     search = arxiv.Search(
         query=query,
         max_results=max_results,
         sort_by=arxiv.SortCriterion.Relevance,
     )
-    results = []
-    for r in client.results(search):
-        results.append({
-            "title": r.title,
-            "authors": [a.name for a in r.authors],
-            "published": r.published.strftime("%Y-%m-%d"),
-            "arxiv_id": r.entry_id.split("/")[-1],
-            "pdf_url": r.pdf_url,
-            "abstract": r.summary[:300],
-        })
-    return results
+
+    last_err = None
+    for attempt, delay in enumerate((0,) + _BACKOFF_SECONDS):
+        if delay:
+            print(f"[arxiv] rate-limited, retrying in {delay}s "
+                  f"(attempt {attempt}/{len(_BACKOFF_SECONDS)}) ...")
+            time.sleep(delay)
+        try:
+            results = []
+            for r in client.results(search):
+                results.append({
+                    "title": r.title,
+                    "authors": [a.name for a in r.authors],
+                    "published": r.published.strftime("%Y-%m-%d"),
+                    "arxiv_id": r.entry_id.split("/")[-1],
+                    "pdf_url": r.pdf_url,
+                    "abstract": r.summary[:300],
+                })
+            return results
+        except arxiv.HTTPError as e:
+            last_err = e
+            if getattr(e, "status", None) != 429:
+                raise
+            continue
+
+    raise RuntimeError(
+        f"arxiv search failed after {len(_BACKOFF_SECONDS)} retries: {last_err}"
+    )
 
 
 def display_results(results: list) -> None:

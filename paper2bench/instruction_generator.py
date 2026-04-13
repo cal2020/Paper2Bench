@@ -20,61 +20,154 @@ load_dotenv()
 # Prompts
 # ---------------------------------------------------------------------------
 
-EXTRACT_YAML_PROMPT = """\
-You are an expert research engineer who specializes in designing benchmark
-experiments for evaluating large language models.
+# ---------------------------------------------------------------------------
+# Shared rules (injected into every extraction prompt)
+# ---------------------------------------------------------------------------
 
-You will be given:
-1. A research question (provided separately).
-2. The full text of an academic paper that investigates this question.
-3. Optionally, a structured research-problem tree derived from the paper.
+_SHARED_RULES = """\
+Shared rules for dataset / reference extraction:
 
-Your task is to extract the key experimental parameters from the paper and
-output them as a YAML document that can be used to generate a standardized
-benchmark instruction file.
+- A **dataset** must have a proper-noun or acronym name (e.g., "QM9", "GSM8K",
+  "MMLU", "NaturalQuestions", "Materials Project").  If the only mention of a
+  data source is an author-year citation (e.g., "Riesselman et al. 2018"),
+  record it under the `references:` list, NOT under `datasets`.
+- For HuggingFace loaders, only emit a loader if you are confident the exact
+  repo ID exists.  If unsure, set `source: unknown` and leave a textual
+  description -- downstream validation will flag hallucinations.
+- For programmatically-generated data, use `source: synthetic` and write a
+  real generation snippet (not a placeholder like `pass` or `np.random.rand`).
+- Never fabricate model IDs.  If the paper does not name a HuggingFace or API
+  model, leave the list empty rather than inventing one.
+- Do NOT include conclusions, results, metrics, prompt templates, or
+  experimental procedures -- the agent must design those itself.
+- Always include "Do NOT use web search" and "Run FULL end-to-end experiments"
+  in `constraints`.
+- Output ONLY valid YAML (no preamble, no markdown fences, no commentary).
+"""
 
-IMPORTANT: The instruction file is given to an AI agent that must DESIGN ITS
-OWN experiments. You must extract ONLY the resources available to the agent
-(models, datasets, budget). Do NOT extract experimental procedures, evaluation
-metrics, prompt templates, or any methodological details -- the agent must
-figure those out independently. This is critical for benchmark integrity.
 
-Output ONLY valid YAML (no preamble, no markdown fences, no commentary)
-with exactly this schema:
+# ---------------------------------------------------------------------------
+# Paper-type-specific prompts
+# ---------------------------------------------------------------------------
+
+EXTRACT_YAML_PROMPT_LLM_EVAL = """\
+You are an expert benchmark engineer.  The paper you are given is an
+**evaluation of existing language models or AI systems on a task**.  Your
+job is to extract the resources the paper used to evaluate models, so that
+an AI agent can design its own experiments answering the same research
+question.
+
+Output ONLY valid YAML with this schema:
 
 ```
 task_id: <snake_case identifier>
+paper_type: llm_evaluation
 research_question: <the provided research question, verbatim>
 models:
   api:          # models available via API (use exact API model IDs)
     - gpt-4o
   huggingface:  # models to load via HuggingFace (use exact repo IDs)
     - meta-llama/Llama-3.1-8B-Instruct
-api_key_var: OPENAI_API_KEY   # or ANTHROPIC_API_KEY, GOOGLE_API_KEY
-budget_per_model: 1000        # realistic number based on paper's scale
+api_key_var: OPENAI_API_KEY
+budget_per_model: 1000
 datasets:
   - name: "<dataset name>"
-    source: huggingface        # huggingface | local | synthetic
+    source: huggingface           # huggingface | local | synthetic | unknown
     loader: |
-      <Python code snippet to load the dataset>
-    description: "<brief factual description -- NO hints about experimental use>"
+      <Python code snippet -- omit if source is 'unknown'>
+    description: "<what the data is, not how to use it>"
+references:
+  - "<author-year citation for any mentioned but unverified data source>"
 constraints:
   - "Do NOT use web search"
   - "Run FULL end-to-end experiments"
 ```
 
-Rules:
-1. Use EXACT model API IDs (e.g., "gpt-4o" not "GPT-4o").
-2. For datasets, prefer HuggingFace dataset IDs when publicly available.
-   Use "synthetic" for datasets generated programmatically.
-3. Set budget_per_model based on the paper's experiment scale (500-5000).
-4. Do NOT include conclusions, results, or findings from the paper.
-5. Do NOT invent models or datasets not in the paper.
-6. Do NOT include evaluation metrics, prompt templates, or experimental procedures.
-7. Dataset descriptions should only say WHAT the data is, not HOW to use it.
-8. Always include "Do NOT use web search" and "Run FULL end-to-end experiments"
-   in constraints.
-"""
+""" + _SHARED_RULES
+
+
+EXTRACT_YAML_PROMPT_NOVEL_ARCH = """\
+You are an expert benchmark engineer.  The paper you are given introduces a
+**new model, method, or architecture** that must be implemented and trained.
+Your job is to extract the resources needed to reproduce (or re-derive) the
+paper's central contribution, so that an AI agent can design and run its own
+experiments testing the same research question.
+
+Output ONLY valid YAML with this schema:
+
+```
+task_id: <snake_case identifier>
+paper_type: novel_architecture
+research_question: <the provided research question, verbatim>
+proposed_method:
+  name: "<short name of the new architecture / method>"
+  summary: "<one-paragraph description of what it is>"
+  key_components:
+    - "<component 1 -- the essential pieces an implementation must include>"
+baselines:                       # existing methods the paper compares against
+  - "<baseline name>"
+reference_implementation:        # optional hints, empty if none
+  - "<framework / library / GitHub repo mentioned by the paper, if any>"
+datasets:
+  - name: "<dataset name>"
+    source: huggingface          # huggingface | local | synthetic | unknown
+    loader: |
+      <Python code snippet -- omit if source is 'unknown'>
+    description: "<what the data is, not how to use it>"
+references:
+  - "<author-year citation for any mentioned but unverified data source>"
+compute_hint: "<rough compute scale from the paper, e.g. 'single GPU, <24h'>"
+constraints:
+  - "Do NOT use web search"
+  - "Run FULL end-to-end experiments"
+  - "Implement the proposed method yourself -- do not import it from a library
+    that bundles the paper's exact code."
+```
+
+""" + _SHARED_RULES
+
+
+EXTRACT_YAML_PROMPT_EMPIRICAL = """\
+You are an expert benchmark engineer.  The paper you are given is an
+**observational or analytical study** -- it neither evaluates existing models
+on a task nor proposes a new architecture.  Your job is to extract the
+empirical resources the paper used, so that an AI agent can design and run
+its own study answering the same research question.
+
+Output ONLY valid YAML with this schema:
+
+```
+task_id: <snake_case identifier>
+paper_type: empirical_study
+research_question: <the provided research question, verbatim>
+study_type: "<e.g. dataset audit, meta-analysis, training-data study>"
+data_sources:                    # primary corpora / logs / measurement sources
+  - name: "<source name>"
+    source: huggingface          # huggingface | local | synthetic | unknown
+    loader: |
+      <Python code snippet -- omit if source is 'unknown'>
+    description: "<what the data is>"
+analytical_tools:                # libraries / techniques used, if any
+  - "<tool name>"
+references:
+  - "<author-year citation for any mentioned but unverified data source>"
+constraints:
+  - "Do NOT use web search"
+  - "Run FULL end-to-end experiments"
+```
+
+""" + _SHARED_RULES
+
+
+# Backwards-compatible alias -- legacy callers get the LLM-eval prompt.
+EXTRACT_YAML_PROMPT = EXTRACT_YAML_PROMPT_LLM_EVAL
+
+
+_PROMPT_BY_TYPE = {
+    "llm_evaluation": EXTRACT_YAML_PROMPT_LLM_EVAL,
+    "novel_architecture": EXTRACT_YAML_PROMPT_NOVEL_ARCH,
+    "empirical_study": EXTRACT_YAML_PROMPT_EMPIRICAL,
+}
 
 
 # ---------------------------------------------------------------------------
@@ -97,11 +190,23 @@ def extract_yaml_from_pdf(
     max_tokens: int = 4096,
     temperature: float = 0.0,
     tree_json_path: Optional[str] = None,
+    paper_type: str = "llm_evaluation",
+    validate_hf_loaders: bool = True,
 ) -> str:
-    """Read a paper PDF and extract structured YAML config via LLM."""
+    """Read a paper PDF and extract structured YAML config via LLM.
+
+    ``paper_type`` selects the extraction prompt
+    (``llm_evaluation`` | ``novel_architecture`` | ``empirical_study``).
+    When ``validate_hf_loaders`` is True, the returned YAML is post-processed:
+    any dataset whose claimed HuggingFace ID does not resolve against the
+    Hub is demoted to ``source: unknown`` (and its loader stripped), so
+    downstream agents know not to trust a hallucinated path.
+    """
     api_key = api_key or os.getenv("OPENAI_API_KEY")
     if not api_key:
         raise ValueError("OPENAI_API_KEY must be set in the environment or passed directly")
+
+    prompt = _PROMPT_BY_TYPE.get(paper_type, EXTRACT_YAML_PROMPT_LLM_EVAL)
 
     client = openai.OpenAI(api_key=api_key)
     paper_text = extract_text_from_pdf(pdf_path)
@@ -110,6 +215,7 @@ def extract_yaml_from_pdf(
 
     user_message = (
         f"TASK ID: {task_id}\n\n"
+        f"PAPER TYPE: {paper_type}\n\n"
         f"RESEARCH QUESTION: {research_question}\n\n"
         "---\n\n"
         "FULL PAPER TEXT:\n\n"
@@ -132,7 +238,7 @@ def extract_yaml_from_pdf(
     response = client.chat.completions.create(
         model=model,
         messages=[
-            {"role": "system", "content": EXTRACT_YAML_PROMPT},
+            {"role": "system", "content": prompt},
             {"role": "user", "content": user_message},
         ],
         max_tokens=max_tokens,
@@ -151,48 +257,155 @@ def extract_yaml_from_pdf(
     # Strip markdown fences if present
     cleaned = re.sub(r"^```(?:ya?ml)?\s*\n", "", raw_output, flags=re.MULTILINE)
     cleaned = re.sub(r"\n```\s*$", "", cleaned, flags=re.MULTILINE)
+    cleaned = cleaned.strip()
 
-    return cleaned.strip()
+    if validate_hf_loaders:
+        cleaned = _validate_hf_loaders(cleaned)
+
+    return cleaned
+
+
+# ---------------------------------------------------------------------------
+# HF loader validation
+# ---------------------------------------------------------------------------
+
+def _validate_hf_loaders(yaml_text: str) -> str:
+    """Demote any dataset claiming a HuggingFace source whose ID does not
+    resolve on the Hub to ``source: unknown`` (and strip its loader).
+
+    This catches hallucinations like ``salesforce/uniref90_bfd30`` that an
+    agent would waste time trying to load.  Silently no-ops if the
+    ``huggingface_hub`` package or network is unavailable.
+    """
+    try:
+        import yaml as _yaml
+        from huggingface_hub import HfApi
+        from huggingface_hub.utils import RepositoryNotFoundError
+    except ImportError:
+        return yaml_text
+
+    try:
+        config = _yaml.safe_load(yaml_text)
+    except Exception:
+        return yaml_text
+    if not isinstance(config, dict):
+        return yaml_text
+
+    # Both schemas use the same dataset shape under different keys.
+    for key in ("datasets", "data_sources"):
+        items = config.get(key, [])
+        if not isinstance(items, list):
+            continue
+        for item in items:
+            if not isinstance(item, dict):
+                continue
+            if item.get("source") != "huggingface":
+                continue
+            loader = item.get("loader", "")
+            m = re.search(r'load_dataset\(\s*["\']([^"\']+)["\']', loader)
+            ds_id = m.group(1) if m else None
+            if not ds_id:
+                continue
+            try:
+                HfApi().dataset_info(ds_id)
+            except RepositoryNotFoundError:
+                print(f"[validate] HF dataset '{ds_id}' not found, "
+                      "demoting to source: unknown")
+                item["source"] = "unknown"
+                item.pop("loader", None)
+            except Exception as e:
+                # Network errors etc. -- don't mutate the config on failure.
+                print(f"[validate] skipped HF check for '{ds_id}': {e}")
+
+    return _yaml.safe_dump(config, sort_keys=False)
 
 
 # ---------------------------------------------------------------------------
 # Template rendering
 # ---------------------------------------------------------------------------
 
-def render_instruction(config: dict, template_path: Optional[str] = None) -> str:
-    """Render a task_config dict into an instruction.txt string using a template."""
+_TEMPLATE_DIR = Path(__file__).parent / "templates"
+_TEMPLATE_BY_TYPE = {
+    "llm_evaluation": _TEMPLATE_DIR / "default.txt",
+    "novel_architecture": _TEMPLATE_DIR / "novel_architecture.txt",
+    "empirical_study": _TEMPLATE_DIR / "empirical_study.txt",
+}
 
-    # Load template
-    tpl_path = Path(template_path) if template_path else _DEFAULT_TEMPLATE
+
+def render_instruction(config: dict, template_path: Optional[str] = None) -> str:
+    """Render a task_config dict into an instruction.txt string using a template.
+
+    If ``template_path`` is not provided, the template is auto-selected based
+    on ``config['paper_type']`` (falling back to the default LLM-eval template).
+    """
+
+    # --- Template selection ---
+    if template_path:
+        tpl_path = Path(template_path)
+    else:
+        paper_type = config.get("paper_type", "llm_evaluation")
+        tpl_path = _TEMPLATE_BY_TYPE.get(paper_type, _DEFAULT_TEMPLATE)
     template = tpl_path.read_text(encoding="utf-8")
 
-    # Models section
+    # --- Models / method section (schema depends on paper type) ---
     models_lines = []
-    api_models = config.get("models", {}).get("api", [])
-    hf_models = config.get("models", {}).get("huggingface", [])
-    if api_models:
-        models_lines.append("- " + " and ".join(api_models) + " via API")
-    for hf in hf_models:
-        models_lines.append(f"- Load with HuggingFace: {hf}")
-    models_section = "\n".join(models_lines)
+    if "proposed_method" in config:
+        # novel_architecture schema
+        method = config["proposed_method"] or {}
+        if method.get("name"):
+            models_lines.append(f"- {method['name']}: {method.get('summary', '').strip()}")
+        for comp in method.get("key_components", []) or []:
+            models_lines.append(f"  - Component: {comp}")
+        for base in config.get("baselines", []) or []:
+            models_lines.append(f"- Baseline for comparison: {base}")
+        for ref in config.get("reference_implementation", []) or []:
+            models_lines.append(f"- Reference hint: {ref}")
+    elif "analytical_tools" in config:
+        # empirical_study schema
+        for tool in config.get("analytical_tools", []) or []:
+            models_lines.append(f"- {tool}")
+    else:
+        # llm_evaluation schema
+        api_models = config.get("models", {}).get("api", []) or []
+        hf_models = config.get("models", {}).get("huggingface", []) or []
+        if api_models:
+            models_lines.append("- " + " and ".join(api_models) + " via API")
+        for hf in hf_models:
+            models_lines.append(f"- Load with HuggingFace: {hf}")
+    models_section = "\n".join(models_lines) if models_lines else "- (none specified -- the agent must choose appropriate tools)"
 
-    # Datasets section
+    # --- Datasets / data-sources section ---
+    dataset_list = config.get("datasets") or config.get("data_sources") or []
     datasets_lines = []
-    for ds in config.get("datasets", []):
-        desc = ds.get("description", ds.get("name", ""))
-        loader = ds.get("loader", "").strip()
-        if ds.get("source") == "synthetic":
-            datasets_lines.append(f"- {desc}")
+    for ds in dataset_list:
+        name = ds.get("name", "Dataset")
+        desc = ds.get("description", name)
+        source = ds.get("source", "")
+        loader = (ds.get("loader") or "").strip()
+
+        if source == "unknown":
+            datasets_lines.append(f"- {name}: {desc}  [loader unverified -- locate the data yourself]")
+        elif source == "synthetic":
+            datasets_lines.append(f"- {name}: {desc}  [generate programmatically]")
+            if loader:
+                datasets_lines.append("  Generation code:")
+                for line in loader.split("\n"):
+                    datasets_lines.append(f"    {line}")
         elif loader:
-            datasets_lines.append(f"- {ds.get('name', 'Dataset')}: {desc}")
+            datasets_lines.append(f"- {name}: {desc}")
             datasets_lines.append("  Loading code:")
             for line in loader.split("\n"):
                 datasets_lines.append(f"    {line}")
         else:
-            datasets_lines.append(f"- {desc}")
-    datasets_section = "\n".join(datasets_lines)
+            datasets_lines.append(f"- {name}: {desc}")
 
-    # Constraints section
+    # Surface unverified citations so the agent knows about them.
+    for ref in config.get("references", []) or []:
+        datasets_lines.append(f"- Referenced but not loaded: {ref}")
+
+    datasets_section = "\n".join(datasets_lines) if datasets_lines else "- (no datasets specified)"
+
+    # --- Constraints ---
     constraints = config.get("constraints", [
         "You should **NOT** use any web search tool or try to answer the question "
         "based on your prior knowledge, but run **FULL** end to end experiment and "

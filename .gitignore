@@ -14,3 +14,12 @@ venv/
 .mypy_cache/
 .pytest_cache/
 *.pdf
+
+# Local test artifacts and logs
+test_output/
+test_output_v2/
+logs/
+runs/
+
+# Internal design notes (not for distribution)
+Paper2Bench.md

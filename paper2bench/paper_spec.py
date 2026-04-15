@@ -20,9 +20,9 @@ import re
 from pathlib import Path
 from typing import Optional
 
-import openai
 from dotenv import load_dotenv
 
+from .llm import chat
 from .pdf_utils import extract_text_from_pdf
 
 load_dotenv()
@@ -113,34 +113,26 @@ def extract_paper_spec(
     temperature: float = 0.0,
 ) -> dict:
     """Read a paper PDF and return its 7-component specification as a dict."""
-    api_key = api_key or os.getenv("OPENAI_API_KEY")
-    if not api_key:
-        raise ValueError("OPENAI_API_KEY must be set")
-
-    client = openai.OpenAI(api_key=api_key)
     paper_text = extract_text_from_pdf(pdf_path)
     if not paper_text.strip():
         raise ValueError(f"No text extracted from {pdf_path}")
 
-    response = client.chat.completions.create(
+    response = chat(
         model=model,
         messages=[
             {"role": "system", "content": SPEC_EXTRACTION_PROMPT},
             {"role": "user", "content": paper_text},
         ],
-        max_completion_tokens=max_tokens,
+        max_tokens=max_tokens,
         temperature=temperature,
+        api_key=api_key,
     )
-
-    raw = response.choices[0].message.content
-    usage = response.usage
     print(
-        f"Tokens  --  input: {usage.prompt_tokens}  |  "
-        f"output: {usage.completion_tokens}  |  "
-        f"total: {usage.total_tokens}"
+        f"Tokens  --  input: {response.input_tokens}  |  "
+        f"output: {response.output_tokens}  |  "
+        f"total: {response.total_tokens}  |  provider: {response.provider}"
     )
-
-    return _parse_json(raw)
+    return _parse_json(response.content)
 
 
 # ---------------------------------------------------------------------------

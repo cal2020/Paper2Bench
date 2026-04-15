@@ -7,9 +7,9 @@ import os
 from pathlib import Path
 from typing import Optional
 
-import openai
 from dotenv import load_dotenv
 
+from .llm import chat
 from .pdf_utils import extract_text_from_pdf
 
 load_dotenv()
@@ -112,11 +112,6 @@ def parse_paper_to_tree(
     temperature: float = 0.0,
 ) -> dict:
     """Read a paper PDF and return the research-problem tree as a dict."""
-    api_key = api_key or os.getenv("OPENAI_API_KEY")
-    if not api_key:
-        raise ValueError("OPENAI_API_KEY must be set in the environment or passed directly")
-
-    client = openai.OpenAI(api_key=api_key)
     paper_text = extract_text_from_pdf(pdf_path)
     if not paper_text.strip():
         raise ValueError(f"No text could be extracted from {pdf_path}")
@@ -127,7 +122,7 @@ def parse_paper_to_tree(
         "Now parse this paper according to the instructions."
     )
 
-    response = client.chat.completions.create(
+    response = chat(
         model=model,
         messages=[
             {"role": "system", "content": TREE_PARSING_PROMPT},
@@ -135,18 +130,14 @@ def parse_paper_to_tree(
         ],
         max_tokens=max_tokens,
         temperature=temperature,
+        api_key=api_key,
     )
-
-    raw_output = response.choices[0].message.content
-    tree = extract_json_from_response(raw_output)
-
-    usage = response.usage
+    tree = extract_json_from_response(response.content)
     print(
-        f"Tokens  --  input: {usage.prompt_tokens}  |  "
-        f"output: {usage.completion_tokens}  |  "
-        f"total: {usage.total_tokens}"
+        f"Tokens  --  input: {response.input_tokens}  |  "
+        f"output: {response.output_tokens}  |  "
+        f"total: {response.total_tokens}  |  provider: {response.provider}"
     )
-
     return tree
 
 

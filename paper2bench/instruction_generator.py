@@ -8,9 +8,9 @@ from pathlib import Path
 from typing import Optional
 
 import yaml
-import openai
 from dotenv import load_dotenv
 
+from .llm import chat
 from .pdf_utils import extract_text_from_pdf
 
 load_dotenv()
@@ -202,13 +202,8 @@ def extract_yaml_from_pdf(
     Hub is demoted to ``source: unknown`` (and its loader stripped), so
     downstream agents know not to trust a hallucinated path.
     """
-    api_key = api_key or os.getenv("OPENAI_API_KEY")
-    if not api_key:
-        raise ValueError("OPENAI_API_KEY must be set in the environment or passed directly")
-
     prompt = _PROMPT_BY_TYPE.get(paper_type, EXTRACT_YAML_PROMPT_LLM_EVAL)
 
-    client = openai.OpenAI(api_key=api_key)
     paper_text = extract_text_from_pdf(pdf_path)
     if not paper_text.strip():
         raise ValueError(f"No text could be extracted from {pdf_path}")
@@ -235,7 +230,7 @@ def extract_yaml_from_pdf(
         else:
             print(f"[warn] Tree JSON not found at {tree_json_path}, skipping.")
 
-    response = client.chat.completions.create(
+    response = chat(
         model=model,
         messages=[
             {"role": "system", "content": prompt},
@@ -243,15 +238,13 @@ def extract_yaml_from_pdf(
         ],
         max_tokens=max_tokens,
         temperature=temperature,
+        api_key=api_key,
     )
-
-    raw_output = response.choices[0].message.content
-
-    usage = response.usage
+    raw_output = response.content
     print(
-        f"Tokens  --  input: {usage.prompt_tokens}  |  "
-        f"output: {usage.completion_tokens}  |  "
-        f"total: {usage.total_tokens}"
+        f"Tokens  --  input: {response.input_tokens}  |  "
+        f"output: {response.output_tokens}  |  "
+        f"total: {response.total_tokens}  |  provider: {response.provider}"
     )
 
     # Strip markdown fences if present

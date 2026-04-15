@@ -2,43 +2,60 @@
 
 Convert academic papers into benchmark tasks for evaluating AI coding agents.
 
-## Pipeline
+Paper2Bench offers two complementary workflows:
 
-**Core pipeline** — paper → benchmark task:
+1. **Core pipeline** — a reproducible task per paper: extract what the paper used (models, datasets, budget), hand it to an agent, and score the agent's conclusion against the paper's.
+2. **Benchmark-variant generator** — turn a paper into a *family* of new research problems (perturbations, ablations, future-work tasks) that test whether an agent can transfer the paper's logic to new settings.
 
-```
-Paper title/author
-  → paper2bench download  → PDF
-  → paper2bench parse     → problem tree JSON
-  → paper2bench classify  → paper_type (llm_evaluation | novel_architecture | empirical_study)
-  → paper2bench extract   → task config YAML
-  → paper2bench render    → instruction.txt
-  → paper2bench plan      → instruction_gt.txt (ground truth)
-  → paper2bench verify    → F1 check (optional)
-```
+Both workflows auto-detect the paper's archetype (`llm_evaluation` / `novel_architecture` / `empirical_study`) and route extraction through a matching prompt and template — so papers like CGCNN or SchNet don't get shoehorned into an LLM-evaluation schema.
 
-**Benchmark-generator components** (independent, research-grade):
+---
 
-```
-PDF
-  → paper2bench specextract → paper_spec.json (7-component spec)
-  → paper2bench generate    → variant benchmark instances
-```
+## Contents
 
-## Installation
+- [Install](#install)
+- [Quick start](#quick-start)
+- [Pipelines at a glance](#pipelines-at-a-glance)
+- [Commands](#commands)
+- [Usage guide](#usage-guide)
+  - [Core pipeline, one command](#core-pipeline-one-command)
+  - [Core pipeline, step by step](#core-pipeline-step-by-step)
+  - [Paper types and auto-classification](#paper-types-and-auto-classification)
+  - [Verification (F1 gate)](#verification-f1-gate)
+  - [Splitting papers with multiple research questions](#splitting-papers-with-multiple-research-questions)
+  - [Benchmark-variant generator](#benchmark-variant-generator)
+  - [Custom templates](#custom-templates)
+- [Worked examples](#worked-examples)
+- [Output files](#output-files)
+- [How it works](#how-it-works)
+
+---
+
+## Install
 
 ```bash
 pip install -e .
 ```
 
-Requires an OpenAI API key:
+Requires Python 3.10+. Set at least one provider key (both may coexist in a `.env` file):
+
 ```bash
-export OPENAI_API_KEY=sk-...
+export OPENAI_API_KEY=sk-...           # required for gpt-* / o-* models
+export ANTHROPIC_API_KEY=sk-ant-...    # required for claude-* models
 ```
 
-## Usage
+**Provider selection** is automatic based on the model name:
 
-### Full pipeline (one command)
+- `gpt-*`, `o1-*`, `o3-*`, `o4-*` → OpenAI
+- `claude-*`, `anthropic/claude-*` → Anthropic
+
+So `--model claude-opus-4-6` just works if `ANTHROPIC_API_KEY` is set and `pip install anthropic` has been run. The default model is `gpt-4o`. Each stage that accepts `--model` (or `--agent-model` / `--eval-model`) can be pointed at either provider independently.
+
+---
+
+## Quick start
+
+One-shot benchmark from an arXiv query:
 
 ```bash
 paper2bench run \
@@ -49,59 +66,146 @@ paper2bench run \
   --auto
 ```
 
-Additional `run` flags:
+Generate a family of variant benchmarks from an existing PDF:
+
+```bash
+paper2bench specextract --pdf paper.pdf -o spec.json
+paper2bench generate    --spec spec.json --pdf paper.pdf -o ./variants/
+```
+
+---
+
+## Pipelines at a glance
+
+**Core pipeline** — paper → single benchmark task:
+
+```
+Paper title/author
+  → paper2bench download   → PDF
+  → paper2bench parse      → problem tree JSON
+  → paper2bench classify   → paper_type (auto)
+  → paper2bench extract    → task_config.yaml
+  → paper2bench render     → instruction.txt
+  → paper2bench plan       → instruction_gt.txt   (ground-truth plan)
+  → paper2bench verify     → F1 check             (optional)
+```
+
+**Benchmark-variant generator** — paper → family of variant tasks:
+
+```
+PDF
+  → paper2bench specextract → paper_spec.json  (7-component spec)
+  → paper2bench generate    → variants/<id>/{instruction.txt, task_config.yaml, metadata.json}
+```
+
+The two workflows are independent — you can use either on its own.
+
+---
+
+## Commands
+
+| Command | Purpose |
+|---------|---------|
+| `download` | Search arXiv and download a paper PDF |
+| `parse` | Parse a PDF into a 3-level problem tree |
+| `classify` | Classify a paper as `llm_evaluation` / `novel_architecture` / `empirical_study` |
+| `extract` | Extract task config YAML (paper-type aware) |
+| `render` | Render YAML into `instruction.txt` |
+| `plan` | Build `instruction_gt.txt` from instruction + PDF |
+| `verify` | Run an agent with `instruction_gt` and check F1 ≥ 80 |
+| `run` | Core pipeline end-to-end |
+| `specextract` | Extract 7-component paper specification |
+| `generate` | Generate benchmark variant instances from a paper spec |
+
+---
+
+## Usage guide
+
+### Core pipeline, one command
+
+```bash
+paper2bench run \
+  --task-id my_task \
+  --query "Paper title and authors" \
+  --research-question "The question the agent will try to answer" \
+  --output-dir ./output/ \
+  --auto
+```
+
+Useful `run` flags:
 
 | Flag | Effect |
 |------|--------|
-| `--split-rqs` | Generate a separate task per research question found in the tree (research-question flag becomes optional) |
-| `--verify` | After generating `instruction_gt.txt`, run an agent with it and check that F1 ≥ 80 against a paper-derived reference answer |
+| `--pdf PATH` | Use a local PDF instead of searching arXiv |
+| `--paper-type TYPE` | Skip auto-classification and force `llm_evaluation` / `novel_architecture` / `empirical_study` |
+| `--skip-hf-validation` | Skip the HuggingFace-Hub existence check on dataset loaders |
+| `--split-rqs` | Emit a separate benchmark task per research question in the parsed tree (`--research-question` becomes optional) |
+| `--verify` | After generating `instruction_gt.txt`, run an agent with it and check F1 ≥ 80 |
+| `--template PATH` | Use a custom instruction template |
+| `--model MODEL` | Change the LLM (default `gpt-4o`) |
 
-### Step by step
+### Core pipeline, step by step
+
+Run any stage on its own — each writes a self-contained artifact.
 
 ```bash
-# 1. Download paper from arXiv
-paper2bench download "The Reversal Curse Berglund" --task-id reversal_curse -o ./papers/
+# 1. Download from arXiv
+paper2bench download "Paper title and authors" --task-id my_task -o ./papers/
 
 # 2. Parse into problem tree
-paper2bench parse ./papers/reversal_curse.pdf -o ./trees/reversal_curse_tree.json
+paper2bench parse ./papers/my_task.pdf -o ./trees/my_task_tree.json
 
-# 3. Extract task config (LLM reads paper, outputs YAML)
+# 3. (optional) Classify standalone
+paper2bench classify --pdf ./papers/my_task.pdf -o ./tasks/my_task/classification.json
+
+# 4. Extract task config (paper-type aware)
 paper2bench extract \
-  --pdf ./papers/reversal_curse.pdf \
-  --research-question "If an LLM is fine-tuned on 'A is B,' does it learn 'B is A'?" \
-  --task-id reversal_curse \
-  --tree ./trees/reversal_curse_tree.json \
-  -o ./tasks/reversal_curse/task_config.yaml
+  --pdf ./papers/my_task.pdf \
+  --research-question "The question" \
+  --task-id my_task \
+  --tree ./trees/my_task_tree.json \
+  --paper-type llm_evaluation \
+  -o ./tasks/my_task/task_config.yaml
 
-# 4. Review and edit the YAML, then render instruction.txt
+# 5. Render instruction.txt
 paper2bench render \
-  --config ./tasks/reversal_curse/task_config.yaml \
-  -o ./tasks/reversal_curse/instruction.txt
+  --config ./tasks/my_task/task_config.yaml \
+  -o ./tasks/my_task/instruction.txt
 
-# 5. Generate ground truth (detailed experimental plan from paper)
+# 6. Generate ground-truth plan
 paper2bench plan \
-  --instruction ./tasks/reversal_curse/instruction.txt \
-  --pdf ./papers/reversal_curse.pdf \
-  --tree ./trees/reversal_curse_tree.json \
-  -o ./tasks/reversal_curse/instruction_gt.txt
+  --instruction ./tasks/my_task/instruction.txt \
+  --pdf ./papers/my_task.pdf \
+  --tree ./trees/my_task_tree.json \
+  -o ./tasks/my_task/instruction_gt.txt
 
-# 6. (optional) Verify the instruction_gt is clear enough for an agent
+# 7. (optional) Verify clarity
 paper2bench verify \
-  --instruction-gt ./tasks/reversal_curse/instruction_gt.txt \
-  --pdf ./papers/reversal_curse.pdf \
-  -o ./tasks/reversal_curse/verify_results.json
+  --instruction-gt ./tasks/my_task/instruction_gt.txt \
+  --pdf ./papers/my_task.pdf \
+  -o ./tasks/my_task/verify_results.json
 ```
 
-### Verification component
+### Paper types and auto-classification
 
-`paper2bench verify` runs a coding agent with `instruction_gt.txt`, extracts
-its final conclusion, decomposes both the conclusion and a paper-derived
-reference answer into atomic claims, and computes claim-level
-**precision / recall / F1**. The instruction passes if F1 ≥ 80.
+Every paper is auto-classified into one of three archetypes; the type drives both the **extraction prompt** and the **instruction template**. Pass `--paper-type` anywhere to override.
 
-Skipped by default — opt in with `--verify` in the `run` pipeline, or invoke
-the standalone command. Not suitable for papers whose experiments cannot be
-executed in a Python sandbox.
+| Type | When it fires | Schema highlights | Template |
+|------|---------------|-------------------|----------|
+| `llm_evaluation` | Paper evaluates existing models on a task (e.g. Lost in the Middle, Chain-of-Thought) | `models.api`, `models.huggingface`, `datasets` | `default.txt` |
+| `novel_architecture` | Paper introduces a new model / method (e.g. CGCNN, SchNet, Transformer) | `proposed_method`, `baselines`, `reference_implementation` | `novel_architecture.txt` |
+| `empirical_study` | Observational / meta-study, no new model | `study_type`, `data_sources`, `analytical_tools` | `empirical_study.txt` |
+
+All three schemas also include:
+
+- **`references`** — author-year citations get their own field so they aren't mis-extracted as fake synthetic datasets.
+- **HuggingFace loader validation** — any `source: huggingface` loader is checked against the Hub; missing repos are demoted to `source: unknown` (bypass with `--skip-hf-validation`).
+
+### Verification (F1 gate)
+
+`paper2bench verify` runs a coding agent with `instruction_gt.txt`, extracts its final conclusion, decomposes both the conclusion and a paper-derived reference answer into atomic claims, and computes claim-level **precision / recall / F1**. The task passes if **F1 ≥ 80**.
+
+Verification is opt-in and not suitable for papers whose experiments can't be executed in a Python sandbox.
 
 ```bash
 paper2bench verify \
@@ -112,194 +216,371 @@ paper2bench verify \
   --eval-model gpt-4o
 ```
 
-### Research-question splitting
+### Splitting papers with multiple research questions
 
-When a paper contains multiple research questions, pass `--split-rqs` to
-generate a separate benchmark task per RQ. Each sub-task gets its own config,
-instruction, and instruction_gt under `tasks/<task_id>_rqN/`.
+Pass `--split-rqs` on `run` to emit a separate benchmark task per research question found in the parsed problem tree. Each sub-task lands in `tasks/<task_id>_rqN/` with its own config, instruction, and instruction_gt.
 
 ```bash
 paper2bench run --task-id my_task --pdf paper.pdf --split-rqs
 ```
 
-### Benchmark-generator components (independent)
+### Benchmark-variant generator
 
-For research beyond straight reproduction, the `specextract` and `generate`
-commands turn a paper into a **family of benchmark variants** — perturbations,
-ablation-derived tasks, and future-work instances — with automated leakage
-checks.
+For evaluating *transfer* rather than reproduction, `specextract` + `generate` turn a paper into a family of new research problems:
+
+- **Perturbations** — new dataset, tighter budget, different metric, shifted domain
+- **Ablation-derived** — does the key component still matter under a shift? Which fails first?
+- **Future-work-derived** — bounded instantiations of the paper's stated limitations
+
+Each variant includes an automated leakage check (direct-answer / method / statistical leak) so instructions that accidentally reveal the paper's answer get flagged.
 
 ```bash
 # Extract the 7-component paper specification
-paper2bench specextract --pdf ./papers/my_paper.pdf -o ./specs/my_paper.json
+paper2bench specextract --pdf paper.pdf -o spec.json
 
-# Generate a family of variant benchmark instances
-paper2bench generate \
-  --spec ./specs/my_paper.json \
-  --pdf ./papers/my_paper.pdf \
-  -o ./variants/my_paper/
+# Generate a family of variants (auto-classifies paper type; override with --paper-type)
+paper2bench generate --spec spec.json --pdf paper.pdf -o ./variants/
 ```
 
-Each generated instance includes:
+Each variant directory contains:
 
-- `instruction.txt` — a **full, detailed research instruction** in the same
-  format as the core pipeline (research question + models/method + datasets
-  with loaders + budget + constraints), rendered via the paper-type-aware
-  template
-- `task_config.yaml` — the resource spec that was rendered into the
-  instruction (schema matches the detected paper type: `llm_evaluation` uses
-  `models`/`datasets`; `novel_architecture` uses `proposed_method`/
-  `baselines`/`reference_implementation`; `empirical_study` uses
-  `data_sources`/`analytical_tools`)
-- `metadata.json` — transformation type (perturbation / ablation /
-  future_work), difficulty (easy / medium / hard), rationale, expected
-  outcome hint (for curators), and the automated leakage-check verdict
+- `instruction.txt` — a detailed research instruction, **same format as the core pipeline's instruction.txt** (research question + models/method + datasets with loaders + budget + constraints), rendered through the paper-type-aware template.
+- `task_config.yaml` — the resource spec that was rendered into the instruction.
+- `metadata.json` — transformation `type`, `difficulty`, rationale, curator-only expected outcome hint, and leakage-check verdict.
 
-The generator auto-classifies the paper unless `--paper-type` is passed, so
-variants of a materials-science paper tell the agent "implement the method
-yourself" while variants of an LLM-evaluation paper list concrete API model
-IDs and HuggingFace loaders.
+Because the generator reuses the paper-type branching, variants of a materials-science paper tell the agent "implement the method yourself" while variants of an LLM-evaluation paper list concrete API model IDs and HuggingFace loaders.
 
-### Paper types
+### Custom templates
 
-`run` auto-classifies each paper into one of three archetypes and routes it
-through a type-specific extraction prompt and instruction template. Pass
-`--paper-type <type>` to skip auto-classification, or run `paper2bench
-classify` standalone.
+Pass `--template` to `render` (or `run`) to use your own template:
 
-| Type | When it fires | YAML schema highlights | Template |
-|------|---------------|------------------------|----------|
-| `llm_evaluation` | Paper evaluates existing models on a task | `models.api`, `models.huggingface`, `datasets` | `default.txt` |
-| `novel_architecture` | Paper proposes a new model / method | `proposed_method`, `baselines`, `reference_implementation` | `novel_architecture.txt` |
-| `empirical_study` | Observational / analytical / meta-study | `study_type`, `data_sources`, `analytical_tools` | `empirical_study.txt` |
+```bash
+paper2bench render --config task.yaml --template my_template.txt -o instruction.txt
+```
 
-All three schemas include a `references` field for author-year citations
-(to prevent them being mis-extracted as fake synthetic datasets) and run
-any claimed HuggingFace dataset loader through a Hub-existence check —
-unverified paths are demoted to `source: unknown` so agents don't waste
-time on hallucinated IDs. Pass `--skip-hf-validation` to skip the network
-check.
+Template placeholders: `{research_question}`, `{models_section}`, `{datasets_section}`, `{budget_per_model}`, `{constraints_section}`.
 
-### Worked examples
+---
 
-Three papers exercised end-to-end on the current pipeline (see
-`test_output_v2/tasks/` for full artifacts):
+## Worked examples
 
-**Lost in the Middle (AI / NLP)** — classified `llm_evaluation` (high confidence)
+Three papers run end-to-end through the core pipeline, showing how the classifier routes each one to a different schema. Each example shows the full rendered `instruction.txt` (what the agent actually sees) and the extracted `task_config.yaml` that produced it.
+
+---
+
+### Lost in the Middle (NLP / LLM)
+
+Classified `llm_evaluation` (high confidence). The LLM-evaluation template lists concrete API + HuggingFace models, dataset loaders, and budget — the agent is expected to evaluate these models, not implement a new one.
+
+<details>
+<summary><b>Rendered <code>instruction.txt</code></b> (what the agent sees)</summary>
+
+```
+You are a research agent. Conduct research and experiment about the question: "How does model performance vary based on relevant information position in context?"
+
+You have access to the following resources:
+
+Models:
+- gpt-3.5-turbo-0613 and gpt-3.5-turbo-16k-0613 and claude-1.3 and claude-1.3-100k via API
+- Load with HuggingFace: mpt-30b-instruct
+- Load with HuggingFace: longchat-13b-16k
+- Load with HuggingFace: flan-t5-xxl
+- Load with HuggingFace: flan-ul2
+- Load with HuggingFace: Llama-2-7b-chat-hf
+- Load with HuggingFace: Llama-2-13b-chat-hf
+- Load with HuggingFace: Llama-2-70b-chat-hf
+- Load with HuggingFace: Llama-2-7b-hf
+- Load with HuggingFace: Llama-2-13b-hf
+- Load with HuggingFace: Llama-2-70b-hf
+- Computational budget: 1000 API calls per model
+
+Datasets:
+- NaturalQuestions-Open: A dataset containing historical queries issued to the Google search engine, coupled with human-annotated answers extracted from Wikipedia.  [loader unverified -- locate the data yourself]
+- Synthetic JSON-formatted key-value pairs: A synthetic dataset of JSON-formatted key-value pairs with unique, randomly-generated UUIDs as keys and values.  [generate programmatically]
+  Generation code:
+    import uuid
+    def generate_synthetic_kv_pairs(num_pairs):
+        return {str(uuid.uuid4()): str(uuid.uuid4()) for _ in range(num_pairs)}
+- Referenced but not loaded: Lee et al. 2019
+- Referenced but not loaded: Kwiatkowski et al. 2019
+
+Experimental constraints:
+- Do NOT use web search
+- Run FULL end-to-end experiments
+
+Please design and execute experiments to investigate this research question. Document your experimental plan, run end-to-end experiments, and provide conclusions at different levels of detail.
+```
+
+</details>
+
+<details>
+<summary><b>Extracted <code>task_config.yaml</code></b></summary>
+
 ```yaml
 paper_type: llm_evaluation
 models:
-  api: [gpt-3.5-turbo-0613, gpt-3.5-turbo-16k-0613, claude-1.3, claude-1.3-100k]
+  api:         [gpt-3.5-turbo-0613, gpt-3.5-turbo-16k-0613, claude-1.3, claude-1.3-100k]
   huggingface: [mpt-30b-instruct, longchat-13b-16k, flan-t5-xxl, flan-ul2,
-                Llama-2-7b-chat-hf, Llama-2-13b-chat-hf, Llama-2-70b-chat-hf, ...]
+                Llama-2-{7b,13b,70b}-{hf,chat-hf}]
 datasets:
   - name: NaturalQuestions-Open
-    source: unknown                # demoted — no canonical HF path
+    source: unknown                          # demoted — no canonical HF path
   - name: Synthetic JSON key-value pairs
     source: synthetic
     loader: |
       import uuid
-      def generate_synthetic_kv_pairs(num_pairs):
-          return {str(uuid.uuid4()): str(uuid.uuid4()) for _ in range(num_pairs)}
+      def generate_synthetic_kv_pairs(n):
+          return {str(uuid.uuid4()): str(uuid.uuid4()) for _ in range(n)}
 references: [Lee et al. 2019, Kwiatkowski et al. 2019]
 ```
 
-**CGCNN (materials science)** — classified `novel_architecture` (high confidence)
+</details>
+
+---
+
+### CGCNN (materials science)
+
+Classified `novel_architecture` (high confidence). The template tells the agent to **implement the method from scratch** — not call a library that bundles the paper's code — and hands it the method's key components, baselines, and a reference repo hint.
+
+<details>
+<summary><b>Rendered <code>instruction.txt</code></b></summary>
+
+```
+You are a research agent. Conduct research about the question: "Can graph convolutional neural networks predict material properties directly from crystal structure?"
+
+Your central task is to **implement a proposed method from scratch** and evaluate whether it answers the research question. Do NOT import a library that bundles the paper's exact code; the benchmark value comes from your own implementation.
+
+Proposed method to implement:
+- Crystal Graph Convolutional Neural Networks (CGCNN): CGCNN is a framework that represents crystal structures as graphs, where nodes represent atoms and edges represent bonds. A convolutional neural network is applied to these graphs to predict material properties directly from the crystal structure, achieving accuracy comparable to DFT calculations while providing interpretability by extracting contributions from local chemical environments.
+  - Component: Crystal graph representation with nodes as atoms and edges as bonds
+  - Component: Graph convolutional layers to update atom feature vectors
+  - Component: Pooling layers to aggregate features into a crystal-level representation
+  - Component: Fully-connected layers for property prediction
+- Baseline for comparison: DFT calculations
+- Reference hint: https://github.com/txie-93/cgcnn
+
+Datasets for training and evaluation:
+- Materials Project: A database of inorganic crystal structures and their properties, used for training and evaluating the CGCNN model.  [loader unverified -- locate the data yourself]
+- Perovskite database: A dataset containing energy above hull data for perovskite crystals, used to demonstrate the interpretability of CGCNN.  [loader unverified -- locate the data yourself]
+- Referenced but not loaded: Jain et al. 2013
+- Referenced but not loaded: Kirklin et al. 2015
+- Referenced but not loaded: De Jong et al. 2015
+
+Experimental constraints:
+- Do NOT use web search
+- Run FULL end-to-end experiments
+- Implement the proposed method yourself -- do not import it from a library that bundles the paper's exact code.
+- Computational budget: 1000 training runs / evaluations total
+
+Deliverables:
+1. A working implementation of the proposed method in Python.
+2. Training and evaluation runs on the specified datasets.
+3. Quantitative results (metrics of your choice, justified against the research question).
+4. A written conclusion tying the results back to the research question.
+
+Design your own experimental protocol, metrics, and baselines. Run end-to-end experiments and report results honestly.
+```
+
+</details>
+
+<details>
+<summary><b>Extracted <code>task_config.yaml</code></b></summary>
+
 ```yaml
 paper_type: novel_architecture
 proposed_method:
   name: Crystal Graph Convolutional Neural Networks (CGCNN)
-  summary: Represents crystal structures as graphs with atoms as nodes and bonds
-    as edges; a graph CNN predicts material properties directly from structure.
+  summary: Represents crystal structures as graphs (atoms=nodes, bonds=edges);
+    a graph CNN predicts material properties directly from structure.
   key_components:
-    - Crystal graph representation with nodes as atoms and edges as bonds
-    - Graph convolutional layers to update atom feature vectors
-    - Pooling layers to aggregate features into a crystal-level representation
-    - Fully-connected layers for property prediction
-baselines: [DFT calculations]
-reference_implementation: [https://github.com/txie-93/cgcnn]
+    - Crystal graph representation
+    - Graph convolutional layers
+    - Pooling layer
+    - Fully-connected prediction head
+baselines:                 [DFT calculations]
+reference_implementation:  [https://github.com/txie-93/cgcnn]
 datasets:
-  - name: Materials Project
-    source: unknown
-  - name: Perovskite database
-    source: unknown
+  - {name: Materials Project,   source: unknown}
+  - {name: Perovskite database, source: unknown}
 references: [Jain et al. 2013, Kirklin et al. 2015, De Jong et al. 2015]
 ```
 
-**SchNet (quantum chemistry)** — classified `novel_architecture` (high confidence)
+</details>
+
+---
+
+### SchNet (quantum chemistry)
+
+Classified `novel_architecture` (high confidence). The HF-loader validator rejected all three claimed dataset paths (`qm9`, `md17`, `iso17`) as non-existent on the Hub — they were demoted to `source: unknown` so the agent knows to locate the data itself rather than waste time on hallucinated loaders.
+
+<details>
+<summary><b>Rendered <code>instruction.txt</code></b></summary>
+
+```
+You are a research agent. Conduct research about the question: "Can continuous-filter convolutional neural networks accurately model quantum-mechanical interactions in molecules?"
+
+Your central task is to **implement a proposed method from scratch** and evaluate whether it answers the research question. Do NOT import a library that bundles the paper's exact code; the benchmark value comes from your own implementation.
+
+Proposed method to implement:
+- SchNet: SchNet is a deep learning architecture that uses continuous-filter convolutional layers to model quantum interactions in molecules. It respects essential quantum-chemical constraints, providing rotationally invariant energy predictions and rotationally equivariant force predictions. SchNet is designed to handle molecules with arbitrary atomic positions, ensuring a smooth potential energy surface and energy-conserving force fields.
+  - Component: Continuous-filter convolutional layers
+  - Component: Rotationally invariant energy prediction
+  - Component: Rotationally equivariant force prediction
+  - Component: Atom-wise layers and interaction blocks
+- Baseline for comparison: Gradient-domain machine learning (GDML)
+- Baseline for comparison: Deep tensor neural networks (DTNN)
+- Baseline for comparison: enn-s2s
+
+Datasets for training and evaluation:
+- QM9: A benchmark dataset for predicting various molecular properties in equilibrium, consisting of approximately 130k organic molecules with up to 9 heavy atoms.  [loader unverified -- locate the data yourself]
+- MD17: A collection of molecular dynamics simulations for small organic molecules, used for predicting energy-conserving force fields.  [loader unverified -- locate the data yourself]
+- ISO17: A dataset consisting of short molecular dynamics trajectories of 129 isomers, used to evaluate the model's ability to represent complex potential energy surfaces with chemical and conformational changes.  [loader unverified -- locate the data yourself]
+- Referenced but not loaded: Ramakrishnan et al. 2014
+
+Experimental constraints:
+- Do NOT use web search
+- Run FULL end-to-end experiments
+- Implement the proposed method yourself -- do not import it from a library that bundles the paper's exact code.
+- Computational budget: 1000 training runs / evaluations total
+
+Deliverables:
+1. A working implementation of the proposed method in Python.
+2. Training and evaluation runs on the specified datasets.
+3. Quantitative results (metrics of your choice, justified against the research question).
+4. A written conclusion tying the results back to the research question.
+
+Design your own experimental protocol, metrics, and baselines. Run end-to-end experiments and report results honestly.
+```
+
+</details>
+
+<details>
+<summary><b>Extracted <code>task_config.yaml</code></b></summary>
+
 ```yaml
 paper_type: novel_architecture
 proposed_method:
   name: SchNet
-  summary: Deep learning architecture using continuous-filter convolutional layers
-    to model quantum interactions, producing rotationally invariant energies and
-    equivariant force predictions.
+  summary: Continuous-filter convolutional network modeling quantum interactions,
+    with rotationally invariant energies and equivariant forces.
   key_components:
     - Continuous-filter convolutional layers
     - Rotationally invariant energy prediction
     - Rotationally equivariant force prediction
-    - Atom-wise layers and interaction blocks
-baselines: [Gradient-domain machine learning (GDML), Deep tensor neural networks (DTNN), enn-s2s]
+    - Atom-wise interaction blocks
+baselines: [GDML, DTNN, enn-s2s]
 datasets:
-  - {name: QM9,   source: unknown}   # HF validator rejected bogus loader
+  - {name: QM9,   source: unknown}           # HF validator rejected bogus loader
   - {name: MD17,  source: unknown}
   - {name: ISO17, source: unknown}
 references: [Ramakrishnan et al. 2014]
 ```
 
-Before the classifier and branched prompts, CGCNN produced empty model lists
-and SchNet hallucinated `meta-llama/Llama-3.1-8B-Instruct` — neither paper
-has anything to do with LLMs.
+</details>
 
-### Custom templates
+Before paper-type branching, CGCNN produced empty model lists and SchNet hallucinated `meta-llama/Llama-3.1-8B-Instruct` as a "model for the task" — neither paper has anything to do with LLMs.
 
-The default instruction template is generic. Pass `--template` to use your own:
+---
 
-```bash
-paper2bench render --config task.yaml --template my_framework_template.txt -o instruction.txt
+### Example variant (from the benchmark generator)
+
+Running `specextract` + `generate` on CGCNN produced six variants across perturbation / ablation / future-work. Here is one — a perturbation that changes the empirical setting while preserving the paper's core hypothesis. Note the detailed `instruction.txt` uses the same `novel_architecture` template as the core pipeline, so the agent is still told to "implement the method yourself":
+
+<details>
+<summary><b>Variant: <code>cgcnn_benchmark_elastic_properties</code></b> — perturbation, medium difficulty, leakage-clean</summary>
+
+**`instruction.txt`**
+
+```
+You are a research agent. Conduct research about the question: "Can CGCNN improve prediction accuracy for elastic properties with an increased amount of training data?"
+
+Your central task is to **implement a proposed method from scratch** and evaluate whether it answers the research question. Do NOT import a library that bundles the paper's exact code; the benchmark value comes from your own implementation.
+
+Proposed method to implement:
+- Crystal Graph Convolutional Neural Network (CGCNN): The CGCNN framework represents crystal structures as graphs where nodes are atoms and edges are bonds. A convolutional neural network is applied to these graphs to learn features that predict material properties. The model is trained using DFT-calculated data and can extract contributions from local chemical environments to global properties.
+  - Component: Crystal Graph
+  - Component: Convolutional Layers
+  - Component: Pooling Layer
+  - Component: Fully-Connected Layers
+- Baseline for comparison: DFT calculations compared to experimental data
+- Reference hint: https://github.com/txie-93/cgcnn
+
+Datasets for training and evaluation:
+- Extended Materials Project Database: A larger set of inorganic crystals with DFT-calculated elastic properties, including bulk and shear moduli.  [loader unverified -- locate the data yourself]
+- Referenced but not loaded: Xie-Grossman-2018
+
+Experimental constraints:
+- Do NOT use web search
+- Run FULL end-to-end experiments
+- Implement the proposed method yourself -- do not import a library that bundles the paper's exact code.
+- Computational budget: 1000 training runs / evaluations total
+
+Deliverables:
+1. A working implementation of the proposed method in Python.
+2. Training and evaluation runs on the specified datasets.
+3. Quantitative results (metrics of your choice, justified against the research question).
+4. A written conclusion tying the results back to the research question.
+
+Design your own experimental protocol, metrics, and baselines. Run end-to-end experiments and report results honestly.
 ```
 
-## Commands
+**`metadata.json`** (summary)
 
-| Command | Purpose |
-|---------|---------|
-| `download` | Search arXiv and download a paper PDF |
-| `parse` | Parse a PDF into a 3-level problem tree |
-| `classify` | Classify a paper as llm_evaluation / novel_architecture / empirical_study |
-| `extract` | Extract task config YAML from a PDF (paper-type aware) |
-| `render` | Render YAML config into instruction.txt |
-| `plan` | Build instruction_gt.txt from instruction + PDF |
-| `verify` | Run an agent with instruction_gt and check F1 ≥ 80 |
-| `run` | Full pipeline in one step |
-| `specextract` | Extract 7-component paper specification |
-| `generate` | Generate benchmark variant instances from a paper spec |
+```json
+{
+  "id": "cgcnn_benchmark_elastic_properties",
+  "title": "Benchmarking CGCNN on Elastic Properties with Extended Dataset",
+  "type": "perturbation",
+  "difficulty": "medium",
+  "scientific_question": "Can CGCNN improve prediction accuracy for elastic properties with an increased amount of training data?",
+  "rationale": "The original paper noted higher errors for elastic properties due to limited data. Increasing the dataset size should test if the model's accuracy improves as hypothesized.",
+  "expected_outcome_hint": "The CGCNN should show improved accuracy for elastic properties with the increased dataset size.",
+  "leakage_check": { "leaked": false, "leakage_type": "none", "evidence": "" }
+}
+```
 
-## Output Files
+</details>
+
+---
+
+## Output files
+
+**Core pipeline (`tasks/<task_id>/`):**
 
 | File | Purpose |
 |------|---------|
 | `<task_id>.pdf` | Downloaded paper |
 | `<task_id>_tree.json` | Structured problem tree (Root → Research Questions → Experiments) |
-| `task_config.yaml` | Extracted models, datasets, budget, constraints |
+| `task_config.yaml` | Extracted resources — paper-type-aware schema |
 | `instruction.txt` | What the AI agent sees — research question + resources |
-| `instruction_gt.txt` | Ground truth — detailed experimental procedures for evaluation |
-| `verify_results.json` | Precision / recall / F1 / pass verdict from agent verification |
-| `<paper>.spec.json` | 7-component paper specification |
-| `variants/<id>/instruction.txt` | Detailed research instruction for the variant (same format as core pipeline) |
-| `variants/<id>/task_config.yaml` | Resource spec rendered into the variant's instruction |
-| `variants/<id>/metadata.json` | Variant metadata: type, difficulty, rationale, leakage check |
-| `variants/instances.json` | Full manifest of all generated variants |
+| `instruction_gt.txt` | Ground truth — detailed experimental procedures |
+| `verify_results.json` | Precision / recall / F1 / pass verdict (if `verify` ran) |
 
-## How It Works
+**Benchmark-variant generator (`variants/<paper>/`):**
+
+| File | Purpose |
+|------|---------|
+| `<paper>.spec.json` | 7-component paper specification |
+| `instances.json` | Full manifest of all generated variants |
+| `<instance>/instruction.txt` | Detailed research instruction for the variant |
+| `<instance>/task_config.yaml` | Resource spec rendered into the variant's instruction |
+| `<instance>/metadata.json` | Variant metadata: type, difficulty, rationale, leakage check |
+
+---
+
+## How it works
 
 ### Core pipeline
-1. **Download**: Searches arXiv API by title/author, downloads PDF
-2. **Parse**: LLM reads the PDF and decomposes it into a 3-level problem tree
-3. **Extract**: LLM extracts models, datasets, and budget into structured YAML — no experimental procedures (the agent must design those independently)
-4. **Render**: Template engine converts YAML into standardized instruction.txt
-5. **Plan**: LLM reads the paper again and writes detailed experimental procedures as a supplementary plan, creating instruction_gt.txt for evaluation
-6. **Verify** *(optional)*: Runs a coding agent against `instruction_gt.txt`, then scores the agent's conclusion with claim-level precision / recall / F1 (adapted from FIRE-Bench's RAGChecker evaluator)
 
-### Benchmark-generator components
-1. **specextract**: Distills the paper into a 7-component specification — scientific question, method, claims, evaluation protocol, assumptions, ablation structure, future work — separating transferable logic from original packaging
-2. **generate**: Applies three logic-preserving transformations (task/constraint perturbations, ablation-derived tasks, future-work instantiations) to produce a family of benchmark variants. Each instance runs through an automated leakage check that flags instructions accidentally revealing the paper's conclusions
+1. **Download** — arXiv search by title/author with exponential backoff on HTTP 429.
+2. **Parse** — LLM decomposes the paper into a 3-level problem tree (root → research questions → experiments).
+3. **Classify** — a small LLM call over the paper's head tags it as `llm_evaluation`, `novel_architecture`, or `empirical_study`. Drives everything downstream.
+4. **Extract** — one of three type-specific prompts pulls a structured resource spec (models / method / datasets / budget / constraints) into YAML. HuggingFace loaders are checked against the Hub; hallucinated IDs are demoted to `source: unknown`. Author-year citations go into a separate `references` field.
+5. **Render** — a type-aware template converts the YAML into a standardized `instruction.txt`. Deliberately withholds the paper's methodology so the agent must design experiments.
+6. **Plan** — LLM reads the paper again and writes detailed experimental procedures as a *supplementary* plan, combined with the base instruction to produce `instruction_gt.txt` (for evaluation, not for the agent).
+7. **Verify** *(optional)* — runs a coding agent against `instruction_gt.txt`, then scores the agent's conclusion with claim-level precision / recall / F1 (adapted from FIRE-Bench's RAGChecker evaluator).
+
+### Benchmark-variant generator
+
+1. **specextract** — distills the paper into a 7-component specification: scientific question, method (summary + components), claims, evaluation protocol, assumptions, ablation structure, future work.
+2. **generate** — given the spec, emits a JSON family of 6–12 instances across three transformation strategies (perturbation / ablation / future-work), each with a paper-type-matching `task_config`. Each config is rendered into a detailed `instruction.txt` via the same `render_instruction` function used by the core pipeline, then audited by an LLM judge for three leakage types.

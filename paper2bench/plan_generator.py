@@ -6,9 +6,9 @@ import os
 from pathlib import Path
 from typing import Optional
 
-import openai
 from dotenv import load_dotenv
 
+from .llm import chat
 from .pdf_utils import extract_text_from_pdf
 
 load_dotenv()
@@ -73,11 +73,6 @@ def generate_supplementary_plan(
     Read a paper PDF plus its existing base instruction and return only the
     supplementary detail (Markdown) that the base instruction does not cover.
     """
-    api_key = api_key or os.getenv("OPENAI_API_KEY")
-    if not api_key:
-        raise ValueError("OPENAI_API_KEY must be set in the environment or passed directly")
-
-    client = openai.OpenAI(api_key=api_key)
     paper_text = extract_text_from_pdf(pdf_path)
     if not paper_text.strip():
         raise ValueError(f"No text could be extracted from {pdf_path}")
@@ -107,23 +102,21 @@ def generate_supplementary_plan(
 
     user_message += "\n\nNow write the supplementary experiment plan."
 
-    response = client.chat.completions.create(
+    response = chat(
         model=model,
         messages=[
             {"role": "system", "content": SUPPLEMENTARY_PLAN_PROMPT},
             {"role": "user", "content": user_message},
         ],
-        max_completion_tokens=max_tokens,
+        max_tokens=max_tokens,
         temperature=temperature,
+        api_key=api_key,
     )
-
-    supplement = response.choices[0].message.content
-
-    usage = response.usage
+    supplement = response.content
     print(
-        f"Tokens  --  input: {usage.prompt_tokens}  |  "
-        f"output: {usage.completion_tokens}  |  "
-        f"total: {usage.total_tokens}"
+        f"Tokens  --  input: {response.input_tokens}  |  "
+        f"output: {response.output_tokens}  |  "
+        f"total: {response.total_tokens}  |  provider: {response.provider}"
     )
 
     return supplement

@@ -26,9 +26,9 @@ import re
 from pathlib import Path
 from typing import Optional
 
-import openai
 from dotenv import load_dotenv
 
+from .llm import chat
 from .pdf_utils import extract_text_from_pdf
 from .instruction_generator import render_instruction
 from .paper_classifier import classify_paper, PAPER_TYPES
@@ -261,12 +261,6 @@ def generate_variants(
       - ``leakage_check`` -- automated audit verdict
       - metadata: id, title, type, difficulty, rationale, expected_outcome_hint
     """
-    api_key = api_key or os.getenv("OPENAI_API_KEY")
-    if not api_key:
-        raise ValueError("OPENAI_API_KEY must be set")
-
-    client = openai.OpenAI(api_key=api_key)
-
     # ---- Paper type (classify if not provided) ----
     if paper_type is None:
         print("[generate] Classifying paper type ...")
@@ -298,25 +292,22 @@ def generate_variants(
         f"{paper_text}"
     )
 
-    response = client.chat.completions.create(
+    response = chat(
         model=model,
         messages=[
             {"role": "system", "content": prompt},
             {"role": "user", "content": user_message},
         ],
-        max_completion_tokens=max_tokens,
+        max_tokens=max_tokens,
         temperature=temperature,
+        api_key=api_key,
     )
-
-    raw = response.choices[0].message.content
-    usage = response.usage
     print(
-        f"  Tokens  --  input: {usage.prompt_tokens}  |  "
-        f"output: {usage.completion_tokens}  |  "
-        f"total: {usage.total_tokens}"
+        f"  Tokens  --  input: {response.input_tokens}  |  "
+        f"output: {response.output_tokens}  |  "
+        f"total: {response.total_tokens}  |  provider: {response.provider}"
     )
-
-    result = _parse_json(raw)
+    result = _parse_json(response.content)
     instances = result.get("instances", [])
     print(f"[generate] Got {len(instances)} instance(s)")
 
@@ -341,7 +332,7 @@ def generate_variants(
     print("[generate] Running leakage checks ...")
     for inst in instances:
         inst["leakage_check"] = _check_leakage(
-            inst.get("instruction", ""), client, model,
+            inst.get("instruction", ""), model, api_key,
         )
         status = "LEAKED" if inst["leakage_check"].get("leaked") else "clean"
         print(f"  [{inst.get('id', '?')}] {status}")
@@ -356,29 +347,26 @@ def check_leakage(
     api_key: Optional[str] = None,
 ) -> dict:
     """Standalone leakage check for any instruction text."""
-    api_key = api_key or os.getenv("OPENAI_API_KEY")
-    if not api_key:
-        raise ValueError("OPENAI_API_KEY must be set")
-    client = openai.OpenAI(api_key=api_key)
-    return _check_leakage(instruction, client, model)
+    return _check_leakage(instruction, model, api_key)
 
 
 # ---------------------------------------------------------------------------
 # Internal helpers
 # ---------------------------------------------------------------------------
 
-def _check_leakage(instruction: str, client: openai.OpenAI, model: str) -> dict:
+def _check_leakage(instruction: str, model: str, api_key: Optional[str]) -> dict:
     """Run the leakage-check LLM judge on a single instruction."""
-    response = client.chat.completions.create(
+    response = chat(
         model=model,
         messages=[
             {"role": "system", "content": LEAKAGE_CHECK_PROMPT},
             {"role": "user", "content": instruction},
         ],
-        max_completion_tokens=1024,
+        max_tokens=1024,
         temperature=0.0,
+        api_key=api_key,
     )
-    return _parse_json(response.choices[0].message.content)
+    return _parse_json(response.content)
 
 
 def _parse_json(text: str) -> dict:

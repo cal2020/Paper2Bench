@@ -242,6 +242,8 @@ def cmd_verify(args):
         eval_model=args.eval_model,
         max_turns=args.max_turns,
         ground_truth=gt_text,
+        research_question=args.research_question or "",
+        eval_mode=args.eval_mode,
     )
 
     # Persist results
@@ -337,6 +339,8 @@ def _run_pipeline_for_rq(
             data_dir=str(tasks_dir / "data") if (tasks_dir / "data").exists() else None,
             agent_model=args.model,
             eval_model=args.model,
+            research_question=rq_text,
+            eval_mode=getattr(args, "eval_mode", "claim_f1"),
         )
         verify_output.write_text(
             json.dumps(metrics, indent=2), encoding="utf-8",
@@ -442,7 +446,10 @@ def cmd_run(args):
             v = ""
             if r["verify"] is not None:
                 status = "PASS" if r["verify"]["pass"] else "FAIL"
-                v = f"  F1={r['verify']['f1']:.1f}% ({status})"
+                if r['verify'].get('eval_mode') == 'llm_judge':
+                    v = f"  score={r['verify']['score']}/100 ({status})"
+                else:
+                    v = f"  F1={r['verify']['f1']:.1f}% ({status})"
             print(f"  [{r['task_id']}] {r['instruction_gt']}{v}")
     else:
         # Combined mode -- all RQs in one prompt (original behaviour)
@@ -462,7 +469,10 @@ def cmd_run(args):
             print(f"  instruction_gt:   {result['instruction_gt']}")
             if result["verify"] is not None:
                 status = "PASS" if result["verify"]["pass"] else "FAIL"
-                print(f"  Verify F1:        {result['verify']['f1']:.1f}% ({status})")
+                if result['verify'].get('eval_mode') == 'llm_judge':
+                    print(f"  Verify score:     {result['verify']['score']}/100 ({status})")
+                else:
+                    print(f"  Verify F1:        {result['verify']['f1']:.1f}% ({status})")
 
 
 def main():
@@ -541,6 +551,12 @@ def main():
     vf.add_argument("--agent-model", default="gpt-4o", help="Model for the agent")
     vf.add_argument("--eval-model", default="gpt-4o", help="Model for evaluation")
     vf.add_argument("--max-turns", type=int, default=30, help="Max agent turns")
+    vf.add_argument("--eval-mode", default="claim_f1",
+                     choices=["claim_f1", "llm_judge"],
+                     help="Evaluation method: claim_f1 (precision/recall/F1 via claim "
+                          "decomposition, default) or llm_judge (single-call rubric scoring)")
+    vf.add_argument("--research-question", default=None,
+                     help="Research question (used by llm_judge mode for context)")
     vf.add_argument("-o", "--output", default="./verify_results.json", help="Output JSON path")
     vf.set_defaults(func=cmd_verify)
 
@@ -587,6 +603,9 @@ def main():
     rp.add_argument("--split-rqs", action="store_true",
                      help="Generate a separate task per research question instead of one combined task")
     rp.add_argument("--verify", action="store_true", help="Run verification step (requires computer-executable experiments)")
+    rp.add_argument("--eval-mode", default="claim_f1",
+                     choices=["claim_f1", "llm_judge"],
+                     help="Verification evaluator: claim_f1 (default) or llm_judge")
     rp.set_defaults(func=cmd_run)
 
     args = parser.parse_args()

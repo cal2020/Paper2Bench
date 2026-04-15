@@ -20,9 +20,9 @@ import shutil
 from pathlib import Path
 from typing import Optional
 
-import openai
 from dotenv import load_dotenv
 
+from .llm import chat
 from .pdf_utils import extract_text_from_pdf
 
 load_dotenv()
@@ -30,7 +30,9 @@ load_dotenv()
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
-F1_THRESHOLD = 80  # percent
+F1_THRESHOLD = 80  # percent (claim-F1 mode pass threshold)
+JUDGE_THRESHOLD = 80  # percent (llm-judge mode pass threshold)
+EVAL_MODES = ("claim_f1", "llm_judge")
 
 AGENT_SYSTEM_PROMPT = textwrap.dedent("""\
 You are an autonomous research agent. You are given a research task with instructions.
@@ -75,25 +77,21 @@ def extract_ground_truth_conclusion(
     temperature: float = 0.0,
 ) -> str:
     """Use an LLM to extract the expected conclusion from a paper PDF."""
-    api_key = api_key or os.getenv("OPENAI_API_KEY")
-    if not api_key:
-        raise ValueError("OPENAI_API_KEY must be set")
-
-    client = openai.OpenAI(api_key=api_key)
     paper_text = extract_text_from_pdf(pdf_path)
     if not paper_text.strip():
         raise ValueError(f"No text extracted from {pdf_path}")
 
-    response = client.chat.completions.create(
+    response = chat(
         model=model,
         messages=[
             {"role": "system", "content": CONCLUSION_EXTRACTION_PROMPT},
             {"role": "user", "content": paper_text},
         ],
-        max_completion_tokens=max_tokens,
+        max_tokens=max_tokens,
         temperature=temperature,
+        api_key=api_key,
     )
-    return response.choices[0].message.content.strip()
+    return response.content.strip()
 
 
 # ---------------------------------------------------------------------------
@@ -162,11 +160,6 @@ def run_agent(
     str
         The agent's final conclusion text.
     """
-    api_key = api_key or os.getenv("OPENAI_API_KEY")
-    if not api_key:
-        raise ValueError("OPENAI_API_KEY must be set")
-
-    client = openai.OpenAI(api_key=api_key)
     instruction_text = Path(instruction_gt_path).read_text(encoding="utf-8").strip()
 
     # ---- sandbox setup ----
@@ -179,12 +172,16 @@ def run_agent(
     else:
         sandbox.mkdir(parents=True, exist_ok=True)
 
-    # write .env into sandbox
+    # write .env into sandbox (pass through whichever provider keys are set)
+    openai_key = os.environ.get("OPENAI_API_KEY", "")
+    anthropic_key = os.environ.get("ANTHROPIC_API_KEY", "")
     with open(sandbox / ".env", "w") as f:
-        f.write(f"OPENAI_API_KEY={api_key}\n")
+        if openai_key:
+            f.write(f"OPENAI_API_KEY={openai_key}\n")
+        if anthropic_key:
+            f.write(f"ANTHROPIC_API_KEY={anthropic_key}\n")
 
     exec_env = os.environ.copy()
-    exec_env["OPENAI_API_KEY"] = api_key
 
     # file listing for the agent
     sandbox_files = []
@@ -212,19 +209,23 @@ def run_agent(
     log_dir.mkdir(parents=True, exist_ok=True)
     log_lines = [f"model: {model}", f"timestamp: {timestamp}", "=" * 40]
 
+    # Token budget per turn (reasoning models may need more)
+    turn_max_tokens = 16384 if any(
+        model.startswith(p) for p in ("o4", "o3", "o1")
+    ) else 4096
+
     conclusion = None
     for turn in range(max_turns):
         print(f"  [verify] Turn {turn + 1}/{max_turns} ...")
-
-        api_kwargs = {"model": model, "messages": messages}
-        if any(model.startswith(p) for p in ("o4", "o3", "o1")):
-            api_kwargs["max_completion_tokens"] = 16384
-        else:
-            api_kwargs["max_completion_tokens"] = 4096
-
         try:
-            resp = client.chat.completions.create(**api_kwargs)
-            assistant_msg = resp.choices[0].message.content or ""
+            resp = chat(
+                model=model,
+                messages=messages,
+                max_tokens=turn_max_tokens,
+                temperature=0.0,
+                api_key=api_key,
+            )
+            assistant_msg = resp.content or ""
         except Exception as e:
             assistant_msg = f"API ERROR: {e}"
             log_lines.append(f"\n--- TURN {turn + 1} (API ERROR) ---\n{assistant_msg}")
@@ -261,9 +262,14 @@ def run_agent(
             "content": "Time is up. Please provide your FINAL CONCLUSION: summarizing all findings.",
         })
         try:
-            api_kwargs["messages"] = messages
-            resp = client.chat.completions.create(**api_kwargs)
-            final = resp.choices[0].message.content or ""
+            resp = chat(
+                model=model,
+                messages=messages,
+                max_tokens=turn_max_tokens,
+                temperature=0.0,
+                api_key=api_key,
+            )
+            final = resp.content or ""
             conclusion = _extract_conclusion(final) or final
             log_lines.append(f"\n--- FORCED FINAL ---\n{final}")
         except Exception as e:
@@ -282,9 +288,9 @@ def run_agent(
 # Claim-based evaluation  (adapted from FIRE-Bench eval/RAGChecker/eval.py)
 # ---------------------------------------------------------------------------
 
-def _decompose_into_claims(text: str, client: openai.OpenAI, model: str) -> list[str]:
+def _decompose_into_claims(text: str, model: str, api_key: Optional[str]) -> list[str]:
     """Break a piece of text into atomic sub-claims using an LLM."""
-    response = client.chat.completions.create(
+    response = chat(
         model=model,
         messages=[
             {
@@ -300,14 +306,14 @@ def _decompose_into_claims(text: str, client: openai.OpenAI, model: str) -> list
             {"role": "user", "content": f"Input statement: {text}"},
         ],
         temperature=0.0,
-        max_completion_tokens=2048,
+        max_tokens=2048,
+        api_key=api_key,
     )
-    raw = response.choices[0].message.content
-    parsed = _parse_json(raw)
+    parsed = _parse_json(response.content)
     return parsed.get("subclaims", [])
 
 
-def _check_claim(claim: str, reference: str, client: openai.OpenAI, model: str) -> bool:
+def _check_claim(claim: str, reference: str, model: str, api_key: Optional[str]) -> bool:
     """Return True if *claim* is entailed by / overlaps with *reference*."""
     prompt = textwrap.dedent(f"""\
         You are a neutral judge asked to determine if a claim is part of the given reference.
@@ -331,7 +337,7 @@ def _check_claim(claim: str, reference: str, client: openai.OpenAI, model: str) 
         }}
         ```
     """)
-    response = client.chat.completions.create(
+    response = chat(
         model=model,
         messages=[
             {
@@ -341,15 +347,16 @@ def _check_claim(claim: str, reference: str, client: openai.OpenAI, model: str) 
             {"role": "user", "content": prompt},
         ],
         temperature=0.0,
-        max_completion_tokens=1024,
+        max_tokens=1024,
+        api_key=api_key,
     )
-    parsed = _parse_json(response.choices[0].message.content)
+    parsed = _parse_json(response.content)
     return bool(parsed.get("result", False))
 
 
-def _extract_core_idea(text: str, client: openai.OpenAI, model: str) -> str:
+def _extract_core_idea(text: str, model: str, api_key: Optional[str]) -> str:
     """Distil a conclusion down to its core insight (no specific numbers)."""
-    response = client.chat.completions.create(
+    response = chat(
         model=model,
         messages=[
             {
@@ -368,9 +375,10 @@ def _extract_core_idea(text: str, client: openai.OpenAI, model: str) -> str:
             {"role": "user", "content": f"Input: {text}"},
         ],
         temperature=0.0,
-        max_completion_tokens=1024,
+        max_tokens=1024,
+        api_key=api_key,
     )
-    return response.choices[0].message.content.strip()
+    return response.content.strip()
 
 
 def _parse_json(text: str) -> dict:
@@ -415,31 +423,25 @@ def evaluate_conclusion(
         Keys: ``precision``, ``recall``, ``f1`` (0-100 scale),
         ``gt_claims``, ``agent_claims``, ``pass`` (bool, f1 >= F1_THRESHOLD).
     """
-    api_key = api_key or os.getenv("OPENAI_API_KEY")
-    if not api_key:
-        raise ValueError("OPENAI_API_KEY must be set")
-
-    client = openai.OpenAI(api_key=api_key)
-
     # Distil the agent conclusion
-    core_idea = _extract_core_idea(agent_conclusion, client, model)
+    core_idea = _extract_core_idea(agent_conclusion, model, api_key)
     print(f"  [eval] Core idea: {core_idea[:200]}...")
 
     # --- Precision: GT claims checked against agent response ---
-    gt_claims = _decompose_into_claims(ground_truth, client, model)
+    gt_claims = _decompose_into_claims(ground_truth, model, api_key)
     print(f"  [eval] Ground-truth decomposed into {len(gt_claims)} claims")
     precision_hits = 0
     for claim in gt_claims:
-        if _check_claim(claim, core_idea, client, model):
+        if _check_claim(claim, core_idea, model, api_key):
             precision_hits += 1
     precision = (precision_hits / len(gt_claims) * 100) if gt_claims else 0.0
 
     # --- Recall: agent claims checked against ground truth ---
-    agent_claims = _decompose_into_claims(core_idea, client, model)
+    agent_claims = _decompose_into_claims(core_idea, model, api_key)
     print(f"  [eval] Agent conclusion decomposed into {len(agent_claims)} claims")
     recall_hits = 0
     for claim in agent_claims:
-        if _check_claim(claim, ground_truth, client, model):
+        if _check_claim(claim, ground_truth, model, api_key):
             recall_hits += 1
     recall = (recall_hits / len(agent_claims) * 100) if agent_claims else 0.0
 
@@ -450,12 +452,117 @@ def evaluate_conclusion(
         f1 = 0.0
 
     return {
+        "eval_mode": "claim_f1",
         "precision": round(precision, 1),
         "recall": round(recall, 1),
         "f1": round(f1, 1),
         "gt_claims_count": len(gt_claims),
         "agent_claims_count": len(agent_claims),
         "pass": f1 >= F1_THRESHOLD,
+    }
+
+
+# ---------------------------------------------------------------------------
+# LLM-as-judge evaluation (single-call rubric scoring)
+# ---------------------------------------------------------------------------
+
+JUDGE_PROMPT = """\
+You are an expert research scientist evaluating whether an autonomous research
+agent correctly answered a research question.  You are given:
+
+1. The research question the agent was asked to answer.
+2. A paper-derived reference conclusion (what the original paper found).
+3. The agent's final conclusion from its own experiments.
+
+Score the agent's conclusion against the reference on a **0-100 scale** using
+this rubric:
+
+- **90-100**: Agent's conclusion matches the reference on every key finding,
+  including direction, magnitude (where applicable), and scope of the claim.
+- **80-89**: All major findings present and directionally correct; minor
+  omissions, slight imprecisions, or small missing nuances.
+- **60-79**: Core direction is correct, but important findings are missing
+  or only partially captured.
+- **40-59**: Partially correct but with significant omissions or errors that
+  would mislead a reader.
+- **20-39**: Mostly wrong, misaligned with the reference, or conflates
+  unrelated effects.
+- **0-19**: Contradicts the reference, or contains no meaningful conclusion.
+
+Rules:
+- Judge only the substantive research content, not writing style or format.
+- Do not penalize the agent for omitting irrelevant details the reference
+  also did not emphasize.
+- If the agent's conclusion is broader or narrower than the reference, note
+  that in ``scope_mismatch`` and reflect it in the score.
+- If the agent contradicts the reference on even one key finding, cap the
+  score at 40 regardless of other correctness.
+
+Output ONLY valid JSON:
+
+{
+  "score": <integer 0-100>,
+  "strengths": "<what the agent got right, one-two sentences>",
+  "weaknesses": "<what is missing, wrong, or imprecise, one-two sentences>",
+  "scope_mismatch": "<any mismatch in scope/generality, or empty string>",
+  "rationale": "<one-sentence justification for the final score>"
+}
+"""
+
+
+def evaluate_conclusion_llm_judge(
+    agent_conclusion: str,
+    ground_truth: str,
+    research_question: str = "",
+    *,
+    model: str = "gpt-4o",
+    api_key: Optional[str] = None,
+) -> dict:
+    """Score the agent's conclusion against the reference using a single LLM
+    judge call with a structured rubric.
+
+    Cheaper and simpler than ``evaluate_conclusion`` (1 call vs ~20-30),
+    at the cost of losing per-claim precision/recall breakdown.
+
+    Returns
+    -------
+    dict
+        Keys: ``score`` (0-100), ``strengths``, ``weaknesses``,
+        ``scope_mismatch``, ``rationale``, ``pass`` (bool, score >= JUDGE_THRESHOLD),
+        ``eval_mode`` = "llm_judge".
+    """
+    user_message = (
+        f"RESEARCH QUESTION:\n{research_question or '(not provided)'}\n\n"
+        f"REFERENCE CONCLUSION (from the source paper):\n{ground_truth}\n\n"
+        f"AGENT'S CONCLUSION:\n{agent_conclusion}"
+    )
+
+    response = chat(
+        model=model,
+        messages=[
+            {"role": "system", "content": JUDGE_PROMPT},
+            {"role": "user", "content": user_message},
+        ],
+        temperature=0.0,
+        max_tokens=1024,
+        api_key=api_key,
+    )
+    parsed = _parse_json(response.content)
+
+    try:
+        score = int(parsed.get("score", 0))
+    except (TypeError, ValueError):
+        score = 0
+    score = max(0, min(100, score))
+
+    return {
+        "eval_mode": "llm_judge",
+        "score": score,
+        "strengths": parsed.get("strengths", ""),
+        "weaknesses": parsed.get("weaknesses", ""),
+        "scope_mismatch": parsed.get("scope_mismatch", ""),
+        "rationale": parsed.get("rationale", ""),
+        "pass": score >= JUDGE_THRESHOLD,
     }
 
 
@@ -473,6 +580,8 @@ def verify_instruction_gt(
     api_key: Optional[str] = None,
     max_turns: int = MAX_TURNS,
     ground_truth: Optional[str] = None,
+    research_question: str = "",
+    eval_mode: str = "claim_f1",
 ) -> dict:
     """End-to-end verification of an instruction_gt.txt.
 
@@ -481,7 +590,19 @@ def verify_instruction_gt(
         2. Run a coding agent with the instruction_gt.
         3. Evaluate the agent's conclusion against the expected conclusion.
         4. Return metrics and pass/fail.
+
+    ``eval_mode`` selects the evaluator:
+      - ``"claim_f1"`` (default) -- decompose both conclusions into atomic
+        claims, check entailment, report precision/recall/F1.  More rigorous,
+        ~20-30 LLM calls.
+      - ``"llm_judge"`` -- single-call rubric scoring (0-100).  Cheaper and
+        simpler, but no per-claim breakdown.
+
+    Pass threshold is 80 for both modes.
     """
+    if eval_mode not in EVAL_MODES:
+        raise ValueError(f"eval_mode must be one of {EVAL_MODES}, got {eval_mode!r}")
+
     api_key = api_key or os.getenv("OPENAI_API_KEY")
 
     # Step 1 -- ground-truth conclusion
@@ -506,19 +627,32 @@ def verify_instruction_gt(
     )
     print(f"[verify] Agent conclusion ({len(agent_conclusion)} chars): {agent_conclusion[:200]}...")
 
-    # Step 3 -- evaluate
-    print("\n[verify] Step 3: Evaluating agent conclusion ...")
-    metrics = evaluate_conclusion(
-        agent_conclusion, gt_conclusion, model=eval_model, api_key=api_key,
-    )
+    # Step 3 -- evaluate (routed by eval_mode)
+    print(f"\n[verify] Step 3: Evaluating agent conclusion (mode={eval_mode}) ...")
+    if eval_mode == "claim_f1":
+        metrics = evaluate_conclusion(
+            agent_conclusion, gt_conclusion, model=eval_model, api_key=api_key,
+        )
+    else:  # llm_judge
+        metrics = evaluate_conclusion_llm_judge(
+            agent_conclusion, gt_conclusion,
+            research_question=research_question,
+            model=eval_model, api_key=api_key,
+        )
 
     # Summary
     status = "PASS" if metrics["pass"] else "FAIL"
     print(f"\n{'=' * 50}")
-    print(f"[verify] Precision : {metrics['precision']:.1f}%")
-    print(f"[verify] Recall    : {metrics['recall']:.1f}%")
-    print(f"[verify] F1        : {metrics['f1']:.1f}%")
-    print(f"[verify] Threshold : {F1_THRESHOLD}%")
+    if eval_mode == "claim_f1":
+        print(f"[verify] Precision : {metrics['precision']:.1f}%")
+        print(f"[verify] Recall    : {metrics['recall']:.1f}%")
+        print(f"[verify] F1        : {metrics['f1']:.1f}%  (threshold {F1_THRESHOLD}%)")
+    else:
+        print(f"[verify] Score     : {metrics['score']}/100  (threshold {JUDGE_THRESHOLD})")
+        if metrics.get("strengths"):
+            print(f"[verify] Strengths : {metrics['strengths']}")
+        if metrics.get("weaknesses"):
+            print(f"[verify] Weaknesses: {metrics['weaknesses']}")
     print(f"[verify] Result    : {status}")
     print(f"{'=' * 50}")
 

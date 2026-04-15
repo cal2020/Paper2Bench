@@ -20,9 +20,9 @@ import re
 from pathlib import Path
 from typing import Optional
 
-import openai
 from dotenv import load_dotenv
 
+from .llm import chat
 from .pdf_utils import extract_text_from_pdf
 
 load_dotenv()
@@ -78,29 +78,23 @@ def classify_paper(
 
     Returns a dict with ``type``, ``confidence``, and ``rationale``.
     """
-    api_key = api_key or os.getenv("OPENAI_API_KEY")
-    if not api_key:
-        raise ValueError("OPENAI_API_KEY must be set")
-
-    client = openai.OpenAI(api_key=api_key)
     paper_text = extract_text_from_pdf(pdf_path)
     if not paper_text.strip():
         raise ValueError(f"No text extracted from {pdf_path}")
 
     excerpt = paper_text[:excerpt_chars]
 
-    response = client.chat.completions.create(
+    response = chat(
         model=model,
         messages=[
             {"role": "system", "content": CLASSIFIER_PROMPT},
             {"role": "user", "content": excerpt},
         ],
-        max_completion_tokens=max_tokens,
+        max_tokens=max_tokens,
         temperature=temperature,
+        api_key=api_key,
     )
-
-    raw = response.choices[0].message.content
-    parsed = _parse_json(raw)
+    parsed = _parse_json(response.content)
 
     # Defensive: fall back to llm_evaluation if the model emits junk.
     if parsed.get("type") not in PAPER_TYPES:

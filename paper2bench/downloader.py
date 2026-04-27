@@ -2,15 +2,49 @@
 
 import argparse
 import os
+import re
 import sys
 import time
 import urllib.request
+from difflib import SequenceMatcher
 from typing import Optional
 
 try:
     import arxiv
 except ImportError:
     sys.exit("Missing dependency: pip install arxiv")
+
+
+def _safe_print(s: str) -> None:
+    """Print a string that may contain chars unencodable on the current console
+    (e.g. cp1252 on Windows can't render Greek letters from arxiv titles)."""
+    try:
+        print(s)
+    except UnicodeEncodeError:
+        enc = sys.stdout.encoding or "ascii"
+        print(s.encode(enc, errors="replace").decode(enc))
+
+
+def _normalize_title(t: str) -> str:
+    """Lowercase, strip punctuation, collapse whitespace -- for fuzzy matching."""
+    t = re.sub(r"[^\w\s]", " ", t.lower())
+    return re.sub(r"\s+", " ", t).strip()
+
+
+def _split_query(query: str) -> tuple[str, str]:
+    """Split 'Title (Author et al.)' into (title, author_hint).
+
+    The parenthetical author suffix poisons arxiv's relevance ranking
+    (the literal token 'et al' floods unrelated papers), so we strip
+    it from the search query and use the author last name only as a
+    soft re-ranking hint.
+    """
+    m = re.match(r"^(.*?)\s*\(([^)]+)\)\s*$", query.strip())
+    if not m:
+        return query.strip(), ""
+    title = m.group(1).strip()
+    author = re.sub(r"\bet\s+al\.?\b", "", m.group(2), flags=re.I).strip(" ,.;")
+    return title, author
 
 
 # Backoff schedule for arxiv HTTP 429 rate-limits.
@@ -85,20 +119,58 @@ def find_and_download(
     task_id: str,
     output_dir: str = "./papers",
     auto: bool = False,
-    max_results: int = 5,
+    max_results: int = 10,
+    min_similarity: float = 0.75,
 ) -> Optional[str]:
     """
     Search arXiv for a paper, optionally confirm with user, and download PDF.
     Returns the output path on success, None on failure.
+
+    In ``auto`` mode, results are re-ranked by title similarity against the
+    query title rather than blindly picking arxiv's #1 -- arxiv's relevance
+    sort is unreliable for short title-style queries (a single noisy hit can
+    bump the real paper out of the top slot).
     """
-    results = search_arxiv(query, max_results=max_results)
+    title_query, author_hint = _split_query(query)
+
+    # Strategy: title-field search first (high precision for known titles),
+    # fall back to free-text if it returns nothing.
+    ti_query = f'ti:"{title_query}"'
+    if author_hint:
+        ti_query += f" AND au:{author_hint.split()[-1]}"
+    results = search_arxiv(ti_query, max_results=max_results)
+    if not results:
+        cleaned_query = f"{title_query} {author_hint}".strip()
+        print(f"[search] ti: returned 0 results, falling back to free-text: {cleaned_query!r}")
+        results = search_arxiv(cleaned_query, max_results=max_results)
 
     if not results:
         print(f"No results found for query: {query}")
         return None
 
     if auto:
-        choice = 0
+        norm_target = _normalize_title(title_query)
+        norm_author = author_hint.lower()
+        scored = []
+        for r in results:
+            title_sim = SequenceMatcher(
+                None, norm_target, _normalize_title(r["title"])
+            ).ratio()
+            author_bonus = 0.1 if norm_author and any(
+                norm_author in a.lower() for a in r["authors"]
+            ) else 0.0
+            scored.append((title_sim + author_bonus, title_sim, r))
+        scored.sort(key=lambda x: x[0], reverse=True)
+        best_score, best_title_sim, selected = scored[0]
+        _safe_print(f"\n[auto] best match: {selected['title'][:90]}")
+        _safe_print(f"[auto] title-similarity={best_title_sim:.2f}  combined={best_score:.2f}")
+        if best_title_sim < min_similarity:
+            _safe_print(f"[auto] ABORT: best match below similarity threshold "
+                  f"({best_title_sim:.2f} < {min_similarity}).")
+            _safe_print(f"[auto] top candidates:")
+            for sc, ts, r in scored[:5]:
+                _safe_print(f"   sim={ts:.2f}  {r['title'][:90]}")
+            return None
     else:
         display_results(results)
         print(f"\nSelect a paper [1-{len(results)}] or 0 to skip: ", end="")
@@ -110,9 +182,8 @@ def find_and_download(
         if choice < 0 or choice >= len(results):
             print("Skipped.")
             return None
-
-    selected = results[choice]
-    print(f"\nSelected: {selected['title']}")
+        selected = results[choice]
+        _safe_print(f"\nSelected: {selected['title']}")
 
     os.makedirs(output_dir, exist_ok=True)
     output_path = os.path.join(output_dir, f"{task_id}.pdf")

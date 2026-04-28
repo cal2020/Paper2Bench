@@ -20,9 +20,11 @@ OUTPUT: a focused answer that directly answers the RQ -- nothing more.
 
 Rules:
 - The FIRST sentence must directly address the question. For yes/no RQs,
-  start with "Yes" or "No" (with appropriate hedge if the original is
-  hedged). For "how" RQs, lead with the mechanism/cause. For "what / when
-  / why" RQs, lead with the finding.
+  state the answer as a substantive claim WITHOUT prefixing "Yes" or
+  "No" -- e.g. instead of "Yes, models exhibit X." write "Models exhibit
+  X.", and instead of "No, models do not exhibit X." write "Models do
+  not exhibit X." For "how" RQs, lead with the mechanism/cause. For
+  "what / when / why" RQs, lead with the finding.
 - PRESERVE the paper's actual finding -- direction, magnitude, and any
   hedge language already in the original. Do NOT soften, strengthen, or
   add speculation.

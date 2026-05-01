@@ -33,8 +33,24 @@ Both workflows auto-detect the paper's archetype (`llm_evaluation` / `novel_arch
 
 ## Install
 
+For development:
+
 ```bash
+git clone https://github.com/AbhayAnandUCSD/Paper2Bench.git
+cd Paper2Bench
 pip install -e .
+```
+
+Or install directly from the private repo with a personal access token (PAT) that has read access:
+
+```bash
+pip install "git+https://<TOKEN>@github.com/AbhayAnandUCSD/Paper2Bench.git@v0.3.0"
+```
+
+If you want to use Claude models, install the optional `anthropic` extra:
+
+```bash
+pip install "paper2bench[anthropic] @ git+https://<TOKEN>@github.com/AbhayAnandUCSD/Paper2Bench.git@v0.3.0"
 ```
 
 Requires Python 3.10+. Set at least one provider key (both may coexist in a `.env` file):
@@ -49,7 +65,29 @@ export ANTHROPIC_API_KEY=sk-ant-...    # required for claude-* models
 - `gpt-*`, `o1-*`, `o3-*`, `o4-*` → OpenAI
 - `claude-*`, `anthropic/claude-*` → Anthropic
 
-So `--model claude-opus-4-6` just works if `ANTHROPIC_API_KEY` is set and `pip install anthropic` has been run. The default model is `gpt-4o`. Each stage that accepts `--model` (or `--agent-model` / `--eval-model`) can be pointed at either provider independently.
+So `--model claude-opus-4-6` just works if `ANTHROPIC_API_KEY` is set and the `anthropic` extra is installed. The default model is `gpt-4o`. Each stage that accepts `--model` (or `--agent-model` / `--eval-model`) can be pointed at either provider independently.
+
+## Python SDK
+
+The pipeline is also importable as a library — useful when you want to feed Paper2Bench programmatically rather than via the CLI:
+
+```python
+import paper2bench
+
+result = paper2bench.run(
+    pdf="paper.pdf",
+    research_question="Does X improve Y?",
+    api_key="sk-...",                  # or rely on OPENAI_API_KEY / ANTHROPIC_API_KEY env vars
+    output_dir="./output",
+)
+
+print(result.paper_type)               # auto-classified, or pass paper_type=... to override
+print(result.instruction_path)         # ./output/tasks/<task_id>/instruction.txt
+print(result.instruction_gt_path)      # ground-truth experimental plan
+print(result.config)                   # parsed task_config.yaml as dict
+```
+
+Stage functions (`parse_paper_to_tree`, `classify_paper`, `extract_yaml_from_pdf`, `render_instruction`, `generate_supplementary_plan`, `build_instruction_gt`, `verify_instruction_gt`, `extract_paper_spec`, `generate_variants`, `chat`) are also importable from `paper2bench` for power users who want to compose the pipeline manually.
 
 ---
 

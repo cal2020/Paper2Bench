@@ -18,6 +18,10 @@ venv/
 # Local test artifacts and logs
 test_output/
 test_output_v2/
+output/
+output_v2/
+output_v3/
+output_v4/
 logs/
 runs/
 

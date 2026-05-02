@@ -1,0 +1,121 @@
+You are a research agent. Conduct research and experiment about the question: "Does chain-of-thought prompting improve LLM reasoning on arithmetic, commonsense, and symbolic tasks?"
+
+You have access to the following resources:
+
+Models:
+- text-ada-001 and text-babbage-001 and text-curie-001 and text-davinci-002 via API
+- Load with HuggingFace: google/paLM
+- Computational budget: 1000 API calls per model
+
+Datasets:
+- GSM8K: A benchmark of math word problems.
+  Loading code:
+    from datasets import load_dataset
+    dataset = load_dataset("openai/grade-school-math")
+- SVAMP: A dataset of math word problems with varying structures.
+  Loading code:
+    from datasets import load_dataset
+    dataset = load_dataset("arkilpatel/SVAMP")
+- ASDiv: A diverse dataset of math word problems.
+  Loading code:
+    from datasets import load_dataset
+    dataset = load_dataset("chaochun/nlu-asdiv-dataset")
+- AQuA: A dataset of algebraic word problems.
+  Loading code:
+    from datasets import load_dataset
+    dataset = load_dataset("deepmind/AQuA")
+- MAWPS: A math word problem repository.
+  Loading code:
+    from datasets import load_dataset
+    dataset = load_dataset("koncel-kedziorski/MAWPS")
+- CSQA: A commonsense question answering benchmark.
+  Loading code:
+    from datasets import load_dataset
+    dataset = load_dataset("commonsenseqa")
+- StrategyQA: A question answering benchmark requiring multi-hop reasoning.
+  Loading code:
+    from datasets import load_dataset
+    dataset = load_dataset("strategyqa")
+- SayCan: A dataset for instructing a robot.
+  Loading code:
+    from datasets import load_dataset
+    dataset = load_dataset("say-can")
+
+Experimental constraints:
+- Do NOT use web search
+- Run FULL end-to-end experiments
+
+Please design and execute experiments to investigate this research question. Document your experimental plan, run end-to-end experiments, and provide conclusions at different levels of detail.
+
+---
+
+## Experimental Design
+
+1. **Arithmetic Reasoning (GSM8K)**
+   - **Procedure**: Use the GSM8K dataset with 1,319 examples. Implement chain-of-thought prompting with 8 exemplars formatted as ⟨input, chain of thought, output⟩. Each exemplar should follow the structure shown in the paper, where the model is prompted to reason through the problem step-by-step.
+   - **What to Record**: Record the solve rate (percentage of correct answers) for each model. Capture the raw outputs and the generated chains of thought for analysis.
+   - **Correspondence**: Figure 2, Table 1, Section 3.2.
+
+2. **Arithmetic Reasoning (SVAMP)**
+   - **Procedure**: Use the SVAMP dataset with 1,000 examples. Apply the same chain-of-thought prompting strategy as in GSM8K, ensuring the exemplars are relevant to the dataset's structure.
+   - **What to Record**: Record the solve rate for each model and the generated outputs.
+   - **Correspondence**: Figure 4, Table 2, Section 3.2.
+
+3. **Arithmetic Reasoning (ASDiv)**
+   - **Procedure**: Use the ASDiv dataset with 2,096 examples. Implement chain-of-thought prompting with 8 exemplars, ensuring they are tailored to the dataset's diverse problems.
+   - **What to Record**: Record the solve rate and outputs.
+   - **Correspondence**: Figure 4, Table 2, Section 3.2.
+
+4. **Arithmetic Reasoning (AQuA)**
+   - **Procedure**: Use the AQuA dataset with 254 multiple-choice questions. Implement chain-of-thought prompting with 4 exemplars from the training set, formatted for multiple-choice responses.
+   - **What to Record**: Record the solve rate and outputs.
+   - **Correspondence**: Figure 4, Table 2, Section 3.2.
+
+5. **Arithmetic Reasoning (MAWPS)**
+   - **Procedure**: Use the MAWPS dataset with 562 examples. Apply chain-of-thought prompting with 8 exemplars, ensuring they cover various arithmetic operations.
+   - **What to Record**: Record the solve rate and outputs.
+   - **Correspondence**: Figure 4, Table 2, Section 3.2.
+
+6. **Commonsense Reasoning (CSQA)**
+   - **Procedure**: Use the CSQA dataset. Implement chain-of-thought prompting with randomly selected examples from the training set, ensuring the prompts are relevant to commonsense reasoning.
+   - **What to Record**: Record the solve rate and outputs.
+   - **Correspondence**: Figure 7, Table 4, Section 4.
+
+7. **Commonsense Reasoning (StrategyQA)**
+   - **Procedure**: Use the StrategyQA dataset. Apply chain-of-thought prompting with examples from the training set, formatted for multi-hop reasoning.
+   - **What to Record**: Record the solve rate and outputs.
+   - **Correspondence**: Figure 7, Table 4, Section 4.
+
+8. **Symbolic Reasoning (Last Letter Concatenation)**
+   - **Procedure**: Use the last letter concatenation task. Implement chain-of-thought prompting with 8 exemplars, ensuring they guide the model through the concatenation process.
+   - **What to Record**: Record the solve rate and outputs.
+   - **Correspondence**: Figure 8, Table 5, Section 5.
+
+9. **Symbolic Reasoning (Coin Flip)**
+   - **Procedure**: Use the coin flip task. Apply chain-of-thought prompting with 8 exemplars, ensuring they detail the reasoning behind the state of the coin.
+   - **What to Record**: Record the solve rate and outputs.
+   - **Correspondence**: Figure 8, Table 5, Section 5.
+
+## Evaluation Details
+
+- **Metrics**: 
+  - Solve rate (%) = (Number of correct answers / Total number of questions) * 100.
+  - Use the `accuracy_score` function from the `sklearn.metrics` library to compute the solve rate.
+
+- **Normalization/Pre-processing**: 
+  - Ensure that all model outputs are stripped of leading/trailing whitespace and converted to a consistent case (e.g., lowercase) before scoring.
+
+- **Aggregation Strategy**: 
+  - Calculate the solve rate per sample, then aggregate results per condition (dataset/model) to compute overall performance metrics.
+
+## Implementation Notes
+
+- **Key Pitfalls**: 
+  - Ensure that the chain-of-thought exemplars are correctly formatted and relevant to the specific dataset to avoid misleading the model.
+  - Be aware of the potential for models to generate incorrect reasoning paths, which may lead to correct answers by chance.
+
+- **Prompt Templates**: 
+  - Use the specific prompt templates provided in the paper for each task, ensuring that the structure ⟨input, chain of thought, output⟩ is maintained.
+
+- **Order of Operations**: 
+  - Follow the sequence of tasks as outlined in the experimental design, ensuring that each model is evaluated under the same conditions for consistency.

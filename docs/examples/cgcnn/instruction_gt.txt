@@ -1,0 +1,101 @@
+You are a research agent. Conduct research and experiment about the question: "Can a graph convolutional network predict bulk material properties directly from crystal structure?"
+
+You have access to the following resources:
+
+Models:
+- CGCNN via API
+- Load with HuggingFace: txie-93/cgcnn
+- Computational budget: 10000 API calls per model
+
+Datasets:
+- Materials Project database: Contains 46744 inorganic crystals with various structure types and compositions.
+  Loading code:
+    from pymatgen import MPRester
+    mpr = MPRester("YOUR_API_KEY")
+    data = mpr.query(criteria={"nelements": {"$lte": 7}}, properties=["material_id", "formation_energy_per_atom", "structure"])
+- Perovskite database: Includes 18928 perovskite crystals with energy above hull data.
+  Loading code:
+    import pandas as pd
+    perovskite_data = pd.read_csv("perovskite_data.csv")
+
+Experimental constraints:
+- Do NOT use web search
+- Run FULL end-to-end experiments
+
+Please design and execute experiments to investigate this research question. Document your experimental plan, run end-to-end experiments, and provide conclusions at different levels of detail.
+
+---
+
+## Experimental Design
+
+1. **Task 1: Predict Formation Energy per Atom**
+   - **Procedure**: Use the Materials Project database with 28046 training data points. Train the CGCNN model using the convolution function defined in Eq. 5. The training set will consist of 60% of the data, with 20% for validation and 20% for testing.
+   - **What to Record**: Mean Absolute Error (MAE) of predicted formation energy per atom compared to DFT values.
+   - **Correspondence**: Figure 2(b), Table I, Section Results.
+
+2. **Task 2: Predict Absolute Energy**
+   - **Procedure**: Utilize the same Materials Project database with 28046 training data points. Train the CGCNN model with the same setup as Task 1.
+   - **What to Record**: MAE for absolute energy predictions.
+   - **Correspondence**: Table I, Section Results.
+
+3. **Task 3: Predict Band Gap**
+   - **Procedure**: Use the Materials Project database with 16458 training data points. Train the CGCNN model with the convolution function defined in Eq. 5.
+   - **What to Record**: MAE for band gap predictions.
+   - **Correspondence**: Table I, Section Results.
+
+4. **Task 4: Predict Fermi Energy**
+   - **Procedure**: Train the CGCNN model using 28046 training data points from the Materials Project database.
+   - **What to Record**: MAE for Fermi energy predictions.
+   - **Correspondence**: Table I, Section Results.
+
+5. **Task 5: Predict Bulk Moduli**
+   - **Procedure**: Use 2041 training data points from the Materials Project database. Train the CGCNN model with the convolution function defined in Eq. 5.
+   - **What to Record**: MAE for bulk modulus predictions.
+   - **Correspondence**: Table I, Section Results.
+
+6. **Task 6: Predict Shear Moduli**
+   - **Procedure**: Train the CGCNN model using 2041 training data points from the Materials Project database.
+   - **What to Record**: MAE for shear modulus predictions.
+   - **Correspondence**: Table I, Section Results.
+
+7. **Task 7: Predict Poisson Ratio**
+   - **Procedure**: Use the same 2041 training data points from the Materials Project database. Train the CGCNN model with the convolution function defined in Eq. 5.
+   - **What to Record**: MAE for Poisson ratio predictions.
+   - **Correspondence**: Table I, Section Results.
+
+8. **Task 8: Extract Site Energies in Perovskites**
+   - **Procedure**: Use the perovskite database containing 18928 crystals. Train the CGCNN model with a linear pooling approach to predict total energy above hull.
+   - **What to Record**: MAE of site energy predictions for perovskites.
+   - **Correspondence**: Figure 3(b), Table V, Section Results.
+
+9. **Task 9: Identify Potentially Synthesizable Perovskites**
+   - **Procedure**: Apply insights from site energy predictions to perform a combinational search for perovskites with energies above hull < 0.2 eV/atom.
+   - **What to Record**: Number of new perovskites identified.
+   - **Correspondence**: Figure 3(c, d), Table V, Section Results.
+
+## Evaluation Details
+
+- **Metrics Definitions**:
+  - **Mean Absolute Error (MAE)**: Calculated as the average of the absolute differences between predicted and actual values for each property.
+  - **Formation Energy Reference State**: The reference state for formation energy is based on DFT calculated values from the Materials Project.
+
+- **Post-Processing**:
+  - For each property, ensure that the predictions are averaged over the test set to obtain the final MAE.
+  - Check for k-point convergence and ensure that the results are smoothed if necessary.
+
+- **Aggregation Strategy**:
+  - Calculate MAE for each structure, then aggregate results per composition, and finally compute an overall MAE across all properties.
+
+## Implementation Notes
+
+- **Key Pitfalls**:
+  - Ensure that the training, validation, and test splits are correctly implemented to avoid data leakage.
+  - Monitor convergence of the CGCNN during training; adjust learning rates and regularization as necessary to prevent overfitting.
+
+- **Input-File Conventions**:
+  - Follow the input conventions specified in the CGCNN documentation for defining atom and bond feature vectors.
+  - Ensure that the output files are parsed correctly to extract the required observables.
+
+- **Order of Operations**:
+  - Train the model on the training set before validating on the validation set.
+  - Use the best-performing model from the validation set to evaluate the test set.

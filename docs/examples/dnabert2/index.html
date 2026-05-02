@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DNABERT-2: EFFICIENT FOUNDATION MODEL AND BENCHMARK FOR MULTI-SPECIES GENOMES — Paper2Bench example</title>
+  <link rel="stylesheet" href="../../styles.css">
+</head>
+<body>
+
+<nav class="nav">
+  <div class="container nav-inner">
+    <a class="nav-brand" href="../../"><span class="dot">●</span> paper2bench</a>
+    <div class="nav-links">
+      <a href="../../#examples">examples</a>
+      <a href="../../#install">install</a>
+      <a href="https://github.com/AbhayAnandUCSD/Paper2Bench">github</a>
+    </div>
+  </div>
+</nav>
+
+<header class="example-header">
+  <div class="container">
+    <div class="crumb"><a href="../../#examples">← back to examples</a></div>
+    <h1>DNABERT-2: EFFICIENT FOUNDATION MODEL AND BENCHMARK FOR MULTI-SPECIES GENOMES</h1>
+    <div class="authors">Zhihan Zhou et al., 2024 · biology · <span style="opacity:0.85">novel_architecture</span></div>
+    <div class="rq-callout"><strong>Research question:</strong> Does byte-pair tokenization and multi-species pretraining improve DNA foundation model quality at lower compute?</div>
+  </div>
+</header>
+
+<div class="container">
+  <div class="example-body">
+
+    <aside class="tree-rail">
+      <div class="tree-label">Problem tree</div>
+      <div class="tree-line"><strong>📄 Root: Improving computational efficiency and performance of genome foundation models</strong></div>
+<div class="tree-line indent-1">├─ <strong>RQ1: How can Byte Pair Encoding (BPE) improve genome tokenization compared to k-mer methods?</strong></div>
+<div class="tree-line indent-2 muted">│   └─ Empirical analysis of BPE tokenizer for genome language  (Fig. 3 · Table 3 · Sec. 3.1)</div>
+<div class="tree-line indent-1">├─ <strong>RQ2: What is the performance of DNABERT-2 on the Genome Understanding Evaluation (GUE) benchmark?</strong></div>
+<div class="tree-line indent-2 muted">│   └─ Evaluation of DNABERT-2 on GUE benchmark  (Fig. 4 · Table 4 · Sec. 5.3)</div>
+<div class="tree-line indent-1">└─ <strong>RQ3: How does DNABERT-2 compare to existing models in terms of computational efficiency?</strong></div>
+<div class="tree-line indent-2 muted">    └─ Comparison of model parameters and FLOPs  (Table 3 · Sec. 5.1)</div>
+    </aside>
+
+    <div>
+      <div class="tabs">
+        <button class="tab active" data-tab="instruction">instruction.txt</button>
+        <button class="tab" data-tab="gt">instruction_gt.txt</button>
+        <button class="tab" data-tab="config">task_config.yaml</button>
+      </div>
+
+      <div class="tab-panel active" data-tab="instruction">
+        <pre><code>You are a research agent. Conduct research and experiment about the question: &quot;Does byte-pair tokenization and multi-species pretraining improve DNA foundation model quality at lower compute?&quot;
+
+You have access to the following resources:
+
+Models:
+- DNABERT-2 via API
+- Load with HuggingFace: InstaDeepAI/nucleotide-transformer-500m-human-ref
+- Computational budget: 10000 API calls per model
+
+Datasets:
+- Multi-species genome dataset: A dataset comprising genomes from 135 species, totaling approximately 32.49 billion nucleotide bases.
+  Loading code:
+    import pandas as pd
+    # Load the multi-species genome dataset
+    dataset = pd.read_csv(&quot;path_to_multi_species_genome_dataset.csv&quot;)
+- Genome Understanding Evaluation (GUE) benchmark: A comprehensive benchmark containing 36 datasets across 9 tasks for evaluating genome foundation models.
+  Loading code:
+    import pandas as pd
+    # Load the GUE benchmark datasets
+    gue_dataset = pd.read_csv(&quot;path_to_gue_benchmark.csv&quot;)
+
+Experimental constraints:
+- Do NOT use web search
+- Run FULL end-to-end experiments
+
+Please design and execute experiments to investigate this research question. Document your experimental plan, run end-to-end experiments, and provide conclusions at different levels of detail.
+</code></pre>
+      </div>
+      <div class="tab-panel" data-tab="gt">
+        <pre><code>You are a research agent. Conduct research and experiment about the question: &quot;Does byte-pair tokenization and multi-species pretraining improve DNA foundation model quality at lower compute?&quot;
+
+You have access to the following resources:
+
+Models:
+- DNABERT-2 via API
+- Load with HuggingFace: InstaDeepAI/nucleotide-transformer-500m-human-ref
+- Computational budget: 10000 API calls per model
+
+Datasets:
+- Multi-species genome dataset: A dataset comprising genomes from 135 species, totaling approximately 32.49 billion nucleotide bases.
+  Loading code:
+    import pandas as pd
+    # Load the multi-species genome dataset
+    dataset = pd.read_csv(&quot;path_to_multi_species_genome_dataset.csv&quot;)
+- Genome Understanding Evaluation (GUE) benchmark: A comprehensive benchmark containing 36 datasets across 9 tasks for evaluating genome foundation models.
+  Loading code:
+    import pandas as pd
+    # Load the GUE benchmark datasets
+    gue_dataset = pd.read_csv(&quot;path_to_gue_benchmark.csv&quot;)
+
+Experimental constraints:
+- Do NOT use web search
+- Run FULL end-to-end experiments
+
+Please design and execute experiments to investigate this research question. Document your experimental plan, run end-to-end experiments, and provide conclusions at different levels of detail.
+
+---
+
+## Experimental Design
+
+1. **Task 1: BPE Tokenization Analysis**
+   - **Precise Procedure**: 
+     - **Input Modality**: Multi-species genome sequences.
+     - **Preprocessing**: Exclude sequences containing &#x27;N&#x27;, retain only sequences with A, T, C, and G. Construct vocabularies with sizes ranging from 28 to 215.
+     - **Model Architecture**: Use DNABERT-2 with BPE tokenizer.
+     - **Training/Validation/Test Split**: Use a split of 80% training, 10% validation, and 10% test for each vocabulary size.
+     - **Inference Protocol**: Evaluate on the GUE benchmark datasets.
+     - **Hyperparameter Sweep**: Vary vocabulary sizes (28, 212, 215) and assess performance.
+   - **What to Record**: F1-scores, average token lengths, and computational costs (FLOPs).
+   - **Correspondence**: Figure 3, Table 3, Section 3.1.
+
+2. **Task 2: DNABERT-2 Evaluation on GUE Benchmark**
+   - **Precise Procedure**: 
+     - **Input Modality**: Sequences from the GUE benchmark datasets.
+     - **Preprocessing**: Follow dataset-specific preprocessing as described in the GUE benchmark.
+     - **Model Architecture**: DNABERT-2.
+     - **Training/Validation/Test Split**: Use the predefined splits for each dataset in the GUE benchmark.
+     - **Inference Protocol**: Evaluate model performance on the test sets of each dataset.
+   - **What to Record**: F1-scores, Matthews Correlation Coefficient (MCC), and ranking among models.
+   - **Correspondence**: Table 4, Section 5.3.
+
+3. **Task 3: Computational Efficiency Comparison**
+   - **Precise Procedure**: 
+     - **Input Modality**: Various genome datasets used for benchmarking.
+     - **Preprocessing**: Standardize preprocessing across models (DNABERT-2, DNABERT, Nucleotide Transformer).
+     - **Model Architecture**: Compare DNABERT-2, DNABERT, and Nucleotide Transformer.
+     - **Training/Validation/Test Split**: Use the same splits as in the GUE benchmark for fair comparison.
+     - **Inference Protocol**: Measure FLOPs and number of parameters during evaluation.
+   - **What to Record**: Number of parameters, FLOPs, and average scores across tasks.
+   - **Correspondence**: Table 3, Section 5.1.
+
+## Evaluation Details
+
+- **Metrics Definitions**:
+  - **F1-Score**: Harmonic mean of precision and recall. Use `sklearn.metrics.f1_score` with `average=&#x27;macro&#x27;` for multi-class tasks.
+  - **Matthews Correlation Coefficient (MCC)**: Use `sklearn.metrics.matthews_corrcoef` for binary classification tasks.
+  - **Computational Cost**: Measure FLOPs using the formula for the number of operations in the forward pass of the model architecture.
+
+- **Post-Processing of Outputs**:
+  - For F1-scores, ensure to handle multi-class averaging appropriately. Use `average=&#x27;macro&#x27;` for balanced class distributions.
+  - For MCC, ensure to handle cases with zero true positives to avoid division by zero errors.
+
+- **Aggregation Strategy**:
+  - Aggregate results per dataset to obtain average scores across tasks. For overall performance, calculate the mean of the average scores across all tasks.
+
+## Implementation Notes
+
+- **Key Pitfalls**:
+  - Ensure that the training and test datasets are properly split to avoid data leakage, especially when using the same sequences for different tasks.
+  - Be cautious of the input length limitations of DNABERT and ensure that sequences longer than 512 tokens are handled appropriately (e.g., by truncation or splitting).
+  - Maintain consistent preprocessing across all models to ensure fair comparisons.
+
+- **File Format Conventions**:
+  - Use FASTA format for input sequences. Ensure that all sequences are in the correct format before processing.
+  - For output, ensure that predictions are saved in a structured format (e.g., CSV) for easy evaluation.
+
+- **Order of Operations**:
+  - Perform deduplication of sequences before splitting into training, validation, and test sets.
+  - Ensure that all preprocessing steps (e.g., filtering, tokenization) are completed before model training and evaluation.
+</code></pre>
+      </div>
+      <div class="tab-panel" data-tab="config">
+        <pre><code>task_id: dnabert2
+research_question: Does byte-pair tokenization and multi-species pretraining improve DNA foundation model quality at lower compute?
+models:
+  api:
+    - DNABERT-2
+  huggingface:
+    - InstaDeepAI/nucleotide-transformer-500m-human-ref
+datasets:
+  - name: &quot;Multi-species genome dataset&quot;
+    source: local
+    loader: |
+      import pandas as pd
+      # Load the multi-species genome dataset
+      dataset = pd.read_csv(&quot;path_to_multi_species_genome_dataset.csv&quot;)
+    description: &quot;A dataset comprising genomes from 135 species, totaling approximately 32.49 billion nucleotide bases.&quot;
+  - name: &quot;Genome Understanding Evaluation (GUE) benchmark&quot;
+    source: local
+    loader: |
+      import pandas as pd
+      # Load the GUE benchmark datasets
+      gue_dataset = pd.read_csv(&quot;path_to_gue_benchmark.csv&quot;)
+    description: &quot;A comprehensive benchmark containing 36 datasets across 9 tasks for evaluating genome foundation models.&quot;
+api_key_var: OPENAI_API_KEY
+budget_per_model: 10000
+constraints:
+  - &quot;Do NOT use web search&quot;
+  - &quot;Run FULL end-to-end experiments&quot;</code></pre>
+      </div>
+
+      <div class="actions">
+        <a class="btn btn-primary" href="bundle.zip" download>↓ Download bundle (.zip)</a>
+        <a class="btn" href="instruction.txt">View raw instruction.txt</a>
+        <a class="btn" href="instruction_gt.txt">View raw instruction_gt.txt</a>
+        <a class="btn" href="task_config.yaml">View raw task_config.yaml</a>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container footer-inner">
+    <span>Paper2Bench · v0.3.0 · MIT</span>
+    <span>
+      <a href="https://github.com/AbhayAnandUCSD/Paper2Bench">GitHub</a> ·
+      <a href="../../#install">Install</a>
+    </span>
+  </div>
+</footer>
+
+<script src="../../scripts.js"></script>
+</body>
+</html>

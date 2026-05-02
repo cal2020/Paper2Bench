@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MACE: Higher Order Equivariant Message Passing Neural Networks for Fast and Accurate Force Fields — Paper2Bench example</title>
+  <link rel="stylesheet" href="../../styles.css">
+</head>
+<body>
+
+<nav class="nav">
+  <div class="container nav-inner">
+    <a class="nav-brand" href="../../"><span class="dot">●</span> paper2bench</a>
+    <div class="nav-links">
+      <a href="../../#examples">examples</a>
+      <a href="../../#install">install</a>
+      <a href="https://github.com/AbhayAnandUCSD/Paper2Bench">github</a>
+    </div>
+  </div>
+</nav>
+
+<header class="example-header">
+  <div class="container">
+    <div class="crumb"><a href="../../#examples">← back to examples</a></div>
+    <h1>MACE: Higher Order Equivariant Message Passing Neural Networks for Fast and Accurate Force Fields</h1>
+    <div class="authors">Ilyes Batatia et al., 2022 · materials · <span style="opacity:0.85">novel_architecture</span></div>
+    <div class="rq-callout"><strong>Research question:</strong> Does higher-body-order equivariant message passing improve accuracy and data efficiency for ML interatomic potentials?</div>
+  </div>
+</header>
+
+<div class="container">
+  <div class="example-body">
+
+    <aside class="tree-rail">
+      <div class="tree-label">Problem tree</div>
+      <div class="tree-line"><strong>📄 Root: Development of fast and accurate force fields using higher order equivariant message passing neural networks.</strong></div>
+<div class="tree-line indent-1">├─ <strong>RQ1: How does the MACE architecture improve the efficiency of message passing in neural networks?</strong></div>
+<div class="tree-line indent-2 muted">│   └─ Comparison of MACE with traditional MPNNs on benchmark tasks.  (Fig. 1 · Table 2 · Sec. 5.1)</div>
+<div class="tree-line indent-1">├─ <strong>RQ2: What are the effects of higher order messages on the learning curves of MACE?</strong></div>
+<div class="tree-line indent-2 muted">│   └─ Analysis of learning curves for MACE with varying correlation orders.  (Fig. 2 · N/A · Sec. 5.1)</div>
+<div class="tree-line indent-1">└─ <strong>RQ3: How does MACE perform in terms of accuracy and computational cost compared to existing models?</strong></div>
+<div class="tree-line indent-2 muted">    └─ Benchmarking MACE against other models on the rMD17 and 3BPA datasets.  (Fig. 3 · Table 1, Table 2 · Sec. 5.3)</div>
+    </aside>
+
+    <div>
+      <div class="tabs">
+        <button class="tab active" data-tab="instruction">instruction.txt</button>
+        <button class="tab" data-tab="gt">instruction_gt.txt</button>
+        <button class="tab" data-tab="config">task_config.yaml</button>
+      </div>
+
+      <div class="tab-panel active" data-tab="instruction">
+        <pre><code>You are a research agent. Conduct research and experiment about the question: &quot;Does higher-body-order equivariant message passing improve accuracy and data efficiency for ML interatomic potentials?&quot;
+
+You have access to the following resources:
+
+Models:
+- MACE via API
+- Load with HuggingFace: mace-mp/MACE-MP-0
+- Computational budget: 10000 API calls per model
+
+Datasets:
+- rMD17 dataset: Contains molecular dynamics trajectories of small organic molecules.
+  Loading code:
+    from pymatgen import MPRester
+    mpr = MPRester(&quot;YOUR_API_KEY&quot;)
+    data = mpr.query({&quot;task_id&quot;: {&quot;$in&quot;: [&quot;rMD17&quot;]}}, [&quot;structure&quot;, &quot;energy&quot;, &quot;forces&quot;])
+- 3BPA dataset: DFT train test splits of a flexible drug-like organic molecule.
+  Loading code:
+    from pymatgen import MPRester
+    mpr = MPRester(&quot;YOUR_API_KEY&quot;)
+    data = mpr.query({&quot;task_id&quot;: {&quot;$in&quot;: [&quot;3BPA&quot;]}}, [&quot;structure&quot;, &quot;energy&quot;, &quot;forces&quot;])
+
+Experimental constraints:
+- Do NOT use web search
+- Run FULL end-to-end experiments
+
+Please design and execute experiments to investigate this research question. Document your experimental plan, run end-to-end experiments, and provide conclusions at different levels of detail.
+</code></pre>
+      </div>
+      <div class="tab-panel" data-tab="gt">
+        <pre><code>You are a research agent. Conduct research and experiment about the question: &quot;Does higher-body-order equivariant message passing improve accuracy and data efficiency for ML interatomic potentials?&quot;
+
+You have access to the following resources:
+
+Models:
+- MACE via API
+- Load with HuggingFace: mace-mp/MACE-MP-0
+- Computational budget: 10000 API calls per model
+
+Datasets:
+- rMD17 dataset: Contains molecular dynamics trajectories of small organic molecules.
+  Loading code:
+    from pymatgen import MPRester
+    mpr = MPRester(&quot;YOUR_API_KEY&quot;)
+    data = mpr.query({&quot;task_id&quot;: {&quot;$in&quot;: [&quot;rMD17&quot;]}}, [&quot;structure&quot;, &quot;energy&quot;, &quot;forces&quot;])
+- 3BPA dataset: DFT train test splits of a flexible drug-like organic molecule.
+  Loading code:
+    from pymatgen import MPRester
+    mpr = MPRester(&quot;YOUR_API_KEY&quot;)
+    data = mpr.query({&quot;task_id&quot;: {&quot;$in&quot;: [&quot;3BPA&quot;]}}, [&quot;structure&quot;, &quot;energy&quot;, &quot;forces&quot;])
+
+Experimental constraints:
+- Do NOT use web search
+- Run FULL end-to-end experiments
+
+Please design and execute experiments to investigate this research question. Document your experimental plan, run end-to-end experiments, and provide conclusions at different levels of detail.
+
+---
+
+## Experimental Design
+
+1. **Task 1: Benchmarking MACE on 3BPA Dataset**
+   - **Procedure**: Train MACE models with L = 0, L = 1, and L = 2 on the 3BPA dataset. Use 500 configurations for training (450 for training and 50 for validation). The models should be trained with a radial cutoff of 5 Å.
+   - **Calculation Type**: Training and validation of ML interatomic potentials.
+   - **Exchange-Correlation Functional**: [uncertain].
+   - **Pseudopotentials**: [uncertain].
+   - **What to Record**: Mean Absolute Error (MAE) on energies and forces, training time.
+   - **Correspondence**: Figure 1, Table 2, Section 5.3.
+
+2. **Task 2: Learning Curve Analysis on rMD17 Dataset**
+   - **Procedure**: Train MACE models with varying correlation orders (ν = 1, 2, 3) on the rMD17 dataset. Use 1000 configurations (950 for training and 50 for validation). The models should be trained with a radial cutoff of 5 Å.
+   - **Calculation Type**: Training and validation of ML interatomic potentials.
+   - **What to Record**: Learning curve steepness, RMSE on training data.
+   - **Correspondence**: Figure 2, Section 5.1.
+
+3. **Task 3: Extrapolation Performance on 3BPA Dataset**
+   - **Procedure**: Evaluate MACE models trained on the 3BPA dataset at different temperatures (300 K, 600 K, 1200 K) and on dihedral slices. Use the same training configurations as in Task 1.
+   - **Calculation Type**: Testing of ML interatomic potentials.
+   - **What to Record**: RMSE on energies and forces for extrapolation tasks.
+   - **Correspondence**: Table 2, Section 5.3.
+
+4. **Task 4: Benchmarking MACE on AcAc Dataset**
+   - **Procedure**: Train MACE models on the AcAc dataset with 500 configurations (450 for training and 50 for validation). Use a radial cutoff of 5 Å.
+   - **Calculation Type**: Training and validation of ML interatomic potentials.
+   - **What to Record**: RMSE on energies and forces at 300 K and 600 K.
+   - **Correspondence**: Table 3, Section 5.3.
+
+## Evaluation Details
+
+- **Metrics Definitions**:
+  - **MAE**: Mean Absolute Error calculated as \( \text{MAE} = \frac{1}{N} \sum_{i=1}^{N} |E_i - \hat{E}_i| \) for energies and \( \text{MAE} = \frac{1}{N} \sum_{i=1}^{N} |F_i - \hat{F}_i| \) for forces, where \( E_i \) and \( F_i \) are the true values, and \( \hat{E}_i \) and \( \hat{F}_i \) are the predicted values.
+  - **Learning Curve Steepness**: Analyzed by fitting a power law to the log-log plot of predictive error as a function of dataset size.
+
+- **Post-Processing**:
+  - For learning curves, average the RMSE over multiple runs to obtain stable estimates.
+  - Ensure k-point convergence for DFT calculations if applicable, using a grid of [uncertain] points.
+  - Apply a smearing technique with a width of [uncertain] eV for electronic structure calculations.
+
+- **Aggregation Strategy**:
+  - Compute metrics per structure, then average over all structures to obtain per-composition metrics, and finally aggregate to overall metrics.
+
+## Implementation Notes
+
+- **Key Pitfalls**:
+  - Ensure that the radial cutoff is consistently set to 5 Å across all models to avoid discrepancies in performance.
+  - Monitor convergence thresholds for training, particularly for the learning rate and batch size, to prevent overfitting.
+  - Be aware of potential issues with extrapolation capabilities, especially when testing on configurations far from the training data.
+
+- **Input File Conventions**:
+  - Use the specified format for MACE input files, ensuring that all parameters are correctly defined as per the training details in Appendix A.5.
+  - Implement a restart strategy to save and resume training if necessary, particularly for long training sessions.
+
+- **Order of Operations**:
+  - Train models on the training set before evaluating on the validation set.
+  - Validate models after each epoch to monitor performance and adjust hyperparameters as needed.
+</code></pre>
+      </div>
+      <div class="tab-panel" data-tab="config">
+        <pre><code>task_id: mace_potential
+research_question: Does higher-body-order equivariant message passing improve accuracy and data efficiency for ML interatomic potentials?
+models:
+  api:
+    - MACE
+  huggingface:
+    - mace-mp/MACE-MP-0
+api_key_var: OPENAI_API_KEY
+budget_per_model: 10000
+datasets:
+  - name: &quot;rMD17 dataset&quot;
+    source: huggingface
+    loader: |
+      from pymatgen import MPRester
+      mpr = MPRester(&quot;YOUR_API_KEY&quot;)
+      data = mpr.query({&quot;task_id&quot;: {&quot;$in&quot;: [&quot;rMD17&quot;]}}, [&quot;structure&quot;, &quot;energy&quot;, &quot;forces&quot;])
+    description: &quot;Contains molecular dynamics trajectories of small organic molecules.&quot;
+  - name: &quot;3BPA dataset&quot;
+    source: huggingface
+    loader: |
+      from pymatgen import MPRester
+      mpr = MPRester(&quot;YOUR_API_KEY&quot;)
+      data = mpr.query({&quot;task_id&quot;: {&quot;$in&quot;: [&quot;3BPA&quot;]}}, [&quot;structure&quot;, &quot;energy&quot;, &quot;forces&quot;])
+    description: &quot;DFT train test splits of a flexible drug-like organic molecule.&quot;
+constraints:
+  - &quot;Do NOT use web search&quot;
+  - &quot;Run FULL end-to-end experiments&quot;</code></pre>
+      </div>
+
+      <div class="actions">
+        <a class="btn btn-primary" href="bundle.zip" download>↓ Download bundle (.zip)</a>
+        <a class="btn" href="instruction.txt">View raw instruction.txt</a>
+        <a class="btn" href="instruction_gt.txt">View raw instruction_gt.txt</a>
+        <a class="btn" href="task_config.yaml">View raw task_config.yaml</a>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container footer-inner">
+    <span>Paper2Bench · v0.3.0 · MIT</span>
+    <span>
+      <a href="https://github.com/AbhayAnandUCSD/Paper2Bench">GitHub</a> ·
+      <a href="../../#install">Install</a>
+    </span>
+  </div>
+</footer>
+
+<script src="../../scripts.js"></script>
+</body>
+</html>

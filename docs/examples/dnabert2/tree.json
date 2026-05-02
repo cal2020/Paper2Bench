@@ -1,0 +1,109 @@
+{
+  "paper": {
+    "title": "DNABERT-2: EFFICIENT FOUNDATION MODEL AND BENCHMARK FOR MULTI-SPECIES GENOMES",
+    "authors": [
+      "Zhihan Zhou",
+      "Yanrong Ji",
+      "Weijian Li",
+      "Pratik Dutta",
+      "Ramana V Davuluri",
+      "Han Liu"
+    ],
+    "venue": "ICLR 2024",
+    "year": "2024"
+  },
+  "problem_tree": {
+    "node": "Root: Improving computational efficiency and performance of genome foundation models",
+    "type": "root",
+    "description": "The paper addresses the limitations of existing genome foundation models, particularly focusing on tokenization methods and the need for standardized benchmarks.",
+    "evidence": "Abstract, Introduction, Conclusion",
+    "children": [
+      {
+        "node": "RQ1: How can Byte Pair Encoding (BPE) improve genome tokenization compared to k-mer methods?",
+        "type": "research_question",
+        "description": "This question investigates the advantages of BPE over traditional k-mer tokenization in terms of computational efficiency and sample efficiency.",
+        "evidence": "Sections 1, 2, 3",
+        "children": [
+          {
+            "type": "leaf",
+            "task": "Empirical analysis of BPE tokenizer for genome language",
+            "dataset": [
+              "Multi-species genome dataset"
+            ],
+            "model_or_method": [
+              "DNABERT-2 with BPE tokenizer"
+            ],
+            "metrics": [
+              "F1-score, computational cost"
+            ],
+            "protocol_or_setup": "Training on multi-species genome dataset with varying vocabulary sizes",
+            "evidence": {
+              "figure": "Fig. 3",
+              "table": "Table 3",
+              "section": "Sec. 3.1"
+            },
+            "conclusion": "BPE outperforms k-mer tokenization in 21 out of 28 datasets with improved computational efficiency.",
+            "status": ""
+          }
+        ]
+      },
+      {
+        "node": "RQ2: What is the performance of DNABERT-2 on the Genome Understanding Evaluation (GUE) benchmark?",
+        "type": "research_question",
+        "description": "This question evaluates the effectiveness of DNABERT-2 across various genome analysis tasks using the newly proposed benchmark.",
+        "evidence": "Sections 4, 5",
+        "children": [
+          {
+            "type": "leaf",
+            "task": "Evaluation of DNABERT-2 on GUE benchmark",
+            "dataset": [
+              "GUE benchmark datasets"
+            ],
+            "model_or_method": [
+              "DNABERT-2"
+            ],
+            "metrics": [
+              "F1-score, Matthews Correlation Coefficient (MCC)"
+            ],
+            "protocol_or_setup": "Testing on 36 datasets across 9 tasks with defined train/dev/test splits",
+            "evidence": {
+              "figure": "Fig. 4",
+              "table": "Table 4",
+              "section": "Sec. 5.3"
+            },
+            "conclusion": "DNABERT-2 achieves comparable performance to state-of-the-art models while being more efficient.",
+            "status": ""
+          }
+        ]
+      },
+      {
+        "node": "RQ3: How does DNABERT-2 compare to existing models in terms of computational efficiency?",
+        "type": "research_question",
+        "description": "This question assesses the computational efficiency of DNABERT-2 relative to other genome foundation models.",
+        "evidence": "Sections 5.1, 5.2",
+        "children": [
+          {
+            "type": "leaf",
+            "task": "Comparison of model parameters and FLOPs",
+            "dataset": [
+              "Various genome datasets used for benchmarking"
+            ],
+            "model_or_method": [
+              "DNABERT-2, DNABERT, Nucleotide Transformer"
+            ],
+            "metrics": [
+              "Number of parameters, FLOPs"
+            ],
+            "protocol_or_setup": "Comparative analysis of model architectures and training setups",
+            "evidence": {
+              "figure": "Table 3",
+              "section": "Sec. 5.1"
+            },
+            "conclusion": "DNABERT-2 is 21× smaller and requires 19× fewer FLOPs than the state-of-the-art models.",
+            "status": ""
+          }
+        ]
+      }
+    ]
+  }
+}

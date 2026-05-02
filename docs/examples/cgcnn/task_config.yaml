@@ -1,0 +1,26 @@
+task_id: cgcnn
+research_question: Can a graph convolutional network predict bulk material properties directly from crystal structure?
+models:
+  api:
+    - CGCNN
+  huggingface:
+    - txie-93/cgcnn
+api_key_var: OPENAI_API_KEY
+budget_per_model: 10000
+datasets:
+  - name: "Materials Project database"
+    source: huggingface
+    loader: |
+      from pymatgen import MPRester
+      mpr = MPRester("YOUR_API_KEY")
+      data = mpr.query(criteria={"nelements": {"$lte": 7}}, properties=["material_id", "formation_energy_per_atom", "structure"])
+    description: "Contains 46744 inorganic crystals with various structure types and compositions."
+  - name: "Perovskite database"
+    source: local
+    loader: |
+      import pandas as pd
+      perovskite_data = pd.read_csv("perovskite_data.csv")
+    description: "Includes 18928 perovskite crystals with energy above hull data."
+constraints:
+  - "Do NOT use web search"
+  - "Run FULL end-to-end experiments"

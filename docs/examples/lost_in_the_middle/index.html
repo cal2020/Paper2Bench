@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lost in the Middle: How Language Models Use Long Contexts — Paper2Bench example</title>
+  <link rel="stylesheet" href="../../styles.css">
+</head>
+<body>
+
+<nav class="nav">
+  <div class="container nav-inner">
+    <a class="nav-brand" href="../../"><span class="dot">●</span> paper2bench</a>
+    <div class="nav-links">
+      <a href="../../#examples">examples</a>
+      <a href="../../#install">install</a>
+      <a href="https://github.com/AbhayAnandUCSD/Paper2Bench">github</a>
+    </div>
+  </div>
+</nav>
+
+<header class="example-header">
+  <div class="container">
+    <div class="crumb"><a href="../../#examples">← back to examples</a></div>
+    <h1>Lost in the Middle: How Language Models Use Long Contexts</h1>
+    <div class="authors">Nelson F. Liu et al., 2023 · ml_nlp · <span style="opacity:0.85">llm_evaluation</span></div>
+    <div class="rq-callout"><strong>Research question:</strong> Do LLMs degrade when relevant information is placed in the middle of long input contexts?</div>
+  </div>
+</header>
+
+<div class="container">
+  <div class="example-body">
+
+    <aside class="tree-rail">
+      <div class="tree-label">Problem tree</div>
+      <div class="tree-line"><strong>📄 Root: Understanding how language models utilize long input contexts</strong></div>
+<div class="tree-line indent-1">├─ <strong>RQ1: How does the position of relevant information within long input contexts affect language model performance?</strong></div>
+<div class="tree-line indent-2 muted">│   └─ Evaluate multi-document question answering performance with varying positions of relevant information.  (Fig. 5 · Table 1 · Sec. 2.3)</div>
+<div class="tree-line indent-1">├─ <strong>RQ2: To what extent can language models retrieve information from their input contexts?</strong></div>
+<div class="tree-line indent-2 muted">│   └─ Conduct a synthetic key-value retrieval task to assess retrieval performance.  (Fig. 7 · Sec. 3.2)</div>
+<div class="tree-line indent-1">└─ <strong>RQ3: What factors contribute to the robustness of language models in utilizing long input contexts?</strong></div>
+<div class="tree-line indent-2 muted">    ├─ Analyze the effect of model architecture on performance with long contexts.  (Fig. 8 · Sec. 4.1)</div>
+<div class="tree-line indent-2 muted">    └─ Evaluate the impact of query-aware contextualization on retrieval tasks.  (Fig. 9 · Sec. 4.2)</div>
+    </aside>
+
+    <div>
+      <div class="tabs">
+        <button class="tab active" data-tab="instruction">instruction.txt</button>
+        <button class="tab" data-tab="gt">instruction_gt.txt</button>
+        <button class="tab" data-tab="config">task_config.yaml</button>
+      </div>
+
+      <div class="tab-panel active" data-tab="instruction">
+        <pre><code>You are a research agent. Conduct research and experiment about the question: &quot;Do LLMs degrade when relevant information is placed in the middle of long input contexts?&quot;
+
+You have access to the following resources:
+
+Models:
+- gpt-3.5-turbo-0613 and claude-1.3 via API
+- Load with HuggingFace: meta-llama/MPT-30B-Instruct
+- Load with HuggingFace: meta-llama/LongChat-13B-16K
+- Computational budget: 1000 API calls per model
+
+Datasets:
+- NaturalQuestions-Open: A dataset containing historical queries issued to the Google search engine, with human-annotated answers extracted from Wikipedia.
+  Loading code:
+    from datasets import load_dataset
+    dataset = load_dataset(&quot;natural_questions&quot;, split=&quot;train&quot;)
+- A synthetic dataset consisting of key-value pairs formatted as JSON, where keys and values are unique randomly-generated UUIDs.
+
+Experimental constraints:
+- Do NOT use web search
+- Run FULL end-to-end experiments
+
+Please design and execute experiments to investigate this research question. Document your experimental plan, run end-to-end experiments, and provide conclusions at different levels of detail.
+</code></pre>
+      </div>
+      <div class="tab-panel" data-tab="gt">
+        <pre><code>You are a research agent. Conduct research and experiment about the question: &quot;Do LLMs degrade when relevant information is placed in the middle of long input contexts?&quot;
+
+You have access to the following resources:
+
+Models:
+- gpt-3.5-turbo-0613 and claude-1.3 via API
+- Load with HuggingFace: meta-llama/MPT-30B-Instruct
+- Load with HuggingFace: meta-llama/LongChat-13B-16K
+- Computational budget: 1000 API calls per model
+
+Datasets:
+- NaturalQuestions-Open: A dataset containing historical queries issued to the Google search engine, with human-annotated answers extracted from Wikipedia.
+  Loading code:
+    from datasets import load_dataset
+    dataset = load_dataset(&quot;natural_questions&quot;, split=&quot;train&quot;)
+- A synthetic dataset consisting of key-value pairs formatted as JSON, where keys and values are unique randomly-generated UUIDs.
+
+Experimental constraints:
+- Do NOT use web search
+- Run FULL end-to-end experiments
+
+Please design and execute experiments to investigate this research question. Document your experimental plan, run end-to-end experiments, and provide conclusions at different levels of detail.
+
+---
+
+## Experimental Design
+
+1. **Multi-Document Question Answering (MDQA)**
+   - **Procedure**: 
+     - Input consists of a question and `k` documents (where `k` can be 10, 20, or 30). Each document is a chunk of at most 100 tokens from Wikipedia.
+     - The relevant document containing the answer is placed at different positions (beginning, middle, end) within the input context.
+     - For each query, retrieve `k-1` distractor documents that do not contain the answer using a retrieval system fine-tuned on MS-MARCO.
+     - Use the following configurations for `k`: 10, 20, and 30 documents.
+   - **What to Record**: 
+     - Accuracy of the model&#x27;s predictions, specifically whether the correct answer appears in the output.
+   - **Correspondence**: 
+     - Results are illustrated in Figure 5 and summarized in Table 1.
+
+2. **Synthetic Key-Value Retrieval Task**
+   - **Procedure**: 
+     - Input consists of a JSON object with `k` key-value pairs (where `k` can be 75, 140, or 300). Each key and value is a unique randomly-generated UUID.
+     - The relevant key is placed at different positions within the JSON object.
+     - For each configuration, evaluate the model&#x27;s ability to return the value associated with a specified key.
+   - **What to Record**: 
+     - Accuracy of the model&#x27;s predictions, specifically whether the correct value appears in the output.
+   - **Correspondence**: 
+     - Results are illustrated in Figure 7.
+
+3. **Model Architecture Comparison**
+   - **Procedure**: 
+     - Compare the performance of decoder-only models (e.g., GPT-3.5-Turbo, MPT-30B-Instruct) against encoder-decoder models (e.g., Flan-T5-XXL, Flan-UL2) on long input sequences.
+     - Use the same input context length as in the MDQA task, varying the position of relevant information.
+   - **What to Record**: 
+     - Accuracy of the models across different positions of relevant information.
+   - **Correspondence**: 
+     - Results are illustrated in Figure 8.
+
+4. **Query-Aware Contextualization**
+   - **Procedure**: 
+     - Implement query-aware contextualization by placing the query before and after the documents in the input context.
+     - Evaluate the performance of models on the synthetic key-value retrieval task with and without query-aware contextualization.
+   - **What to Record**: 
+     - Accuracy of the models on the key-value retrieval task.
+   - **Correspondence**: 
+     - Results are illustrated in Figure 9.
+
+## Evaluation Details
+
+- **Metrics**: 
+  - Accuracy is defined as the percentage of correct answers returned by the model. 
+  - For multi-document QA, accuracy is calculated as:
+    \[
+    \text{Accuracy} = \frac{\text{Number of Correct Answers}}{\text{Total Questions}} \times 100
+    \]
+  - For key-value retrieval, accuracy is similarly calculated based on the number of correct values returned.
+
+- **Normalization/Pre-processing**: 
+  - Ensure that the model outputs are stripped of any extraneous text and only the predicted answers are considered for scoring.
+
+- **Aggregation Strategy**: 
+  - Calculate per-sample accuracy for each model and condition, then average these to obtain per-condition accuracy, and finally compute overall accuracy across all conditions.
+
+## Implementation Notes
+
+- **Key Pitfalls**: 
+  - Ensure that the distractor documents are truly irrelevant to avoid misleading performance metrics.
+  - Be cautious of the model&#x27;s context length limitations; ensure that the input does not exceed the maximum token limit for each model.
+
+- **Prompt Templates**: 
+  - Use the following prompt template for the multi-document QA task:
+    ```
+    Write a high-quality answer for the given question using only the provided search results (some of which might be irrelevant).
+    Document [1]: ...
+    Document [2]: ...
+    ...
+    Question: {question}
+    Answer:
+    ```
+
+- **Order of Operations**: 
+  - For each experiment, ensure that the input context is constructed correctly before passing it to the model.
+  - Record outputs immediately after model inference to avoid any discrepancies in results due to changes in input or model state.
+</code></pre>
+      </div>
+      <div class="tab-panel" data-tab="config">
+        <pre><code>task_id: lost_in_the_middle
+research_question: Do LLMs degrade when relevant information is placed in the middle of long input contexts?
+models:
+  api:
+    - gpt-3.5-turbo-0613
+    - claude-1.3
+  huggingface:
+    - meta-llama/MPT-30B-Instruct
+    - meta-llama/LongChat-13B-16K
+api_key_var: OPENAI_API_KEY
+budget_per_model: 1000
+datasets:
+  - name: &quot;NaturalQuestions-Open&quot;
+    source: huggingface
+    loader: |
+      from datasets import load_dataset
+      dataset = load_dataset(&quot;natural_questions&quot;, split=&quot;train&quot;)
+    description: &quot;A dataset containing historical queries issued to the Google search engine, with human-annotated answers extracted from Wikipedia.&quot;
+  - name: &quot;Synthetic JSON key-value pairs&quot;
+    source: synthetic
+    loader: |
+      import json
+      import random
+      def generate_synthetic_kv_pairs(num_pairs):
+          return {str(i): str(random.uuid4()) for i in range(num_pairs)}
+    description: &quot;A synthetic dataset consisting of key-value pairs formatted as JSON, where keys and values are unique randomly-generated UUIDs.&quot;
+constraints:
+  - &quot;Do NOT use web search&quot;
+  - &quot;Run FULL end-to-end experiments&quot;</code></pre>
+      </div>
+
+      <div class="actions">
+        <a class="btn btn-primary" href="bundle.zip" download>↓ Download bundle (.zip)</a>
+        <a class="btn" href="instruction.txt">View raw instruction.txt</a>
+        <a class="btn" href="instruction_gt.txt">View raw instruction_gt.txt</a>
+        <a class="btn" href="task_config.yaml">View raw task_config.yaml</a>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container footer-inner">
+    <span>Paper2Bench · v0.3.0 · MIT</span>
+    <span>
+      <a href="https://github.com/AbhayAnandUCSD/Paper2Bench">GitHub</a> ·
+      <a href="../../#install">Install</a>
+    </span>
+  </div>
+</footer>
+
+<script src="../../scripts.js"></script>
+</body>
+</html>

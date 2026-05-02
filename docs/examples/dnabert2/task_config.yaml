@@ -1,0 +1,27 @@
+task_id: dnabert2
+research_question: Does byte-pair tokenization and multi-species pretraining improve DNA foundation model quality at lower compute?
+models:
+  api:
+    - DNABERT-2
+  huggingface:
+    - InstaDeepAI/nucleotide-transformer-500m-human-ref
+datasets:
+  - name: "Multi-species genome dataset"
+    source: local
+    loader: |
+      import pandas as pd
+      # Load the multi-species genome dataset
+      dataset = pd.read_csv("path_to_multi_species_genome_dataset.csv")
+    description: "A dataset comprising genomes from 135 species, totaling approximately 32.49 billion nucleotide bases."
+  - name: "Genome Understanding Evaluation (GUE) benchmark"
+    source: local
+    loader: |
+      import pandas as pd
+      # Load the GUE benchmark datasets
+      gue_dataset = pd.read_csv("path_to_gue_benchmark.csv")
+    description: "A comprehensive benchmark containing 36 datasets across 9 tasks for evaluating genome foundation models."
+api_key_var: OPENAI_API_KEY
+budget_per_model: 10000
+constraints:
+  - "Do NOT use web search"
+  - "Run FULL end-to-end experiments"

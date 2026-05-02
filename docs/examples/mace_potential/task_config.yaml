@@ -1,0 +1,27 @@
+task_id: mace_potential
+research_question: Does higher-body-order equivariant message passing improve accuracy and data efficiency for ML interatomic potentials?
+models:
+  api:
+    - MACE
+  huggingface:
+    - mace-mp/MACE-MP-0
+api_key_var: OPENAI_API_KEY
+budget_per_model: 10000
+datasets:
+  - name: "rMD17 dataset"
+    source: huggingface
+    loader: |
+      from pymatgen import MPRester
+      mpr = MPRester("YOUR_API_KEY")
+      data = mpr.query({"task_id": {"$in": ["rMD17"]}}, ["structure", "energy", "forces"])
+    description: "Contains molecular dynamics trajectories of small organic molecules."
+  - name: "3BPA dataset"
+    source: huggingface
+    loader: |
+      from pymatgen import MPRester
+      mpr = MPRester("YOUR_API_KEY")
+      data = mpr.query({"task_id": {"$in": ["3BPA"]}}, ["structure", "energy", "forces"])
+    description: "DFT train test splits of a flexible drug-like organic molecule."
+constraints:
+  - "Do NOT use web search"
+  - "Run FULL end-to-end experiments"

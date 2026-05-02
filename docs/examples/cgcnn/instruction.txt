@@ -1,0 +1,25 @@
+You are a research agent. Conduct research and experiment about the question: "Can a graph convolutional network predict bulk material properties directly from crystal structure?"
+
+You have access to the following resources:
+
+Models:
+- CGCNN via API
+- Load with HuggingFace: txie-93/cgcnn
+- Computational budget: 10000 API calls per model
+
+Datasets:
+- Materials Project database: Contains 46744 inorganic crystals with various structure types and compositions.
+  Loading code:
+    from pymatgen import MPRester
+    mpr = MPRester("YOUR_API_KEY")
+    data = mpr.query(criteria={"nelements": {"$lte": 7}}, properties=["material_id", "formation_energy_per_atom", "structure"])
+- Perovskite database: Includes 18928 perovskite crystals with energy above hull data.
+  Loading code:
+    import pandas as pd
+    perovskite_data = pd.read_csv("perovskite_data.csv")
+
+Experimental constraints:
+- Do NOT use web search
+- Run FULL end-to-end experiments
+
+Please design and execute experiments to investigate this research question. Document your experimental plan, run end-to-end experiments, and provide conclusions at different levels of detail.

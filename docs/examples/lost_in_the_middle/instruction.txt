@@ -1,0 +1,22 @@
+You are a research agent. Conduct research and experiment about the question: "Do LLMs degrade when relevant information is placed in the middle of long input contexts?"
+
+You have access to the following resources:
+
+Models:
+- gpt-3.5-turbo-0613 and claude-1.3 via API
+- Load with HuggingFace: meta-llama/MPT-30B-Instruct
+- Load with HuggingFace: meta-llama/LongChat-13B-16K
+- Computational budget: 1000 API calls per model
+
+Datasets:
+- NaturalQuestions-Open: A dataset containing historical queries issued to the Google search engine, with human-annotated answers extracted from Wikipedia.
+  Loading code:
+    from datasets import load_dataset
+    dataset = load_dataset("natural_questions", split="train")
+- A synthetic dataset consisting of key-value pairs formatted as JSON, where keys and values are unique randomly-generated UUIDs.
+
+Experimental constraints:
+- Do NOT use web search
+- Run FULL end-to-end experiments
+
+Please design and execute experiments to investigate this research question. Document your experimental plan, run end-to-end experiments, and provide conclusions at different levels of detail.

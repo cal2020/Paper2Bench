@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Chain-of-Thought Prompting Elicits Reasoning in Large Language Models — Paper2Bench example</title>
+  <link rel="stylesheet" href="../../styles.css">
+</head>
+<body>
+
+<nav class="nav">
+  <div class="container nav-inner">
+    <a class="nav-brand" href="../../"><span class="dot">●</span> paper2bench</a>
+    <div class="nav-links">
+      <a href="../../#examples">examples</a>
+      <a href="../../#install">install</a>
+      <a href="https://github.com/AbhayAnandUCSD/Paper2Bench">github</a>
+    </div>
+  </div>
+</nav>
+
+<header class="example-header">
+  <div class="container">
+    <div class="crumb"><a href="../../#examples">← back to examples</a></div>
+    <h1>Chain-of-Thought Prompting Elicits Reasoning in Large Language Models</h1>
+    <div class="authors">Jason Wei et al., 2022 · ml_nlp · <span style="opacity:0.85">llm_evaluation</span></div>
+    <div class="rq-callout"><strong>Research question:</strong> Does chain-of-thought prompting improve LLM reasoning on arithmetic, commonsense, and symbolic tasks?</div>
+  </div>
+</header>
+
+<div class="container">
+  <div class="example-body">
+
+    <aside class="tree-rail">
+      <div class="tree-label">Problem tree</div>
+      <div class="tree-line"><strong>📄 Root: Improving reasoning abilities of large language models through chain-of-thought prompting</strong></div>
+<div class="tree-line indent-1">├─ <strong>RQ1: How does chain-of-thought prompting affect performance on arithmetic reasoning tasks?</strong></div>
+<div class="tree-line indent-2 muted">│   └─ Evaluate performance on the GSM8K benchmark using chain-of-thought prompting.  (Fig. 2 · Table 1 · Sec. 3.2)</div>
+<div class="tree-line indent-1">├─ <strong>RQ2: What is the effect of chain-of-thought prompting on commonsense reasoning tasks?</strong></div>
+<div class="tree-line indent-2 muted">│   └─ Assess performance on the CSQA and StrategyQA benchmarks using chain-of-thought prompting.  (Fig. 7 · Table 4 · Sec. 4)</div>
+<div class="tree-line indent-1">└─ <strong>RQ3: How does chain-of-thought prompting facilitate symbolic reasoning?</strong></div>
+<div class="tree-line indent-2 muted">    └─ Evaluate performance on symbolic reasoning tasks such as last letter concatenation and coin flip.  (Fig. 8 · Table 5 · Sec. 5)</div>
+    </aside>
+
+    <div>
+      <div class="tabs">
+        <button class="tab active" data-tab="instruction">instruction.txt</button>
+        <button class="tab" data-tab="gt">instruction_gt.txt</button>
+        <button class="tab" data-tab="config">task_config.yaml</button>
+      </div>
+
+      <div class="tab-panel active" data-tab="instruction">
+        <pre><code>You are a research agent. Conduct research and experiment about the question: &quot;Does chain-of-thought prompting improve LLM reasoning on arithmetic, commonsense, and symbolic tasks?&quot;
+
+You have access to the following resources:
+
+Models:
+- text-ada-001 and text-babbage-001 and text-curie-001 and text-davinci-002 via API
+- Load with HuggingFace: google/paLM
+- Computational budget: 1000 API calls per model
+
+Datasets:
+- GSM8K: A benchmark of math word problems.
+  Loading code:
+    from datasets import load_dataset
+    dataset = load_dataset(&quot;openai/grade-school-math&quot;)
+- SVAMP: A dataset of math word problems with varying structures.
+  Loading code:
+    from datasets import load_dataset
+    dataset = load_dataset(&quot;arkilpatel/SVAMP&quot;)
+- ASDiv: A diverse dataset of math word problems.
+  Loading code:
+    from datasets import load_dataset
+    dataset = load_dataset(&quot;chaochun/nlu-asdiv-dataset&quot;)
+- AQuA: A dataset of algebraic word problems.
+  Loading code:
+    from datasets import load_dataset
+    dataset = load_dataset(&quot;deepmind/AQuA&quot;)
+- MAWPS: A math word problem repository.
+  Loading code:
+    from datasets import load_dataset
+    dataset = load_dataset(&quot;koncel-kedziorski/MAWPS&quot;)
+- CSQA: A commonsense question answering benchmark.
+  Loading code:
+    from datasets import load_dataset
+    dataset = load_dataset(&quot;commonsenseqa&quot;)
+- StrategyQA: A question answering benchmark requiring multi-hop reasoning.
+  Loading code:
+    from datasets import load_dataset
+    dataset = load_dataset(&quot;strategyqa&quot;)
+- SayCan: A dataset for instructing a robot.
+  Loading code:
+    from datasets import load_dataset
+    dataset = load_dataset(&quot;say-can&quot;)
+
+Experimental constraints:
+- Do NOT use web search
+- Run FULL end-to-end experiments
+
+Please design and execute experiments to investigate this research question. Document your experimental plan, run end-to-end experiments, and provide conclusions at different levels of detail.
+</code></pre>
+      </div>
+      <div class="tab-panel" data-tab="gt">
+        <pre><code>You are a research agent. Conduct research and experiment about the question: &quot;Does chain-of-thought prompting improve LLM reasoning on arithmetic, commonsense, and symbolic tasks?&quot;
+
+You have access to the following resources:
+
+Models:
+- text-ada-001 and text-babbage-001 and text-curie-001 and text-davinci-002 via API
+- Load with HuggingFace: google/paLM
+- Computational budget: 1000 API calls per model
+
+Datasets:
+- GSM8K: A benchmark of math word problems.
+  Loading code:
+    from datasets import load_dataset
+    dataset = load_dataset(&quot;openai/grade-school-math&quot;)
+- SVAMP: A dataset of math word problems with varying structures.
+  Loading code:
+    from datasets import load_dataset
+    dataset = load_dataset(&quot;arkilpatel/SVAMP&quot;)
+- ASDiv: A diverse dataset of math word problems.
+  Loading code:
+    from datasets import load_dataset
+    dataset = load_dataset(&quot;chaochun/nlu-asdiv-dataset&quot;)
+- AQuA: A dataset of algebraic word problems.
+  Loading code:
+    from datasets import load_dataset
+    dataset = load_dataset(&quot;deepmind/AQuA&quot;)
+- MAWPS: A math word problem repository.
+  Loading code:
+    from datasets import load_dataset
+    dataset = load_dataset(&quot;koncel-kedziorski/MAWPS&quot;)
+- CSQA: A commonsense question answering benchmark.
+  Loading code:
+    from datasets import load_dataset
+    dataset = load_dataset(&quot;commonsenseqa&quot;)
+- StrategyQA: A question answering benchmark requiring multi-hop reasoning.
+  Loading code:
+    from datasets import load_dataset
+    dataset = load_dataset(&quot;strategyqa&quot;)
+- SayCan: A dataset for instructing a robot.
+  Loading code:
+    from datasets import load_dataset
+    dataset = load_dataset(&quot;say-can&quot;)
+
+Experimental constraints:
+- Do NOT use web search
+- Run FULL end-to-end experiments
+
+Please design and execute experiments to investigate this research question. Document your experimental plan, run end-to-end experiments, and provide conclusions at different levels of detail.
+
+---
+
+## Experimental Design
+
+1. **Arithmetic Reasoning (GSM8K)**
+   - **Procedure**: Use the GSM8K dataset with 1,319 examples. Implement chain-of-thought prompting with 8 exemplars formatted as ⟨input, chain of thought, output⟩. Each exemplar should follow the structure shown in the paper, where the model is prompted to reason through the problem step-by-step.
+   - **What to Record**: Record the solve rate (percentage of correct answers) for each model. Capture the raw outputs and the generated chains of thought for analysis.
+   - **Correspondence**: Figure 2, Table 1, Section 3.2.
+
+2. **Arithmetic Reasoning (SVAMP)**
+   - **Procedure**: Use the SVAMP dataset with 1,000 examples. Apply the same chain-of-thought prompting strategy as in GSM8K, ensuring the exemplars are relevant to the dataset&#x27;s structure.
+   - **What to Record**: Record the solve rate for each model and the generated outputs.
+   - **Correspondence**: Figure 4, Table 2, Section 3.2.
+
+3. **Arithmetic Reasoning (ASDiv)**
+   - **Procedure**: Use the ASDiv dataset with 2,096 examples. Implement chain-of-thought prompting with 8 exemplars, ensuring they are tailored to the dataset&#x27;s diverse problems.
+   - **What to Record**: Record the solve rate and outputs.
+   - **Correspondence**: Figure 4, Table 2, Section 3.2.
+
+4. **Arithmetic Reasoning (AQuA)**
+   - **Procedure**: Use the AQuA dataset with 254 multiple-choice questions. Implement chain-of-thought prompting with 4 exemplars from the training set, formatted for multiple-choice responses.
+   - **What to Record**: Record the solve rate and outputs.
+   - **Correspondence**: Figure 4, Table 2, Section 3.2.
+
+5. **Arithmetic Reasoning (MAWPS)**
+   - **Procedure**: Use the MAWPS dataset with 562 examples. Apply chain-of-thought prompting with 8 exemplars, ensuring they cover various arithmetic operations.
+   - **What to Record**: Record the solve rate and outputs.
+   - **Correspondence**: Figure 4, Table 2, Section 3.2.
+
+6. **Commonsense Reasoning (CSQA)**
+   - **Procedure**: Use the CSQA dataset. Implement chain-of-thought prompting with randomly selected examples from the training set, ensuring the prompts are relevant to commonsense reasoning.
+   - **What to Record**: Record the solve rate and outputs.
+   - **Correspondence**: Figure 7, Table 4, Section 4.
+
+7. **Commonsense Reasoning (StrategyQA)**
+   - **Procedure**: Use the StrategyQA dataset. Apply chain-of-thought prompting with examples from the training set, formatted for multi-hop reasoning.
+   - **What to Record**: Record the solve rate and outputs.
+   - **Correspondence**: Figure 7, Table 4, Section 4.
+
+8. **Symbolic Reasoning (Last Letter Concatenation)**
+   - **Procedure**: Use the last letter concatenation task. Implement chain-of-thought prompting with 8 exemplars, ensuring they guide the model through the concatenation process.
+   - **What to Record**: Record the solve rate and outputs.
+   - **Correspondence**: Figure 8, Table 5, Section 5.
+
+9. **Symbolic Reasoning (Coin Flip)**
+   - **Procedure**: Use the coin flip task. Apply chain-of-thought prompting with 8 exemplars, ensuring they detail the reasoning behind the state of the coin.
+   - **What to Record**: Record the solve rate and outputs.
+   - **Correspondence**: Figure 8, Table 5, Section 5.
+
+## Evaluation Details
+
+- **Metrics**: 
+  - Solve rate (%) = (Number of correct answers / Total number of questions) * 100.
+  - Use the `accuracy_score` function from the `sklearn.metrics` library to compute the solve rate.
+
+- **Normalization/Pre-processing**: 
+  - Ensure that all model outputs are stripped of leading/trailing whitespace and converted to a consistent case (e.g., lowercase) before scoring.
+
+- **Aggregation Strategy**: 
+  - Calculate the solve rate per sample, then aggregate results per condition (dataset/model) to compute overall performance metrics.
+
+## Implementation Notes
+
+- **Key Pitfalls**: 
+  - Ensure that the chain-of-thought exemplars are correctly formatted and relevant to the specific dataset to avoid misleading the model.
+  - Be aware of the potential for models to generate incorrect reasoning paths, which may lead to correct answers by chance.
+
+- **Prompt Templates**: 
+  - Use the specific prompt templates provided in the paper for each task, ensuring that the structure ⟨input, chain of thought, output⟩ is maintained.
+
+- **Order of Operations**: 
+  - Follow the sequence of tasks as outlined in the experimental design, ensuring that each model is evaluated under the same conditions for consistency.
+</code></pre>
+      </div>
+      <div class="tab-panel" data-tab="config">
+        <pre><code>task_id: cot_prompting
+research_question: Does chain-of-thought prompting improve LLM reasoning on arithmetic, commonsense, and symbolic tasks?
+models:
+  api:
+    - text-ada-001
+    - text-babbage-001
+    - text-curie-001
+    - text-davinci-002
+  huggingface:
+    - google/paLM
+api_key_var: OPENAI_API_KEY
+budget_per_model: 1000
+datasets:
+  - name: &quot;GSM8K&quot;
+    source: huggingface
+    loader: |
+      from datasets import load_dataset
+      dataset = load_dataset(&quot;openai/grade-school-math&quot;)
+    description: &quot;A benchmark of math word problems.&quot;
+  - name: &quot;SVAMP&quot;
+    source: huggingface
+    loader: |
+      from datasets import load_dataset
+      dataset = load_dataset(&quot;arkilpatel/SVAMP&quot;)
+    description: &quot;A dataset of math word problems with varying structures.&quot;
+  - name: &quot;ASDiv&quot;
+    source: huggingface
+    loader: |
+      from datasets import load_dataset
+      dataset = load_dataset(&quot;chaochun/nlu-asdiv-dataset&quot;)
+    description: &quot;A diverse dataset of math word problems.&quot;
+  - name: &quot;AQuA&quot;
+    source: huggingface
+    loader: |
+      from datasets import load_dataset
+      dataset = load_dataset(&quot;deepmind/AQuA&quot;)
+    description: &quot;A dataset of algebraic word problems.&quot;
+  - name: &quot;MAWPS&quot;
+    source: huggingface
+    loader: |
+      from datasets import load_dataset
+      dataset = load_dataset(&quot;koncel-kedziorski/MAWPS&quot;)
+    description: &quot;A math word problem repository.&quot;
+  - name: &quot;CSQA&quot;
+    source: huggingface
+    loader: |
+      from datasets import load_dataset
+      dataset = load_dataset(&quot;commonsenseqa&quot;)
+    description: &quot;A commonsense question answering benchmark.&quot;
+  - name: &quot;StrategyQA&quot;
+    source: huggingface
+    loader: |
+      from datasets import load_dataset
+      dataset = load_dataset(&quot;strategyqa&quot;)
+    description: &quot;A question answering benchmark requiring multi-hop reasoning.&quot;
+  - name: &quot;SayCan&quot;
+    source: huggingface
+    loader: |
+      from datasets import load_dataset
+      dataset = load_dataset(&quot;say-can&quot;)
+    description: &quot;A dataset for instructing a robot.&quot;
+constraints:
+  - &quot;Do NOT use web search&quot;
+  - &quot;Run FULL end-to-end experiments&quot;</code></pre>
+      </div>
+
+      <div class="actions">
+        <a class="btn btn-primary" href="bundle.zip" download>↓ Download bundle (.zip)</a>
+        <a class="btn" href="instruction.txt">View raw instruction.txt</a>
+        <a class="btn" href="instruction_gt.txt">View raw instruction_gt.txt</a>
+        <a class="btn" href="task_config.yaml">View raw task_config.yaml</a>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container footer-inner">
+    <span>Paper2Bench · v0.3.0 · MIT</span>
+    <span>
+      <a href="https://github.com/AbhayAnandUCSD/Paper2Bench">GitHub</a> ·
+      <a href="../../#install">Install</a>
+    </span>
+  </div>
+</footer>
+
+<script src="../../scripts.js"></script>
+</body>
+</html>

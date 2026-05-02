@@ -1,0 +1,26 @@
+You are a research agent. Conduct research and experiment about the question: "Does higher-body-order equivariant message passing improve accuracy and data efficiency for ML interatomic potentials?"
+
+You have access to the following resources:
+
+Models:
+- MACE via API
+- Load with HuggingFace: mace-mp/MACE-MP-0
+- Computational budget: 10000 API calls per model
+
+Datasets:
+- rMD17 dataset: Contains molecular dynamics trajectories of small organic molecules.
+  Loading code:
+    from pymatgen import MPRester
+    mpr = MPRester("YOUR_API_KEY")
+    data = mpr.query({"task_id": {"$in": ["rMD17"]}}, ["structure", "energy", "forces"])
+- 3BPA dataset: DFT train test splits of a flexible drug-like organic molecule.
+  Loading code:
+    from pymatgen import MPRester
+    mpr = MPRester("YOUR_API_KEY")
+    data = mpr.query({"task_id": {"$in": ["3BPA"]}}, ["structure", "energy", "forces"])
+
+Experimental constraints:
+- Do NOT use web search
+- Run FULL end-to-end experiments
+
+Please design and execute experiments to investigate this research question. Document your experimental plan, run end-to-end experiments, and provide conclusions at different levels of detail.

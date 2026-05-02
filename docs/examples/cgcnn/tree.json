@@ -1,0 +1,127 @@
+{
+  "paper": {
+    "title": "Crystal Graph Convolutional Neural Networks for an Accurate and Interpretable Prediction of Material Properties",
+    "authors": [
+      "Tian Xie",
+      "Jeffrey C. Grossman"
+    ],
+    "venue": "Department of Materials Science and Engineering, Massachusetts Institute of Technology",
+    "year": "2018"
+  },
+  "problem_tree": {
+    "node": "Root: Development of a machine learning framework for predicting material properties from crystal structures",
+    "type": "root",
+    "description": "The paper presents a crystal graph convolutional neural network (CGCNN) framework that learns material properties directly from the atomic connectivity in crystal structures, aiming for both accuracy and interpretability.",
+    "evidence": "The abstract and introduction discuss the need for a new method to predict material properties accurately and interpretably.",
+    "children": [
+      {
+        "node": "RQ1: How accurately can the CGCNN predict various material properties compared to DFT calculations?",
+        "type": "research_question",
+        "description": "This question investigates the predictive performance of the CGCNN framework against established DFT calculations for different material properties.",
+        "evidence": "The results section and Table I summarize the prediction performance of the CGCNN for various properties.",
+        "children": [
+          {
+            "type": "leaf",
+            "task": "Predict formation energy per atom using CGCNN",
+            "dataset": [
+              "Materials Project database with 28046 training data points"
+            ],
+            "model_or_method": [
+              "CGCNN with convolution function Eq. 5"
+            ],
+            "metrics": [
+              "Mean Absolute Error (MAE) of 0.039 eV/atom"
+            ],
+            "protocol_or_setup": "Training with 60% of data, validation with 20%, and testing with 20%",
+            "evidence": {
+              "figure": "Fig. 2(b)",
+              "table": "Table I",
+              "section": "Results"
+            },
+            "conclusion": "The CGCNN achieves a MAE of 0.039 eV/atom for formation energy, demonstrating high accuracy.",
+            "status": ""
+          },
+          {
+            "type": "leaf",
+            "task": "Predict other material properties (absolute energy, band gap, etc.) using CGCNN",
+            "dataset": [
+              "Materials Project database with various training data points for each property"
+            ],
+            "model_or_method": [
+              "CGCNN with convolution function Eq. 5"
+            ],
+            "metrics": [
+              "MAE for absolute energy: 0.072 eV/atom, band gap: 0.388 eV"
+            ],
+            "protocol_or_setup": "Similar training and validation setup as above",
+            "evidence": {
+              "figure": "Fig. S4",
+              "table": "Table I",
+              "section": "Results"
+            },
+            "conclusion": "The CGCNN provides reliable predictions for multiple properties, with MAEs close to DFT accuracy.",
+            "status": ""
+          }
+        ]
+      },
+      {
+        "node": "RQ2: How does the CGCNN framework provide interpretability in material property predictions?",
+        "type": "research_question",
+        "description": "This question explores how the CGCNN allows for the extraction of local chemical environment contributions to global properties.",
+        "evidence": "The discussion section highlights the interpretability aspect of the CGCNN framework.",
+        "children": [
+          {
+            "type": "leaf",
+            "task": "Extract site energies in perovskites from total energy above hull",
+            "dataset": [
+              "Database of 18928 perovskite crystals"
+            ],
+            "model_or_method": [
+              "CGCNN with linear pooling"
+            ],
+            "metrics": [
+              "Mean Absolute Error (MAE) of 0.130 eV/atom for site energy predictions"
+            ],
+            "protocol_or_setup": "Using total energy above hull data for training",
+            "evidence": {
+              "figure": "Fig. 3(b)",
+              "table": "Table V",
+              "section": "Results"
+            },
+            "conclusion": "The CGCNN allows for the extraction of site-specific energies, providing insights into material stability.",
+            "status": ""
+          }
+        ]
+      },
+      {
+        "node": "RQ3: What are the implications of the CGCNN framework for materials design and discovery?",
+        "type": "research_question",
+        "description": "This question assesses how the insights gained from the CGCNN can guide the design of new materials, particularly perovskites.",
+        "evidence": "The conclusion discusses the potential for high-throughput screening and materials discovery.",
+        "children": [
+          {
+            "type": "leaf",
+            "task": "Identify potentially synthesizable perovskites using CGCNN insights",
+            "dataset": [
+              "378 perovskite candidates with energies above hull < 0.2 eV/atom"
+            ],
+            "model_or_method": [
+              "Combinational search based on CGCNN predictions"
+            ],
+            "metrics": [
+              "Identification of 33 new perovskites"
+            ],
+            "protocol_or_setup": "Using insights from site energy predictions to guide searches",
+            "evidence": {
+              "figure": "Fig. 3(c, d)",
+              "table": "Table V",
+              "section": "Results"
+            },
+            "conclusion": "The CGCNN framework significantly reduces the search space for new materials, enhancing discovery efficiency.",
+            "status": ""
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Paper2Bench — agent benchmarks from academic papers</title>
+  <meta name="description" content="Convert academic papers into reproducible benchmark tasks for AI coding agents. Drop a paper, get a research question, models, datasets, and a ground-truth experimental plan.">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<nav class="nav">
+  <div class="container nav-inner">
+    <a class="nav-brand" href="./"><span class="dot">●</span> paper2bench</a>
+    <div class="nav-links">
+      <a href="#examples">examples</a>
+      <a href="#install">install</a>
+      <a href="https://github.com/AbhayAnandUCSD/Paper2Bench">github</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="container">
+    <h1>Convert academic papers into agent benchmarks.</h1>
+    <p class="lede">
+      Drop a paper. Get back a research question, the models and datasets the paper used, and a ground-truth experimental plan — ready to hand to a coding agent. ~2-3&nbsp;minutes per paper.
+    </p>
+    <div class="hero-meta">
+      <span class="pill">v0.3.0</span>
+      <span>Python SDK + CLI · OpenAI &amp; Anthropic supported</span>
+      <span>·</span>
+      <span>Built on the Paper2Bench pipeline</span>
+    </div>
+  </div>
+</header>
+
+<section class="block">
+  <div class="container">
+    <p class="section-label">What you get from a paper</p>
+    <h2>One paper in, one benchmark task out.</h2>
+    <p class="subtitle">Every paper produces a problem tree (Root → Research Questions → Experiments) plus four artifacts: a parsed config, an agent-facing instruction, a ground-truth plan for evaluators, and the original PDF.</p>
+
+    <div class="anchor-grid">
+      <div class="tree-block">
+        <div class="tree-label">Problem tree — CGCNN (example)</div>
+<div class="tree-line"><strong>📄 Root</strong>: Predict bulk material properties from crystal structure</div>
+<div class="tree-line indent-1">├─ <strong>RQ1</strong>: Can a graph CNN match DFT accuracy on formation energy?</div>
+<div class="tree-line indent-2 muted">│   └─ Exp: train on Materials Project, MAE on test set (Fig 2b, Tbl I)</div>
+<div class="tree-line indent-1">├─ <strong>RQ2</strong>: Does the model generalize to elastic moduli?</div>
+<div class="tree-line indent-2 muted">│   └─ Exp: bulk &amp; shear modulus on 2,041 structures (Fig S5)</div>
+<div class="tree-line indent-1">└─ <strong>RQ3</strong>: Can per-atom site energies be extracted?</div>
+<div class="tree-line indent-2 muted">    └─ Exp: 18,928 perovskite crystals (Fig 3b)</div>
+      </div>
+      <div class="outputs">
+        <p style="margin: 0; color: var(--text-muted);">Each run writes to <code>output/tasks/&lt;task_id&gt;/</code>:</p>
+        <ul>
+          <li><strong>tree.json</strong> — the parsed problem tree</li>
+          <li><strong>task_config.yaml</strong> — models, datasets, budget, constraints</li>
+          <li><strong>instruction.txt</strong> — what the agent sees (no leaked methodology)</li>
+          <li><strong>instruction_gt.txt</strong> — ground-truth experimental plan, for evaluators</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="block" id="examples">
+  <div class="container">
+    <p class="section-label">Examples</p>
+    <h2>Five validated benchmarks across three domains.</h2>
+    <p class="subtitle">Each card opens a detail page with the parsed tree, the rendered instruction, the ground-truth plan, and a downloadable bundle. These are 5 of 30 papers we ran end-to-end during validation.</p>
+
+    <div class="examples">
+
+      <a class="example-card" href="examples/cgcnn/">
+        <div class="card-header">
+          <div>
+            <div class="card-title">CGCNN</div>
+            <div class="card-meta">Xie &amp; Grossman, 2018 · materials</div>
+          </div>
+          <span class="card-tag">novel_architecture</span>
+        </div>
+        <p class="card-rq">Can a graph convolutional network predict bulk material properties directly from crystal structure?</p>
+        <div class="card-tree">├─ formation energy
+├─ band gap
+├─ elastic moduli
+└─ perovskite site E</div>
+      </a>
+
+      <a class="example-card" href="examples/dnabert2/">
+        <div class="card-header">
+          <div>
+            <div class="card-title">DNABERT-2</div>
+            <div class="card-meta">Zhou et al., 2023 · biology</div>
+          </div>
+          <span class="card-tag">novel_architecture</span>
+        </div>
+        <p class="card-rq">Does byte-pair tokenization and multi-species pretraining improve DNA foundation model quality at lower compute?</p>
+        <div class="card-tree">├─ BPE vocab sweep
+├─ GUE benchmark eval
+└─ FLOPs / accuracy</div>
+      </a>
+
+      <a class="example-card" href="examples/cot_prompting/">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Chain-of-Thought</div>
+            <div class="card-meta">Wei et al., 2022 · ml_nlp</div>
+          </div>
+          <span class="card-tag">llm_evaluation</span>
+        </div>
+        <p class="card-rq">Does chain-of-thought prompting improve LLM reasoning on arithmetic, commonsense, and symbolic tasks?</p>
+        <div class="card-tree">├─ arithmetic (GSM8K, …)
+├─ commonsense (CSQA)
+└─ symbolic reasoning</div>
+      </a>
+
+      <a class="example-card" href="examples/lost_in_the_middle/">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Lost in the Middle</div>
+            <div class="card-meta">Liu et al., 2023 · ml_nlp</div>
+          </div>
+          <span class="card-tag">llm_evaluation</span>
+        </div>
+        <p class="card-rq">Do LLMs degrade when relevant information is placed in the middle of long input contexts?</p>
+        <div class="card-tree">├─ multi-doc QA position
+└─ key-value retrieval</div>
+      </a>
+
+      <a class="example-card" href="examples/mace_potential/">
+        <div class="card-header">
+          <div>
+            <div class="card-title">MACE</div>
+            <div class="card-meta">Batatia et al., 2022 · materials</div>
+          </div>
+          <span class="card-tag">novel_architecture</span>
+        </div>
+        <p class="card-rq">Does higher-body-order equivariant message passing improve accuracy and data efficiency for ML interatomic potentials?</p>
+        <div class="card-tree">├─ 3BPA benchmark
+├─ rMD17 learning curves
+└─ extrapolation regimes</div>
+      </a>
+
+    </div>
+  </div>
+</section>
+
+<section class="block" id="install">
+  <div class="container">
+    <p class="section-label">Install</p>
+    <h2>Use it from Python or the CLI.</h2>
+    <p class="subtitle">The repo is private; install from GitHub with a personal access token (PAT). Set <code>OPENAI_API_KEY</code> (or <code>ANTHROPIC_API_KEY</code>) in <code>.env</code> or your environment.</p>
+
+    <div class="install-grid">
+
+      <div class="install-card">
+        <h3>Install from GitHub (private repo)</h3>
+        <div class="copy-block">
+          <pre><code>pip install "git+https://&lt;PAT&gt;@github.com/AbhayAnandUCSD/Paper2Bench.git@v0.3.0"</code></pre>
+          <button class="copy-btn">copy</button>
+        </div>
+        <p style="font-size: 13px; color: var(--text-muted); margin: 8px 0 12px;">For Claude support add the optional extra:</p>
+        <div class="copy-block">
+          <pre><code>pip install "paper2bench[anthropic] @ git+https://&lt;PAT&gt;@github.com/AbhayAnandUCSD/Paper2Bench.git@v0.3.0"</code></pre>
+          <button class="copy-btn">copy</button>
+        </div>
+      </div>
+
+      <div class="install-card">
+        <h3>Run the full pipeline (CLI)</h3>
+        <div class="copy-block">
+<pre><code>paper2bench run \
+  --task-id reversal_curse \
+  --query "The Reversal Curse Berglund" \
+  --research-question "If an LLM is fine-tuned on 'A is B,' does it learn 'B is A'?" \
+  --output-dir ./output/ \
+  --auto</code></pre>
+          <button class="copy-btn">copy</button>
+        </div>
+        <p style="font-size: 13px; color: var(--text-muted); margin: 8px 0 0;">
+          Other subcommands: <code>download</code>, <code>parse</code>, <code>classify</code>, <code>extract</code>, <code>render</code>, <code>plan</code>, <code>verify</code>, <code>specextract</code>, <code>generate</code>.
+        </p>
+      </div>
+
+    </div>
+
+    <div style="margin-top: 28px;">
+      <h3 style="font-size: 16px; margin: 0 0 12px;">Or use the Python SDK</h3>
+      <div class="copy-block">
+<pre><code>import paper2bench
+
+result = paper2bench.run(
+    pdf="paper.pdf",
+    research_question="Does X improve Y?",
+    output_dir="./output",
+    # paper_type=                     # auto-classified if omitted
+    # api_key="sk-..."                # or use OPENAI_API_KEY / ANTHROPIC_API_KEY env
+)
+
+print(result.paper_type)               # llm_evaluation | novel_architecture | empirical_study
+print(result.instruction_path)         # ./output/tasks/&lt;task_id&gt;/instruction.txt
+print(result.instruction_gt_path)      # ground-truth plan
+print(result.config)                   # parsed task_config.yaml as dict</code></pre>
+        <button class="copy-btn">copy</button>
+      </div>
+
+      <p style="font-size: 13.5px; color: var(--text-muted); margin: 14px 0 0;">
+        Stage functions are also importable for fine-grained control:
+        <code>parse_paper_to_tree</code>, <code>classify_paper</code>, <code>extract_yaml_from_pdf</code>, <code>render_instruction</code>, <code>generate_supplementary_plan</code>, <code>build_instruction_gt</code>, <code>verify_instruction_gt</code>, <code>extract_paper_spec</code>, <code>generate_variants</code>, <code>chat</code>.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section class="block">
+  <div class="container">
+    <p class="section-label">How it works</p>
+    <h2>Five LLM-driven stages, ~2-3 minutes end-to-end.</h2>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-top: 24px;">
+      <div style="padding: 16px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px;">
+        <div style="font-size: 11px; color: var(--text-faint); margin-bottom: 4px;">STAGE 1</div>
+        <div style="font-weight: 600; margin-bottom: 6px;">parse</div>
+        <div style="font-size: 13px; color: var(--text-muted);">PDF → 3-level problem tree (Root → Research Questions → Experiments).</div>
+      </div>
+      <div style="padding: 16px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px;">
+        <div style="font-size: 11px; color: var(--text-faint); margin-bottom: 4px;">STAGE 2</div>
+        <div style="font-weight: 600; margin-bottom: 6px;">classify</div>
+        <div style="font-size: 13px; color: var(--text-muted);">Auto-detect paper archetype to pick the right extraction prompt.</div>
+      </div>
+      <div style="padding: 16px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px;">
+        <div style="font-size: 11px; color: var(--text-faint); margin-bottom: 4px;">STAGE 3</div>
+        <div style="font-weight: 600; margin-bottom: 6px;">extract</div>
+        <div style="font-size: 13px; color: var(--text-muted);">PDF + RQ → <code>task_config.yaml</code> (HuggingFace-validated).</div>
+      </div>
+      <div style="padding: 16px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px;">
+        <div style="font-size: 11px; color: var(--text-faint); margin-bottom: 4px;">STAGE 4</div>
+        <div style="font-weight: 600; margin-bottom: 6px;">render</div>
+        <div style="font-size: 13px; color: var(--text-muted);">Template the YAML into <code>instruction.txt</code> for the agent.</div>
+      </div>
+      <div style="padding: 16px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px;">
+        <div style="font-size: 11px; color: var(--text-faint); margin-bottom: 4px;">STAGE 5</div>
+        <div style="font-weight: 600; margin-bottom: 6px;">plan</div>
+        <div style="font-size: 13px; color: var(--text-muted);">Build <code>instruction_gt.txt</code> — the ground-truth experimental plan.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container footer-inner">
+    <span>Paper2Bench · v0.3.0 · MIT</span>
+    <span>
+      <a href="https://github.com/AbhayAnandUCSD/Paper2Bench">GitHub</a> ·
+      <a href="https://github.com/AbhayAnandUCSD/Paper2Bench/issues">Issues</a>
+    </span>
+  </div>
+</footer>
+
+<script src="scripts.js"></script>
+</body>
+</html>

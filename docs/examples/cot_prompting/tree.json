@@ -1,0 +1,115 @@
+{
+  "paper": {
+    "title": "Chain-of-Thought Prompting Elicits Reasoning in Large Language Models",
+    "authors": [
+      "Jason Wei",
+      "Xuezhi Wang",
+      "Dale Schuurmans",
+      "Maarten Bosma",
+      "Brian Ichter",
+      "Fei Xia",
+      "Ed H. Chi",
+      "Quoc V. Le",
+      "Denny Zhou"
+    ],
+    "venue": "36th Conference on Neural Information Processing Systems (NeurIPS 2022)",
+    "year": "2022"
+  },
+  "problem_tree": {
+    "node": "Root: Improving reasoning abilities of large language models through chain-of-thought prompting",
+    "type": "root",
+    "description": "This paper investigates how chain-of-thought prompting can enhance the reasoning capabilities of large language models across various reasoning tasks.",
+    "evidence": "Abstract and Introduction sections of the paper.",
+    "children": [
+      {
+        "node": "RQ1: How does chain-of-thought prompting affect performance on arithmetic reasoning tasks?",
+        "type": "research_question",
+        "description": "This question investigates the impact of chain-of-thought prompting on the performance of language models in solving arithmetic word problems.",
+        "evidence": "Sections 3 and 3.2 of the paper.",
+        "children": [
+          {
+            "type": "leaf",
+            "task": "Evaluate performance on the GSM8K benchmark using chain-of-thought prompting.",
+            "dataset": [
+              "GSM8K"
+            ],
+            "model_or_method": [
+              "PaLM 540B"
+            ],
+            "metrics": [
+              "solve rate (%)"
+            ],
+            "protocol_or_setup": "Chain-of-thought prompting with 8 exemplars.",
+            "evidence": {
+              "figure": "Fig. 2",
+              "table": "Table 1",
+              "section": "Sec. 3.2"
+            },
+            "conclusion": "Chain-of-thought prompting significantly improves performance on GSM8K.",
+            "status": ""
+          }
+        ]
+      },
+      {
+        "node": "RQ2: What is the effect of chain-of-thought prompting on commonsense reasoning tasks?",
+        "type": "research_question",
+        "description": "This question explores how chain-of-thought prompting influences the performance of language models on commonsense reasoning tasks.",
+        "evidence": "Section 4 of the paper.",
+        "children": [
+          {
+            "type": "leaf",
+            "task": "Assess performance on the CSQA and StrategyQA benchmarks using chain-of-thought prompting.",
+            "dataset": [
+              "CSQA",
+              "StrategyQA"
+            ],
+            "model_or_method": [
+              "PaLM 540B"
+            ],
+            "metrics": [
+              "solve rate (%)"
+            ],
+            "protocol_or_setup": "Chain-of-thought prompting with exemplars.",
+            "evidence": {
+              "figure": "Fig. 7",
+              "table": "Table 4",
+              "section": "Sec. 4"
+            },
+            "conclusion": "Chain-of-thought prompting improves performance on commonsense reasoning tasks.",
+            "status": ""
+          }
+        ]
+      },
+      {
+        "node": "RQ3: How does chain-of-thought prompting facilitate symbolic reasoning?",
+        "type": "research_question",
+        "description": "This question investigates the role of chain-of-thought prompting in enhancing symbolic reasoning capabilities of language models.",
+        "evidence": "Section 5 of the paper.",
+        "children": [
+          {
+            "type": "leaf",
+            "task": "Evaluate performance on symbolic reasoning tasks such as last letter concatenation and coin flip.",
+            "dataset": [
+              "Last Letter Concatenation",
+              "Coin Flip"
+            ],
+            "model_or_method": [
+              "PaLM 540B"
+            ],
+            "metrics": [
+              "solve rate (%)"
+            ],
+            "protocol_or_setup": "Chain-of-thought prompting with exemplars.",
+            "evidence": {
+              "figure": "Fig. 8",
+              "table": "Table 5",
+              "section": "Sec. 5"
+            },
+            "conclusion": "Chain-of-thought prompting enables better performance in symbolic reasoning tasks.",
+            "status": ""
+          }
+        ]
+      }
+    ]
+  }
+}

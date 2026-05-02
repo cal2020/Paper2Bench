@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Crystal Graph Convolutional Neural Networks for an Accurate and Interpretable Prediction of Material Properties — Paper2Bench example</title>
+  <link rel="stylesheet" href="../../styles.css">
+</head>
+<body>
+
+<nav class="nav">
+  <div class="container nav-inner">
+    <a class="nav-brand" href="../../"><span class="dot">●</span> paper2bench</a>
+    <div class="nav-links">
+      <a href="../../#examples">examples</a>
+      <a href="../../#install">install</a>
+      <a href="https://github.com/AbhayAnandUCSD/Paper2Bench">github</a>
+    </div>
+  </div>
+</nav>
+
+<header class="example-header">
+  <div class="container">
+    <div class="crumb"><a href="../../#examples">← back to examples</a></div>
+    <h1>Crystal Graph Convolutional Neural Networks for an Accurate and Interpretable Prediction of Material Properties</h1>
+    <div class="authors">Tian Xie et al., 2018 · materials · <span style="opacity:0.85">novel_architecture</span></div>
+    <div class="rq-callout"><strong>Research question:</strong> Can a graph convolutional network predict bulk material properties directly from crystal structure?</div>
+  </div>
+</header>
+
+<div class="container">
+  <div class="example-body">
+
+    <aside class="tree-rail">
+      <div class="tree-label">Problem tree</div>
+      <div class="tree-line"><strong>📄 Root: Development of a machine learning framework for predicting material properties from crystal structures</strong></div>
+<div class="tree-line indent-1">├─ <strong>RQ1: How accurately can the CGCNN predict various material properties compared to DFT calculations?</strong></div>
+<div class="tree-line indent-2 muted">│   ├─ Predict formation energy per atom using CGCNN  (Fig. 2(b) · Table I · Results)</div>
+<div class="tree-line indent-2 muted">│   └─ Predict other material properties (absolute energy, band gap, etc.) using CGCNN  (Fig. S4 · Table I · Results)</div>
+<div class="tree-line indent-1">├─ <strong>RQ2: How does the CGCNN framework provide interpretability in material property predictions?</strong></div>
+<div class="tree-line indent-2 muted">│   └─ Extract site energies in perovskites from total energy above hull  (Fig. 3(b) · Table V · Results)</div>
+<div class="tree-line indent-1">└─ <strong>RQ3: What are the implications of the CGCNN framework for materials design and discovery?</strong></div>
+<div class="tree-line indent-2 muted">    └─ Identify potentially synthesizable perovskites using CGCNN insights  (Fig. 3(c, d) · Table V · Results)</div>
+    </aside>
+
+    <div>
+      <div class="tabs">
+        <button class="tab active" data-tab="instruction">instruction.txt</button>
+        <button class="tab" data-tab="gt">instruction_gt.txt</button>
+        <button class="tab" data-tab="config">task_config.yaml</button>
+      </div>
+
+      <div class="tab-panel active" data-tab="instruction">
+        <pre><code>You are a research agent. Conduct research and experiment about the question: &quot;Can a graph convolutional network predict bulk material properties directly from crystal structure?&quot;
+
+You have access to the following resources:
+
+Models:
+- CGCNN via API
+- Load with HuggingFace: txie-93/cgcnn
+- Computational budget: 10000 API calls per model
+
+Datasets:
+- Materials Project database: Contains 46744 inorganic crystals with various structure types and compositions.
+  Loading code:
+    from pymatgen import MPRester
+    mpr = MPRester(&quot;YOUR_API_KEY&quot;)
+    data = mpr.query(criteria={&quot;nelements&quot;: {&quot;$lte&quot;: 7}}, properties=[&quot;material_id&quot;, &quot;formation_energy_per_atom&quot;, &quot;structure&quot;])
+- Perovskite database: Includes 18928 perovskite crystals with energy above hull data.
+  Loading code:
+    import pandas as pd
+    perovskite_data = pd.read_csv(&quot;perovskite_data.csv&quot;)
+
+Experimental constraints:
+- Do NOT use web search
+- Run FULL end-to-end experiments
+
+Please design and execute experiments to investigate this research question. Document your experimental plan, run end-to-end experiments, and provide conclusions at different levels of detail.
+</code></pre>
+      </div>
+      <div class="tab-panel" data-tab="gt">
+        <pre><code>You are a research agent. Conduct research and experiment about the question: &quot;Can a graph convolutional network predict bulk material properties directly from crystal structure?&quot;
+
+You have access to the following resources:
+
+Models:
+- CGCNN via API
+- Load with HuggingFace: txie-93/cgcnn
+- Computational budget: 10000 API calls per model
+
+Datasets:
+- Materials Project database: Contains 46744 inorganic crystals with various structure types and compositions.
+  Loading code:
+    from pymatgen import MPRester
+    mpr = MPRester(&quot;YOUR_API_KEY&quot;)
+    data = mpr.query(criteria={&quot;nelements&quot;: {&quot;$lte&quot;: 7}}, properties=[&quot;material_id&quot;, &quot;formation_energy_per_atom&quot;, &quot;structure&quot;])
+- Perovskite database: Includes 18928 perovskite crystals with energy above hull data.
+  Loading code:
+    import pandas as pd
+    perovskite_data = pd.read_csv(&quot;perovskite_data.csv&quot;)
+
+Experimental constraints:
+- Do NOT use web search
+- Run FULL end-to-end experiments
+
+Please design and execute experiments to investigate this research question. Document your experimental plan, run end-to-end experiments, and provide conclusions at different levels of detail.
+
+---
+
+## Experimental Design
+
+1. **Task 1: Predict Formation Energy per Atom**
+   - **Procedure**: Use the Materials Project database with 28046 training data points. Train the CGCNN model using the convolution function defined in Eq. 5. The training set will consist of 60% of the data, with 20% for validation and 20% for testing.
+   - **What to Record**: Mean Absolute Error (MAE) of predicted formation energy per atom compared to DFT values.
+   - **Correspondence**: Figure 2(b), Table I, Section Results.
+
+2. **Task 2: Predict Absolute Energy**
+   - **Procedure**: Utilize the same Materials Project database with 28046 training data points. Train the CGCNN model with the same setup as Task 1.
+   - **What to Record**: MAE for absolute energy predictions.
+   - **Correspondence**: Table I, Section Results.
+
+3. **Task 3: Predict Band Gap**
+   - **Procedure**: Use the Materials Project database with 16458 training data points. Train the CGCNN model with the convolution function defined in Eq. 5.
+   - **What to Record**: MAE for band gap predictions.
+   - **Correspondence**: Table I, Section Results.
+
+4. **Task 4: Predict Fermi Energy**
+   - **Procedure**: Train the CGCNN model using 28046 training data points from the Materials Project database.
+   - **What to Record**: MAE for Fermi energy predictions.
+   - **Correspondence**: Table I, Section Results.
+
+5. **Task 5: Predict Bulk Moduli**
+   - **Procedure**: Use 2041 training data points from the Materials Project database. Train the CGCNN model with the convolution function defined in Eq. 5.
+   - **What to Record**: MAE for bulk modulus predictions.
+   - **Correspondence**: Table I, Section Results.
+
+6. **Task 6: Predict Shear Moduli**
+   - **Procedure**: Train the CGCNN model using 2041 training data points from the Materials Project database.
+   - **What to Record**: MAE for shear modulus predictions.
+   - **Correspondence**: Table I, Section Results.
+
+7. **Task 7: Predict Poisson Ratio**
+   - **Procedure**: Use the same 2041 training data points from the Materials Project database. Train the CGCNN model with the convolution function defined in Eq. 5.
+   - **What to Record**: MAE for Poisson ratio predictions.
+   - **Correspondence**: Table I, Section Results.
+
+8. **Task 8: Extract Site Energies in Perovskites**
+   - **Procedure**: Use the perovskite database containing 18928 crystals. Train the CGCNN model with a linear pooling approach to predict total energy above hull.
+   - **What to Record**: MAE of site energy predictions for perovskites.
+   - **Correspondence**: Figure 3(b), Table V, Section Results.
+
+9. **Task 9: Identify Potentially Synthesizable Perovskites**
+   - **Procedure**: Apply insights from site energy predictions to perform a combinational search for perovskites with energies above hull &lt; 0.2 eV/atom.
+   - **What to Record**: Number of new perovskites identified.
+   - **Correspondence**: Figure 3(c, d), Table V, Section Results.
+
+## Evaluation Details
+
+- **Metrics Definitions**:
+  - **Mean Absolute Error (MAE)**: Calculated as the average of the absolute differences between predicted and actual values for each property.
+  - **Formation Energy Reference State**: The reference state for formation energy is based on DFT calculated values from the Materials Project.
+
+- **Post-Processing**:
+  - For each property, ensure that the predictions are averaged over the test set to obtain the final MAE.
+  - Check for k-point convergence and ensure that the results are smoothed if necessary.
+
+- **Aggregation Strategy**:
+  - Calculate MAE for each structure, then aggregate results per composition, and finally compute an overall MAE across all properties.
+
+## Implementation Notes
+
+- **Key Pitfalls**:
+  - Ensure that the training, validation, and test splits are correctly implemented to avoid data leakage.
+  - Monitor convergence of the CGCNN during training; adjust learning rates and regularization as necessary to prevent overfitting.
+
+- **Input-File Conventions**:
+  - Follow the input conventions specified in the CGCNN documentation for defining atom and bond feature vectors.
+  - Ensure that the output files are parsed correctly to extract the required observables.
+
+- **Order of Operations**:
+  - Train the model on the training set before validating on the validation set.
+  - Use the best-performing model from the validation set to evaluate the test set.
+</code></pre>
+      </div>
+      <div class="tab-panel" data-tab="config">
+        <pre><code>task_id: cgcnn
+research_question: Can a graph convolutional network predict bulk material properties directly from crystal structure?
+models:
+  api:
+    - CGCNN
+  huggingface:
+    - txie-93/cgcnn
+api_key_var: OPENAI_API_KEY
+budget_per_model: 10000
+datasets:
+  - name: &quot;Materials Project database&quot;
+    source: huggingface
+    loader: |
+      from pymatgen import MPRester
+      mpr = MPRester(&quot;YOUR_API_KEY&quot;)
+      data = mpr.query(criteria={&quot;nelements&quot;: {&quot;$lte&quot;: 7}}, properties=[&quot;material_id&quot;, &quot;formation_energy_per_atom&quot;, &quot;structure&quot;])
+    description: &quot;Contains 46744 inorganic crystals with various structure types and compositions.&quot;
+  - name: &quot;Perovskite database&quot;
+    source: local
+    loader: |
+      import pandas as pd
+      perovskite_data = pd.read_csv(&quot;perovskite_data.csv&quot;)
+    description: &quot;Includes 18928 perovskite crystals with energy above hull data.&quot;
+constraints:
+  - &quot;Do NOT use web search&quot;
+  - &quot;Run FULL end-to-end experiments&quot;</code></pre>
+      </div>
+
+      <div class="actions">
+        <a class="btn btn-primary" href="bundle.zip" download>↓ Download bundle (.zip)</a>
+        <a class="btn" href="instruction.txt">View raw instruction.txt</a>
+        <a class="btn" href="instruction_gt.txt">View raw instruction_gt.txt</a>
+        <a class="btn" href="task_config.yaml">View raw task_config.yaml</a>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container footer-inner">
+    <span>Paper2Bench · v0.3.0 · MIT</span>
+    <span>
+      <a href="https://github.com/AbhayAnandUCSD/Paper2Bench">GitHub</a> ·
+      <a href="../../#install">Install</a>
+    </span>
+  </div>
+</footer>
+
+<script src="../../scripts.js"></script>
+</body>
+</html>

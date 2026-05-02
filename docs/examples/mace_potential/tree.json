@@ -1,0 +1,110 @@
+{
+  "paper": {
+    "title": "MACE: Higher Order Equivariant Message Passing Neural Networks for Fast and Accurate Force Fields",
+    "authors": [
+      "Ilyes Batatia",
+      "Dávid Péter Kovács",
+      "Gregor N. C. Simm",
+      "Christoph Ortner",
+      "Gábor Csányi"
+    ],
+    "venue": "36th Conference on Neural Information Processing Systems (NeurIPS 2022)",
+    "year": "2022"
+  },
+  "problem_tree": {
+    "node": "Root: Development of fast and accurate force fields using higher order equivariant message passing neural networks.",
+    "type": "root",
+    "description": "The paper addresses the challenge of creating efficient and accurate interatomic potentials through the introduction of the MACE architecture, which utilizes higher order messages in message passing neural networks.",
+    "evidence": "Abstract and Introduction",
+    "children": [
+      {
+        "node": "RQ1: How does the MACE architecture improve the efficiency of message passing in neural networks?",
+        "type": "research_question",
+        "description": "This question investigates the specific improvements in computational efficiency and scalability achieved by using higher order messages in the MACE architecture compared to traditional MPNNs.",
+        "evidence": "Sections 4 and 5.1",
+        "children": [
+          {
+            "type": "leaf",
+            "task": "Comparison of MACE with traditional MPNNs on benchmark tasks.",
+            "dataset": [
+              "3BPA benchmark dataset"
+            ],
+            "model_or_method": [
+              "MACE architecture with higher order messages"
+            ],
+            "metrics": [
+              "Root Mean Square Error (RMSE) on energies and forces"
+            ],
+            "protocol_or_setup": "Two-layer MACE models with a local radial cutoff of 5 Å.",
+            "evidence": {
+              "figure": "Fig. 1",
+              "table": "Table 2",
+              "section": "Sec. 5.1"
+            },
+            "conclusion": "MACE reduces the number of required message passing iterations to just two, improving computational efficiency.",
+            "status": ""
+          }
+        ]
+      },
+      {
+        "node": "RQ2: What are the effects of higher order messages on the learning curves of MACE?",
+        "type": "research_question",
+        "description": "This question explores how the inclusion of higher order messages influences the learning efficiency and accuracy of the MACE model.",
+        "evidence": "Section 5.1",
+        "children": [
+          {
+            "type": "leaf",
+            "task": "Analysis of learning curves for MACE with varying correlation orders.",
+            "dataset": [
+              "rMD17 dataset"
+            ],
+            "model_or_method": [
+              "MACE with different correlation orders (ν)"
+            ],
+            "metrics": [
+              "Learning curve steepness, RMSE on training data"
+            ],
+            "protocol_or_setup": "Training MACE models with correlation orders ν = 1, 2, 3.",
+            "evidence": {
+              "figure": "Fig. 2",
+              "table": "N/A",
+              "section": "Sec. 5.1"
+            },
+            "conclusion": "Higher order messages significantly improve the steepness of learning curves, indicating better data efficiency.",
+            "status": ""
+          }
+        ]
+      },
+      {
+        "node": "RQ3: How does MACE perform in terms of accuracy and computational cost compared to existing models?",
+        "type": "research_question",
+        "description": "This question assesses the performance of MACE in terms of accuracy on benchmark datasets and its computational efficiency compared to other state-of-the-art models.",
+        "evidence": "Sections 5.2 and 5.3",
+        "children": [
+          {
+            "type": "leaf",
+            "task": "Benchmarking MACE against other models on the rMD17 and 3BPA datasets.",
+            "dataset": [
+              "rMD17 dataset",
+              "3BPA dataset"
+            ],
+            "model_or_method": [
+              "MACE with L = 0, L = 1, L = 2"
+            ],
+            "metrics": [
+              "Mean Absolute Error (MAE) on energies and forces, training time"
+            ],
+            "protocol_or_setup": "Training MACE models on specified datasets and comparing with BOTNet and NequIP.",
+            "evidence": {
+              "figure": "Fig. 3",
+              "table": "Table 1, Table 2",
+              "section": "Sec. 5.3"
+            },
+            "conclusion": "MACE achieves state-of-the-art accuracy while being significantly faster to train and evaluate than previous models.",
+            "status": ""
+          }
+        ]
+      }
+    ]
+  }
+}

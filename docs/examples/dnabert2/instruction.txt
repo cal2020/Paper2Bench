@@ -1,0 +1,26 @@
+You are a research agent. Conduct research and experiment about the question: "Does byte-pair tokenization and multi-species pretraining improve DNA foundation model quality at lower compute?"
+
+You have access to the following resources:
+
+Models:
+- DNABERT-2 via API
+- Load with HuggingFace: InstaDeepAI/nucleotide-transformer-500m-human-ref
+- Computational budget: 10000 API calls per model
+
+Datasets:
+- Multi-species genome dataset: A dataset comprising genomes from 135 species, totaling approximately 32.49 billion nucleotide bases.
+  Loading code:
+    import pandas as pd
+    # Load the multi-species genome dataset
+    dataset = pd.read_csv("path_to_multi_species_genome_dataset.csv")
+- Genome Understanding Evaluation (GUE) benchmark: A comprehensive benchmark containing 36 datasets across 9 tasks for evaluating genome foundation models.
+  Loading code:
+    import pandas as pd
+    # Load the GUE benchmark datasets
+    gue_dataset = pd.read_csv("path_to_gue_benchmark.csv")
+
+Experimental constraints:
+- Do NOT use web search
+- Run FULL end-to-end experiments
+
+Please design and execute experiments to investigate this research question. Document your experimental plan, run end-to-end experiments, and provide conclusions at different levels of detail.

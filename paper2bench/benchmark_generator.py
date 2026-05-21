@@ -73,7 +73,7 @@ _RESOURCE_SCHEMA_NOVEL_ARCH = """\
       "key_components": ["<component 1>", "<component 2>", ...]
     },
     "baselines": ["<existing method to compare against>", ...],
-    "reference_implementation": ["<library / repo hint, if any>"],
+    "reference_implementation": ["<framework hint only, e.g. 'PyTorch Geometric', 'JAX'. NEVER a URL, NEVER a GitHub/HuggingFace repo, NEVER the source paper's own codebase.>"],
     "datasets": [
       {
         "name": "<dataset name>",
@@ -186,26 +186,47 @@ self-contained instruction.txt for an autonomous agent.
 }}
 
 Rules:
-1. Generate 2-4 instances per source (6-12 total).  Prefer quality over quantity.
+1. Generate **at least 2 instances of each transformation type** (perturbation,
+   ablation, future_work) for a minimum of 6 instances total.  Aim for
+   6-9 in total; prefer quality over quantity but do NOT skip a category.
 2. The ``task_config`` resource spec must be concrete and complete -- the
    same format and detail level as the core pipeline's task_config.yaml.
    List real models, real datasets (with HF paths when you are confident,
    else ``source: unknown``), realistic budgets, and explicit constraints.
 3. The perturbed task should use a *different* dataset / metric / component
    than the original paper when relevant -- that is the whole point of the
-   transformation.
+   transformation.  At most ONE perturbation may be a pure dataset swap;
+   the others MUST change something else (metric family, compute budget,
+   model family under test, evaluation regime, distribution shift, etc.).
 4. A dataset must have a proper-noun or acronym name.  Author-year citations
    belong in ``references``, never in ``datasets`` / ``data_sources``.
-5. Do NOT leak the paper's conclusions, exact results, or method details
-   that would let an agent skip experimentation.  Do NOT tell the agent to
-   "use the same architecture as the original paper"; if the paper is a
-   novel_architecture, the agent must re-derive or adapt the method.
-6. Mark difficulty as:
+5. **Ablation instances MUST come from the paper's own ablation_structure
+   when the spec lists any** -- pick a `component_varied` from the spec and
+   build the ablation around it.  Only invent a new ablation axis if the
+   spec's ablation_structure is empty.
+6. **Future_work instances MUST come from the spec's `future_work` list**
+   when it has entries -- map each one to a concrete task.  Do NOT
+   instantiate a future_work item that asks the agent to re-derive a
+   conclusion already explicitly stated in the source paper.
+7. Do NOT leak the paper's conclusions, exact results, or method details
+   that would let an agent skip experimentation.  Specifically:
+   - Do NOT cite the source paper itself in ``references``.
+   - Do NOT include URLs to the source paper's official code repository,
+     the first author's GitHub/HuggingFace account, or any "official
+     implementation" hint.  ``reference_implementation`` is for generic
+     framework names (e.g. "PyTorch Geometric"), never URLs.
+   - Do NOT recreate the paper's exact study (same dataset + same models +
+     same already-answered question).
+   - Do NOT tell the agent to "use the same architecture as the original
+     paper"; if the paper is a novel_architecture, the agent must re-derive
+     or adapt the method.
+8. Mark difficulty as:
    - **easy**: one-step adaptation (e.g. same method, closely related dataset)
    - **medium**: moderate shift requiring planning (new domain, tighter
      budget, partial ablation)
    - **hard**: multi-step investigation requiring significant adaptation
-7. Output ONLY valid JSON (no markdown fences, no preamble).
+   Bump up one notch if the only available dataset is ``source: unknown``.
+9. Output ONLY valid JSON (no markdown fences, no preamble).
 """
 
 # ---------------------------------------------------------------------------
@@ -214,23 +235,37 @@ Rules:
 
 LEAKAGE_CHECK_PROMPT = """\
 You are a benchmark quality auditor.  Your job is to check whether a
-research instruction **accidentally leaks** the expected answer, making it
-possible for an agent to solve the task by reading the instruction alone
-instead of running experiments.
+research benchmark variant **accidentally leaks** the expected answer or
+trivializes the task, so an agent could "solve" it without genuine
+experimentation.
 
-Check for these leakage types:
-1. **Direct answer leak**: the instruction states or strongly implies the
-   conclusion.
-2. **Method leak**: the instruction gives so much methodological detail that
-   the experiment is trivially reduced to running a provided recipe.
-3. **Statistical leak**: exact numbers, effect sizes, or rankings from the
-   source paper appear in the instruction.
+You will be shown:
+  SOURCE PAPER DIGEST -- title, authors, and the paper's main claims.
+  VARIANT TASK_CONFIG  -- the JSON resource spec (models, datasets, refs).
+  RENDERED INSTRUCTION -- the prompt the agent will read.
+
+Check for these leakage types (any one is sufficient to flag):
+1. **direct_answer**: the instruction states or strongly implies the conclusion.
+2. **method**: the instruction (or task_config) gives so much methodological
+   detail that the experiment is reduced to running a provided recipe.
+3. **statistical**: exact numbers, effect sizes, or rankings from the source
+   paper appear.
+4. **repo_link**: the task_config's `reference_implementation` (or any field
+   rendered into the instruction) contains a URL to the SOURCE paper's
+   official code repository, the first author's personal GitHub/HuggingFace
+   account, or anything that would let the agent download the paper's code.
+5. **self_citation**: `references` cites the source paper itself (by author
+   surname + year, or by paper title).
+6. **setup_reproduction**: the variant essentially recreates the source
+   paper's exact study -- same dataset, same models, asking a question the
+   source paper already explicitly answered.  Flag this even if wording is
+   reworded.
 
 Respond with ONLY a JSON object:
 {
   "leaked": true/false,
-  "leakage_type": "<direct_answer | method | statistical | none>",
-  "evidence": "<quote from the instruction that constitutes leakage, or empty string>"
+  "leakage_type": "direct_answer | method | statistical | repo_link | self_citation | setup_reproduction | none",
+  "evidence": "<quote or field path showing the leakage, or empty string>"
 }
 """
 
@@ -311,7 +346,22 @@ def generate_variants(
     instances = result.get("instances", [])
     print(f"[generate] Got {len(instances)} instance(s)")
 
-    # ---- Step 2: Render each task_config into a detailed instruction.txt ----
+    # ---- Step 2: Sanitize task_configs (strip self-references / repo URLs) ----
+    print("[generate] Sanitizing task_configs ...")
+    _strip_self_references(spec, instances)
+
+    # ---- Step 3: Validate datasets + models against HuggingFace; resolve unknowns ----
+    print("[generate] Validating datasets and models ...")
+    for inst in instances:
+        cfg = inst.get("task_config") or {}
+        if not cfg:
+            continue
+        cfg = _revalidate_task_config(cfg, model, api_key)
+        _validate_hf_models(cfg)
+        _bump_difficulty_for_unresolved(inst, cfg)
+        inst["task_config"] = cfg
+
+    # ---- Step 4: Render each task_config into a detailed instruction.txt ----
     print("[generate] Rendering detailed instructions ...")
     for inst in instances:
         cfg = inst.get("task_config") or {}
@@ -328,14 +378,23 @@ def generate_variants(
             print(f"  [{inst.get('id', '?')}] render failed: {e}")
             inst["instruction"] = ""
 
-    # ---- Step 3: Leakage check each rendered instruction ----
+    # ---- Step 5: Leakage check each rendered instruction (with paper context) ----
     print("[generate] Running leakage checks ...")
+    paper_digest = _build_paper_digest(spec)
     for inst in instances:
         inst["leakage_check"] = _check_leakage(
-            inst.get("instruction", ""), model, api_key,
+            inst.get("instruction", ""),
+            inst.get("task_config") or {},
+            paper_digest,
+            model, api_key,
         )
         status = "LEAKED" if inst["leakage_check"].get("leaked") else "clean"
-        print(f"  [{inst.get('id', '?')}] {status}")
+        kind = inst["leakage_check"].get("leakage_type", "")
+        print(f"  [{inst.get('id', '?')}] {status}"
+              f"{f' ({kind})' if status == 'LEAKED' else ''}")
+
+    # ---- Step 6: Coverage report ----
+    _report_coverage(instances)
 
     return instances
 
@@ -343,30 +402,232 @@ def generate_variants(
 def check_leakage(
     instruction: str,
     *,
+    task_config: Optional[dict] = None,
+    paper_digest: str = "",
     model: str = "gpt-4o",
     api_key: Optional[str] = None,
 ) -> dict:
     """Standalone leakage check for any instruction text."""
-    return _check_leakage(instruction, model, api_key)
+    return _check_leakage(instruction, task_config or {}, paper_digest, model, api_key)
 
 
 # ---------------------------------------------------------------------------
 # Internal helpers
 # ---------------------------------------------------------------------------
 
-def _check_leakage(instruction: str, model: str, api_key: Optional[str]) -> dict:
+def _check_leakage(
+    instruction: str,
+    task_config: dict,
+    paper_digest: str,
+    model: str,
+    api_key: Optional[str],
+) -> dict:
     """Run the leakage-check LLM judge on a single instruction."""
+    user_msg = (
+        "SOURCE PAPER DIGEST:\n"
+        f"{paper_digest or '(unavailable)'}\n\n"
+        "VARIANT TASK_CONFIG:\n"
+        f"```json\n{json.dumps(task_config, indent=2, ensure_ascii=False)}\n```\n\n"
+        "RENDERED INSTRUCTION:\n"
+        f"{instruction}"
+    )
     response = chat(
         model=model,
         messages=[
             {"role": "system", "content": LEAKAGE_CHECK_PROMPT},
-            {"role": "user", "content": instruction},
+            {"role": "user", "content": user_msg},
         ],
         max_tokens=1024,
         temperature=0.0,
         api_key=api_key,
     )
     return _parse_json(response.content)
+
+
+def _build_paper_digest(spec: dict) -> str:
+    """Compact summary of the source paper for the leakage judge."""
+    paper = (spec or {}).get("paper") or {}
+    spec_body = (spec or {}).get("spec") or {}
+    title = paper.get("title") or "(unknown title)"
+    authors = ", ".join(paper.get("authors") or []) or "(unknown)"
+    year = paper.get("year") or "(unknown)"
+    claims = spec_body.get("claim") or []
+    claim_lines = "\n".join(f"  - {c}" for c in claims[:5]) if claims else "  (none)"
+    return (
+        f"Title: {title}\n"
+        f"Authors: {authors}\n"
+        f"Year: {year}\n"
+        f"Main claims:\n{claim_lines}"
+    )
+
+
+def _author_last_name(name: str) -> str:
+    parts = re.split(r"\s+", str(name or "").strip())
+    return parts[-1].lower() if parts and parts[-1] else ""
+
+
+def _strip_self_references(spec: dict, instances: list) -> None:
+    """Remove the source paper from each variant's `references`, and drop
+    any URL-flavoured `reference_implementation` entry that points at the
+    source paper's repo / first-author account.
+
+    The source paper is never a valid reference for a benchmark *derived*
+    from it, and its canonical repo is the worst possible leak (the agent
+    is told to re-derive the method from scratch).
+    """
+    paper = (spec or {}).get("paper") or {}
+    authors = [a for a in (paper.get("authors") or []) if a]
+    last_names = [_author_last_name(a) for a in authors if a]
+    last_names = [ln for ln in last_names if ln]
+    year = str(paper.get("year") or "").strip()
+    title_lc = (paper.get("title") or "").lower()
+    title_tokens = {t for t in re.findall(r"[a-z0-9]{4,}", title_lc)}
+
+    for inst in instances:
+        cfg = inst.get("task_config") or {}
+
+        # 1. Strip self-citations from references
+        refs = cfg.get("references") or []
+        if isinstance(refs, list):
+            kept = []
+            for ref in refs:
+                r = str(ref).lower()
+                # self-cite if any author surname AND year both appear,
+                # or the title appears verbatim
+                self_cite = (
+                    (year and any(ln in r for ln in last_names) and year in r)
+                    or (title_lc and title_lc[:40] in r)
+                )
+                if self_cite:
+                    print(f"  [{inst.get('id','?')}] dropped self-citation: {ref}")
+                    continue
+                kept.append(ref)
+            if kept != refs:
+                cfg["references"] = kept
+
+        # 2. Strip URL-bearing reference_implementation entries that look
+        #    like the source paper's repo or the first author's account.
+        ri = cfg.get("reference_implementation") or []
+        if isinstance(ri, list):
+            kept_ri = []
+            for hint in ri:
+                h = str(hint).lower()
+                is_url = "://" in h or h.startswith(("github.com", "huggingface.co"))
+                if is_url:
+                    # Drop if any author surname appears in the URL,
+                    # or any 4+ char title token appears.
+                    if any(ln and ln in h for ln in last_names) or any(
+                        tok in h for tok in title_tokens
+                    ):
+                        print(f"  [{inst.get('id','?')}] dropped repo URL: {hint}")
+                        continue
+                    # Also drop generic GitHub/HF links from variants -- the
+                    # benchmark value comes from the agent re-deriving.
+                    if "github.com" in h or "huggingface.co" in h or "gitlab.com" in h:
+                        print(f"  [{inst.get('id','?')}] dropped code URL: {hint}")
+                        continue
+                kept_ri.append(hint)
+            if kept_ri != ri:
+                cfg["reference_implementation"] = kept_ri
+
+
+def _revalidate_task_config(cfg: dict, model: str, api_key: Optional[str]) -> dict:
+    """Round-trip the variant task_config through the same dataset
+    validators the main pipeline uses (HF loader check, unknown-dataset
+    resolution, external-link discovery).  Silently no-op on any failure
+    so a missing dependency or network issue can't break generation.
+    """
+    try:
+        import yaml as _yaml
+        from .instruction_generator import (
+            _validate_hf_loaders,
+            resolve_unknown_datasets,
+            find_external_dataset_links,
+        )
+    except ImportError:
+        return cfg
+    try:
+        yaml_text = _yaml.safe_dump(cfg, sort_keys=False)
+        yaml_text = _validate_hf_loaders(yaml_text)
+        yaml_text = resolve_unknown_datasets(yaml_text, model=model)
+        yaml_text = find_external_dataset_links(yaml_text, model=model)
+        result = _yaml.safe_load(yaml_text)
+        if isinstance(result, dict):
+            return result
+    except Exception as e:
+        print(f"[validate] task_config revalidation skipped: {e}")
+    return cfg
+
+
+def _validate_hf_models(cfg: dict) -> None:
+    """Drop any HuggingFace model ID that does not resolve on the Hub.
+    Catches fabrications like ``meta-llama/Llama-2-3B`` (does not exist)
+    that would waste agent time."""
+    try:
+        from huggingface_hub import HfApi
+        from huggingface_hub.utils import RepositoryNotFoundError
+    except ImportError:
+        return
+    models = cfg.get("models") or {}
+    if not isinstance(models, dict):
+        return
+    hf = models.get("huggingface") or []
+    if not isinstance(hf, list) or not hf:
+        return
+    api = HfApi()
+    kept = []
+    for mid in hf:
+        if not isinstance(mid, str) or not mid:
+            continue
+        try:
+            api.model_info(mid)
+            kept.append(mid)
+        except RepositoryNotFoundError:
+            print(f"[validate] HF model '{mid}' not found, dropping")
+        except Exception as e:
+            # network / auth failure -- keep the entry rather than guess
+            print(f"[validate] skipped HF model check for '{mid}': {e}")
+            kept.append(mid)
+    if kept != hf:
+        models["huggingface"] = kept
+
+
+def _bump_difficulty_for_unresolved(inst: dict, cfg: dict) -> None:
+    """If the variant's only data source is still ``unknown`` after
+    validation, bump difficulty up one notch -- the agent has to locate
+    the data themselves, which is materially harder."""
+    items = cfg.get("datasets") or cfg.get("data_sources") or []
+    if not isinstance(items, list) or not items:
+        return
+    if not all(
+        isinstance(d, dict) and (d.get("source") or "").lower() == "unknown"
+        for d in items
+    ):
+        return
+    cur = (inst.get("difficulty") or "").lower()
+    bumped = {"easy": "medium", "medium": "hard"}.get(cur)
+    if bumped:
+        inst["difficulty"] = bumped
+        prev_note = inst.get("difficulty_note", "")
+        suffix = "auto-bumped: data source unresolved"
+        inst["difficulty_note"] = (
+            f"{prev_note} ({suffix})" if prev_note else suffix
+        )
+
+
+def _report_coverage(instances: list) -> None:
+    """Warn when any of the three transformation sources has fewer than
+    two instances -- callers will likely want to re-run."""
+    from collections import Counter
+    counts = Counter((i.get("type") or "?") for i in instances)
+    line = " | ".join(f"{k}: {counts.get(k, 0)}" for k in
+                      ("perturbation", "ablation", "future_work"))
+    print(f"[generate] Coverage -- {line}")
+    sparse = [k for k in ("perturbation", "ablation", "future_work")
+              if counts.get(k, 0) < 2]
+    if sparse:
+        print(f"[generate] WARN: under-covered transformation type(s): "
+              f"{', '.join(sparse)} (<2 instances). Consider re-running.")
 
 
 def _parse_json(text: str) -> dict:

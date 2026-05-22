@@ -133,7 +133,6 @@ function CanvasViz({ stage, tier, paper }) {
   const showFiles     = stage >= 3;
   const showAnnot1    = stage === 1;
   const showAnnotTree = stage === 2 && tier >= 3;
-  const showAnnotOut  = stage === 3;
 
   // PDF position shifts: huge & centered at stage 1, smaller at top at stage 2+
   const pdfBox = pdfBig
@@ -379,20 +378,6 @@ function CanvasViz({ stage, tier, paper }) {
         })()}
       </g>
 
-      {/* Stage 3: output annotations */}
-      <g style={fadeStyle(showAnnotOut, 0.4)}>
-        {/* Diff stat callout between files */}
-        <foreignObject x={FILES[0].x + FILE_W + 20} y={FILES[0].y - 4} width={FILES[1].x - FILES[0].x - FILE_W - 40} height={FILE_H + 8}>
-          <div xmlns="http://www.w3.org/1999/xhtml" style={{
-            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%',
-            textAlign: 'center',
-          }}>
-            <div style={{ fontFamily: 'var(--display)', fontSize: 44, fontWeight: 300, letterSpacing: '-1.5px', color: 'var(--accent)', lineHeight: 1 }}>+{paper.diff.addedLines}</div>
-            <div style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: 1.5, marginTop: 6, whiteSpace: 'nowrap' }}>lines added</div>
-            <div style={{ fontFamily: 'var(--display)', fontStyle: 'italic', fontSize: 12, color: 'var(--faint)', marginTop: 6, whiteSpace: 'nowrap' }}>scored by verify →</div>
-          </div>
-        </foreignObject>
-      </g>
     </svg>
   );
 }

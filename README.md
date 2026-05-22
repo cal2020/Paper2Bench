@@ -67,6 +67,8 @@ export ANTHROPIC_API_KEY=sk-ant-...    # required for claude-* models
 
 So `--model claude-opus-4-6` just works if `ANTHROPIC_API_KEY` is set and the `anthropic` extra is installed. The default model is `gpt-4o`. Each stage that accepts `--model` (or `--agent-model` / `--eval-model`) can be pointed at either provider independently.
 
+> **Note on Claude + `--split-rqs`**: a single paper's `run` makes ~6 LLM calls per RQ, each with ~45k input tokens. Lower Anthropic tiers (30k input-tokens/min) will hit rate limits on papers with many RQs. Workarounds: run one RQ at a time via `--research-question "..."` instead of `--split-rqs`, or use OpenAI for batch runs.
+
 ## Python SDK
 
 The pipeline is also importable as a library — useful when you want to feed Paper2Bench programmatically rather than via the CLI:

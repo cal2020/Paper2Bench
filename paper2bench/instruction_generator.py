@@ -122,8 +122,8 @@ proposed_method:
     - "<component 1 -- the essential pieces an implementation must include>"
 baselines:                       # existing methods the paper compares against
   - "<baseline name>"
-reference_implementation:        # optional hints, empty if none
-  - "<framework / library / GitHub repo mentioned by the paper, if any>"
+reference_implementation:        # FRAMEWORK HINTS ONLY, never URLs or repos
+  - "<framework / library name only, e.g. 'PyTorch', 'JAX', 'PyTorch Geometric'. NEVER a URL, NEVER a GitHub or HuggingFace repo, NEVER the source paper's own codebase. Omit the section entirely if the paper does not mention a specific framework.>"
 datasets:
   - name: "<dataset name>"
     source: huggingface          # huggingface | local | synthetic | unknown
@@ -687,7 +687,22 @@ def render_instruction(config: dict, template_path: Optional[str] = None) -> str
         for base in config.get("baselines", []) or []:
             models_lines.append(f"- Baseline for comparison: {base}")
         for ref in config.get("reference_implementation", []) or []:
-            models_lines.append(f"- Reference hint: {ref}")
+            if not isinstance(ref, str):
+                continue
+            ref_clean = ref.strip()
+            if not ref_clean:
+                continue
+            # Defense-in-depth: even though the extract prompt forbids
+            # URLs/repos in reference_implementation, the LLM occasionally
+            # ignores it. Drop anything that looks like a link.
+            lowered = ref_clean.lower()
+            if (lowered.startswith(("http://", "https://", "www.", "github.com/",
+                                    "huggingface.co/"))
+                    or "://" in lowered
+                    or "github.com/" in lowered
+                    or "huggingface.co/" in lowered):
+                continue
+            models_lines.append(f"- Reference hint: {ref_clean}")
     elif "analytical_tools" in config:
         # empirical_study schema
         for tool in config.get("analytical_tools", []) or []:

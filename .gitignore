@@ -22,6 +22,8 @@ output/
 output_v2/
 output_v3/
 output_v4/
+output_beta/
+output_claude_smoke/
 logs/
 runs/
 

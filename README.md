@@ -41,16 +41,16 @@ cd Paper2Bench
 pip install -e .
 ```
 
-Or install directly from the private repo with a personal access token (PAT) that has read access:
+Or install directly from GitHub:
 
 ```bash
-pip install "git+https://<TOKEN>@github.com/AbhayAnandUCSD/Paper2Bench.git@v0.3.0"
+pip install git+https://github.com/AbhayAnandUCSD/Paper2Bench.git@v0.3.0
 ```
 
 If you want to use Claude models, install the optional `anthropic` extra:
 
 ```bash
-pip install "paper2bench[anthropic] @ git+https://<TOKEN>@github.com/AbhayAnandUCSD/Paper2Bench.git@v0.3.0"
+pip install "paper2bench[anthropic] @ git+https://github.com/AbhayAnandUCSD/Paper2Bench.git@v0.3.0"
 ```
 
 Requires Python 3.10+. Set at least one provider key (both may coexist in a `.env` file):

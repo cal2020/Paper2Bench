@@ -1,5 +1,23 @@
 # Paper2Bench
 
+This checkout contains the **0.4.0a2 implementation** extending upstream
+Paper2Bench: bounded local/hosted text runtimes, citation-grounded source evidence,
+durable generation checkpoints, isolated Docker/SSH workers with explicit NVIDIA
+GPU selection, an opt-in target-model file broker, and reviewed fixed-protocol
+scientific execution. Start with [IMPLEMENTATION.md](IMPLEMENTATION.md) for usable
+commands, verification evidence, and capability limits. The updated
+[interactive demo](https://paper2bench-portable-demo.escape4242.chatgpt.site) is
+deployed as an owner-private Site; its build is documented in
+[deployment/demo](deployment/demo/README.md). Actual local Llama
+inference and a Docker → model broker → Llama → Docker round trip passed;
+external SSH, NVIDIA hardware, and hosted model accounts remain untested here.
+
+The extension is implemented in this checkout, not in the upstream release tags
+linked below. The original generation workflows remain available. Legacy
+conclusion scoring remains separate from method fidelity and scientific
+agreement; a generated reference draft or matching conclusion is not a
+paper-reproduction result.
+
 Convert academic papers into benchmark tasks for evaluating AI coding agents.
 
 Paper2Bench offers two complementary workflows:
@@ -33,7 +51,18 @@ Both workflows auto-detect the paper's archetype (`llm_evaluation` / `novel_arch
 
 ## Install
 
-For development:
+Install this implementation from your private GitHub repository:
+
+```bash
+gh repo clone cal2020/Paper2Bench
+cd Paper2Bench
+python3 -m venv .venv
+.venv/bin/python -m pip install -e '.[dev]'
+.venv/bin/python -m paper2bench doctor
+```
+
+The remaining upstream installation examples describe the original project and
+do **not** install this checkout's 0.4.0a2 changes:
 
 ```bash
 git clone https://github.com/AbhayAnandUCSD/Paper2Bench.git
@@ -53,19 +82,27 @@ If you want to use Claude models, install the optional `anthropic` extra:
 pip install "paper2bench[anthropic] @ git+https://github.com/AbhayAnandUCSD/Paper2Bench.git@v0.3.0"
 ```
 
-Requires Python 3.10+. Set at least one provider key (both may coexist in a `.env` file):
+Requires Python 3.10+. Hosted models require an appropriate exported credential;
+local runtime profiles need no hosted-provider key. Automatic `.env` loading is
+disabled in this extension. Export variables explicitly, or load them in trusted
+caller code before invocation:
 
 ```bash
 export OPENAI_API_KEY=sk-...           # required for gpt-* / o-* models
 export ANTHROPIC_API_KEY=sk-ant-...    # required for claude-* models
 ```
 
-**Provider selection** is automatic based on the model name:
+Without a runtime profile, legacy **provider selection** uses the model name:
 
 - `gpt-*`, `o1-*`, `o3-*`, `o4-*` → OpenAI
 - `claude-*`, `anthropic/claude-*` → Anthropic
 
-So `--model claude-opus-4-6` just works if `ANTHROPIC_API_KEY` is set and the `anthropic` extra is installed. The default model is `gpt-4o`. Each stage that accepts `--model` (or `--agent-model` / `--eval-model`) can be pointed at either provider independently.
+The legacy default model is `gpt-4o`; choose a provider/model available to your
+account. Each stage accepting `--model` (or `--agent-model` / `--eval-model`) can
+select a legacy provider independently. Runtime profiles instead specify every
+role's provider, model, endpoint, credential reference, and durable budget; their
+bindings take precedence over legacy model defaults. The extension's HTTP text
+adapters do not require the optional Anthropic SDK extra.
 
 > **Note on Claude + `--split-rqs`**: a single paper's `run` makes ~6 LLM calls per RQ, each with ~45k input tokens. Lower Anthropic tiers (30k input-tokens/min) will hit rate limits on papers with many RQs. Workarounds: run one RQ at a time via `--research-question "..."` instead of `--split-rqs`, or use OpenAI for batch runs.
 

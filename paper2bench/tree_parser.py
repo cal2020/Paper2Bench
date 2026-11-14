@@ -7,12 +7,10 @@ import os
 from pathlib import Path
 from typing import Optional
 
-from dotenv import load_dotenv
 
 from .llm import chat
 from .pdf_utils import extract_text_from_pdf
 
-load_dotenv()
 
 
 TREE_PARSING_PROMPT = """

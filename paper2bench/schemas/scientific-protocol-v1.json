@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:paper2bench:scientific-protocol:1",
+  "title": "Paper2Bench frozen scientific protocol version 1",
+  "$comment": "Runtime validation additionally checks digest bindings, DAG acyclicity, dependency gates, complete seed schedules and trusted evidence provenance.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "profile", "protocol_id", "task_manifest_sha256", "submission_sha256", "source", "datasets", "plan", "criteria"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "profile": {"enum": ["reproduction/v1", "transfer/v1"]},
+    "protocol_id": {"$ref": "#/$defs/id"},
+    "task_manifest_sha256": {"$ref": "#/$defs/sha"},
+    "submission_sha256": {"$ref": "#/$defs/sha"},
+    "source": {
+      "type": "object", "additionalProperties": false, "required": ["paper_sha256", "citations"],
+      "properties": {
+        "paper_sha256": {"$ref": "#/$defs/sha"},
+        "citations": {"type": "array", "minItems": 1, "maxItems": 128, "items": {
+          "type": "object", "additionalProperties": false, "required": ["id", "locator", "claim"],
+          "properties": {"id": {"$ref": "#/$defs/id"}, "locator": {"$ref": "#/$defs/text"}, "claim": {"$ref": "#/$defs/text"}}
+        }}
+      }
+    },
+    "datasets": {"type": "object", "minProperties": 1, "maxProperties": 128, "additionalProperties": {"$ref": "#/$defs/sha"}},
+    "plan": {
+      "type": "object", "additionalProperties": false,
+      "required": ["seed_schedule", "stopping_rule", "variability_source", "independence_assumption"],
+      "properties": {
+        "seed_schedule": {"type": "array", "minItems": 1, "maxItems": 10000, "uniqueItems": true,
+                          "items": {"type": "integer", "minimum": 0, "maximum": 4294967295}},
+        "stopping_rule": {"const": "fixed_schedule"},
+        "variability_source": {"$ref": "#/$defs/text"},
+        "sampling_unit": {"$ref": "#/$defs/text"},
+        "independence_assumption": {"type": "boolean"},
+        "confidence_level": {"type": "number", "exclusiveMinimum": 0, "maximum": 0.999999}
+      }
+    },
+    "criteria": {"type": "array", "minItems": 3, "maxItems": 128, "items": {"$ref": "#/$defs/criterion"}},
+    "reviews": {"type": "array", "maxItems": 128, "items": {"$ref": "#/$defs/review"}},
+    "transformation": {
+      "type": "object", "additionalProperties": false,
+      "required": ["parent_task_sha256", "changed_factors", "expected_outcome_source"],
+      "properties": {
+        "parent_task_sha256": {"$ref": "#/$defs/sha"},
+        "changed_factors": {"$ref": "#/$defs/refs"},
+        "expected_outcome_source": {"const": "variant_protocol"}
+      }
+    }
+  },
+  "allOf": [
+    {"if": {"properties": {"profile": {"const": "transfer/v1"}}}, "then": {"required": ["transformation"]}},
+    {"if": {"properties": {"profile": {"const": "reproduction/v1"}}}, "then": {"not": {"required": ["transformation"]}}}
+  ],
+  "$defs": {
+    "sha": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]{0,79}$"},
+    "text": {"type": "string", "minLength": 1, "maxLength": 4096},
+    "refs": {"type": "array", "minItems": 1, "maxItems": 128, "uniqueItems": true, "items": {"$ref": "#/$defs/text"}},
+    "review": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "reviewer", "status", "submission_sha256", "paper_sha256", "source_citations", "evidence_refs"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"}, "reviewer": {"$ref": "#/$defs/text"},
+        "status": {"enum": ["pass", "fail", "inconclusive"]},
+        "submission_sha256": {"$ref": "#/$defs/sha"}, "paper_sha256": {"$ref": "#/$defs/sha"},
+        "source_citations": {"$ref": "#/$defs/refs"}, "evidence_refs": {"$ref": "#/$defs/refs"}
+      }
+    },
+    "criterion": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "kind", "dimension", "critical", "depends_on"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"}, "kind": {"enum": ["execution", "review", "metric"]},
+        "dimension": {"enum": ["execution", "implementation_fidelity", "empirical_agreement", "transfer"]},
+        "critical": {"type": "boolean"}, "weight": {"type": "number", "exclusiveMinimum": 0},
+        "depends_on": {"type": "array", "maxItems": 128, "uniqueItems": true, "items": {"$ref": "#/$defs/id"}},
+        "source_citations": {"$ref": "#/$defs/refs"}, "review_id": {"$ref": "#/$defs/id"},
+        "metric_id": {"$ref": "#/$defs/id"}, "baseline_id": {"$ref": "#/$defs/id"}, "units": {"$ref": "#/$defs/text"},
+        "rule": {"enum": ["absolute_tolerance", "relative_tolerance", "at_least", "at_most", "equivalence_interval"]},
+        "reference": {"type": "number"}, "tolerance": {"type": "number", "minimum": 0},
+        "bounds": {"type": "array", "minItems": 2, "maxItems": 2, "items": {"type": "number"}},
+        "min_samples_per_run": {"type": "integer", "minimum": 1}
+      },
+      "allOf": [
+        {"if": {"properties": {"kind": {"const": "execution"}}}, "then": {"properties": {"dimension": {"const": "execution"}}}},
+        {"if": {"properties": {"kind": {"const": "review"}}}, "then": {"required": ["review_id"], "properties": {"dimension": {"const": "implementation_fidelity"}}}},
+        {"if": {"properties": {"kind": {"const": "metric"}}}, "then": {"required": ["metric_id", "units", "rule", "reference"]}},
+        {"if": {"properties": {"kind": {"const": "metric"}, "rule": {"enum": ["absolute_tolerance", "relative_tolerance", "equivalence_interval"]}}, "required": ["rule"]}, "then": {"required": ["tolerance"]}}
+      ]
+    }
+  }
+}

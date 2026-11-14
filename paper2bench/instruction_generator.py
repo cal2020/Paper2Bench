@@ -8,12 +8,10 @@ from pathlib import Path
 from typing import Optional
 
 import yaml
-from dotenv import load_dotenv
 
 from .llm import chat
 from .pdf_utils import extract_text_from_pdf
 
-load_dotenv()
 
 
 # ---------------------------------------------------------------------------
@@ -272,8 +270,8 @@ def extract_yaml_from_pdf(
 
     if validate_hf_loaders:
         cleaned = _validate_hf_loaders(cleaned)
-        cleaned = resolve_unknown_datasets(cleaned, model=model)
-        cleaned = find_external_dataset_links(cleaned, model=model)
+        cleaned = resolve_unknown_datasets(cleaned, model=model, api_key=api_key)
+        cleaned = find_external_dataset_links(cleaned, model=model, api_key=api_key)
 
     return cleaned
 
@@ -319,6 +317,9 @@ def _validate_hf_loaders(yaml_text: str) -> str:
     agent would waste time trying to load.  Silently no-ops if the
     ``huggingface_hub`` package or network is unavailable.
     """
+    offline = _offline_resource_validation(yaml_text)
+    if offline is not None:
+        return offline
     try:
         import yaml as _yaml
         from huggingface_hub import HfApi
@@ -398,7 +399,7 @@ def _is_paper_internal_data(name: str, description: str = "") -> bool:
     return any(p in blob for p in bad_phrases)
 
 
-def resolve_unknown_datasets(yaml_text: str, model: str = "gpt-4o") -> str:
+def resolve_unknown_datasets(yaml_text: str, model: str = "gpt-4o", api_key: Optional[str] = None) -> str:
     """Look up a HuggingFace Hub repo ID for every dataset with
     ``source: unknown``. Promotes confirmed matches to ``source: huggingface``
     with a generated ``load_dataset(...)`` loader. No-ops if the LLM call,
@@ -411,6 +412,9 @@ def resolve_unknown_datasets(yaml_text: str, model: str = "gpt-4o") -> str:
       3. Each suggested ID is verified with ``HfApi().dataset_info()``;
          hallucinations are dropped.
     """
+    offline = _offline_resource_validation(yaml_text)
+    if offline is not None:
+        return offline
     try:
         import yaml as _yaml
         from huggingface_hub import HfApi
@@ -459,6 +463,7 @@ def resolve_unknown_datasets(yaml_text: str, model: str = "gpt-4o") -> str:
             ],
             max_tokens=600,
             temperature=0.0,
+            api_key=api_key,
         )
         raw = response.content.strip()
         raw = re.sub(r"^```(?:json)?\s*\n", "", raw, flags=re.MULTILINE)
@@ -529,26 +534,11 @@ No commentary, no markdown.
 
 
 def _url_reachable(url: str, timeout: float = 6.0) -> bool:
-    """Best-effort HEAD probe; many sites reject HEAD so fall back to GET
-    with a 1-byte read. Treat 2xx and 3xx as reachable."""
-    import urllib.error
-    import urllib.request
-    headers = {"User-Agent": "paper2bench/1.0 (+dataset-locator)"}
-    for method in ("HEAD", "GET"):
-        try:
-            req = urllib.request.Request(url, method=method, headers=headers)
-            with urllib.request.urlopen(req, timeout=timeout) as r:
-                return 200 <= getattr(r, "status", 200) < 400
-        except urllib.error.HTTPError as e:
-            if e.code in (405, 501) and method == "HEAD":
-                continue  # try GET
-            return False
-        except Exception:
-            return False
-    return False
+    from .network import url_reachable
+    return url_reachable(url, timeout=timeout)
 
 
-def find_external_dataset_links(yaml_text: str, model: str = "gpt-4o") -> str:
+def find_external_dataset_links(yaml_text: str, model: str = "gpt-4o", api_key: Optional[str] = None) -> str:
     """For each dataset still ``source: unknown``, ask an LLM for an
     authoritative public URL (GitHub / project page / arxiv) and validate
     it with an HTTP request. Confirmed URLs are written into the dataset
@@ -557,6 +547,9 @@ def find_external_dataset_links(yaml_text: str, model: str = "gpt-4o") -> str:
 
     Skips datasets whose name/description looks paper-internal.
     """
+    offline = _offline_resource_validation(yaml_text)
+    if offline is not None:
+        return offline
     try:
         import yaml as _yaml
     except ImportError:
@@ -602,6 +595,7 @@ def find_external_dataset_links(yaml_text: str, model: str = "gpt-4o") -> str:
             ],
             max_tokens=800,
             temperature=0.0,
+            api_key=api_key,
         )
         raw = response.content.strip()
         raw = re.sub(r"^```(?:json)?\s*\n", "", raw, flags=re.MULTILINE)
@@ -853,3 +847,15 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+def _offline_resource_validation(yaml_text):
+    from .runtime_config import get_context
+    context = get_context()
+    if context and context.config.policy.get("data_egress") == "local_only":
+        config = yaml.safe_load(yaml_text)
+        if not isinstance(config, dict):
+            raise ValueError("Task configuration must be a mapping")
+        config["resource_validation"] = {"status": "not_run", "reason": "local_only"}
+        return yaml.safe_dump(config, sort_keys=False)
+    return None

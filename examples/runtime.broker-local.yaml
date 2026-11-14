@@ -1,0 +1,50 @@
+# Opt-in target-model experiments during verify / run --verify.
+# Set P2B_LOCAL_MODEL to an already installed Ollama model; no model is downloaded.
+# Local server routing is operator-trusted, not independently attested offline.
+schema_version: 1
+profile: local_file_broker
+models:
+  local_controller:
+    provider: ollama
+    model_from_env: P2B_LOCAL_MODEL
+    endpoint: http://127.0.0.1:11434
+    hosting: local_server
+    locality_assurance: operator_trusted
+    context_tokens: 32768
+    timeout_seconds: 120
+    required_capabilities: [text_generation]
+  local_subject:
+    provider: ollama
+    model_from_env: P2B_LOCAL_MODEL
+    endpoint: http://127.0.0.1:11434
+    hosting: local_server
+    locality_assurance: operator_trusted
+    context_tokens: 32768
+    timeout_seconds: 30
+    required_capabilities: [text_generation]
+roles:
+  author: local_controller
+  reference: local_controller
+  agent: local_controller
+  judge: local_controller
+policy:
+  data_egress: local_only
+  verified_offline_required: false
+  telemetry_content: false
+routing:
+  fallback: disabled
+execution:
+  backend: docker
+  network: none
+  model_broker:
+    # Candidate code knows only the public ID on the left.
+    targets: {subject: local_subject}
+    max_requests: 8
+    max_batch_requests: 4
+    max_tokens_per_request: 128
+    max_total_output_tokens: 512
+budgets:
+  authoring: {requests: 40, input_tokens: 500000, output_tokens: 100000}
+  evaluation: {requests: 50, input_tokens: 500000, output_tokens: 100000}
+  # Agent-control and target-model calls share this durable pool.
+  experiments: {requests: 40, input_tokens: 500000, output_tokens: 100000, agent_turns: 30}

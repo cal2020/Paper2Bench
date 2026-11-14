@@ -177,8 +177,12 @@ def cmd_generate(args):
     # Write each instance's instruction as a separate file
     clean_count = 0
     leaked_count = 0
+    unknown_count = 0
     for inst in instances:
         inst_id = inst.get("id", "unknown")
+        import re
+        if not isinstance(inst_id, str) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]{0,79}", inst_id):
+            raise ValueError("Variant ID must be a normalized identifier")
         inst_dir = output_dir / inst_id
         inst_dir.mkdir(parents=True, exist_ok=True)
 
@@ -194,6 +198,8 @@ def cmd_generate(args):
                 (inst_dir / "task_config.yaml").write_text(
                     _yaml.safe_dump(cfg, sort_keys=False), encoding="utf-8",
                 )
+                from .bundles import write_draft_manifest
+                write_draft_manifest(inst_dir, dict(cfg, task_id=inst_id))
             except Exception as e:
                 print(f"  [{inst_id}] failed to write task_config.yaml: {e}")
         # metadata.json (everything except the rendered instruction text)
@@ -202,16 +208,18 @@ def cmd_generate(args):
             json.dumps(meta, indent=2, ensure_ascii=False), encoding="utf-8",
         )
 
-        leaked = inst.get("leakage_check", {}).get("leaked", False)
-        if leaked:
+        leaked = inst.get("leakage_check", {}).get("leaked")
+        if leaked is True:
             leaked_count += 1
-        else:
+        elif leaked is False:
             clean_count += 1
+        else:
+            unknown_count += 1
 
     print(f"\n{len(instances)} instance(s) written to {output_dir}/")
-    print(f"  Clean: {clean_count}  |  Leaked: {leaked_count}")
-    if leaked_count:
-        print("  [warn] Leaked instances need manual review or regeneration.")
+    print(f"  No leak detected (advisory): {clean_count}  |  Leaked: {leaked_count}  |  Ungraded: {unknown_count}")
+    if leaked_count or unknown_count:
+        print("  [warn] Leaked or ungraded instances require review or regeneration.")
 
 
 def cmd_verify(args):
@@ -244,6 +252,9 @@ def cmd_verify(args):
         ground_truth=gt_text,
         research_question=args.research_question or "",
         eval_mode=args.eval_mode,
+        data_files=args.data_file,
+        executor=_executor(args),
+        execution_options={"timeout_seconds": args.code_timeout},
     )
 
     # Persist results
@@ -327,6 +338,10 @@ def _run_pipeline_for_rq(
     gt_path.write_text(instruction_gt, encoding="utf-8")
     print(f"instruction_gt.txt saved to {gt_path}")
 
+    from .bundles import write_draft_manifest, digest
+    write_draft_manifest(tasks_dir, dict(config, task_id=task_id, research_question=rq_text),
+                         source={"paper_sha256": digest(Path(pdf_path).read_bytes())})
+
     # Step 6: (optional) Verify instruction_gt.txt
     metrics = None
     if args.verify:
@@ -341,6 +356,8 @@ def _run_pipeline_for_rq(
             eval_model=args.model,
             research_question=rq_text,
             eval_mode=getattr(args, "eval_mode", "claim_f1"),
+            executor=_executor(args),
+            execution_options={"timeout_seconds": args.code_timeout},
         )
         verify_output.write_text(
             json.dumps(metrics, indent=2), encoding="utf-8",
@@ -387,6 +404,24 @@ def cmd_run(args):
             sys.exit("Failed to download paper.")
     else:
         sys.exit("Provide either --pdf (local file) or --query (arXiv search).")
+
+    if not args.split_rqs:
+        if not args.research_question:
+            raise ValueError("--research-question is required unless --split-rqs is used")
+        from .api import run as generate
+        from .runtime_config import get_context
+        context = get_context()
+        result = generate(pdf=pdf_path, research_question=args.research_question,
+                          paper_type=args.paper_type, output_dir=out, task_id=task_id,
+                          model=args.model, template=args.template,
+                          validate_hf_loaders=not args.skip_hf_validation, verify=args.verify,
+                          eval_mode=args.eval_mode, runtime_config=context.config if context else None,
+                          executor=_executor(args) if args.verify else None,
+                          execution_options={"timeout_seconds": args.code_timeout},
+                          model_runs_dir=args.model_runs_dir)
+        print(json.dumps({"task_id": result.task_id, "instruction": str(result.instruction_path),
+                          "reference_plan": str(result.instruction_gt_path), "extras": result.extras}, indent=2))
+        return
 
     # Step 2: Parse tree
     print(f"\n{'='*50}\nStep 2: Parsing problem tree\n{'='*50}")
@@ -475,7 +510,12 @@ def cmd_run(args):
                     print(f"  Verify F1:        {result['verify']['f1']:.1f}% ({status})")
 
 
-def main():
+def _executor(args):
+    from .executor_factory import build_executor
+    return build_executor(image=getattr(args, "execution_image", None))
+
+
+def main(argv=None):
     parser = argparse.ArgumentParser(
         prog="paper2bench",
         description="Paper2Bench: Convert academic papers into benchmark tasks.",
@@ -608,8 +648,25 @@ def main():
                      help="Verification evaluator: claim_f1 (default) or llm_judge")
     rp.set_defaults(func=cmd_run)
 
-    args = parser.parse_args()
-    args.func(args)
+    from .cli_runtime import dispatch, register
+    register(subparsers)
+    args = parser.parse_args(argv)
+    try:
+        raw_arguments = argv if argv is not None else sys.argv[1:]
+        if (args.runtime_config or os.environ.get("PAPER2BENCH_RUNTIME_CONFIG")) and any(
+                a.split("=", 1)[0] in {"--model", "--agent-model", "--eval-model"} for a in raw_arguments):
+            raise ValueError("With a runtime profile, set per-role models in that profile rather than legacy model flags")
+        # Validate path-like task IDs before legacy output directories are created.
+        if hasattr(args, "task_id"):
+            import re
+            if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]{0,79}", args.task_id):
+                raise ValueError("task-id must be an identifier, not a path")
+        result = dispatch(args)
+        if isinstance(result, int) and result:
+            raise SystemExit(result)
+    except (ValueError, RuntimeError, OSError) as error:
+        print(f"paper2bench: {type(error).__name__}: {error}", file=sys.stderr)
+        raise SystemExit(2) from error
 
 
 if __name__ == "__main__":

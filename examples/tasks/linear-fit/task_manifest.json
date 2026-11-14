@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "task_id": "linear-fit",
+  "revision": 1,
+  "research_question": "Demonstrate independently checked classical_ml execution",
+  "paper_type": "empirical_study",
+  "method_kind": "classical_ml",
+  "task_mode": "adaptation",
+  "readiness": "ready",
+  "source": {
+    "fixture": "synthetic demonstration; not a paper reproduction"
+  },
+  "files": {
+    "solution.py": "d050e311dcb33d7c17855086b445ff87694a7b7cc3c8d2340de48668078b8620",
+    "input.json": "80a619bdfdd4993dccbcb0bcae895a1d44cf8daf8c1f309991e558c16bb4dab1"
+  },
+  "entrypoint": "solution.py",
+  "inputs": "input.json",
+  "predictions": "predictions.json",
+  "limits": {
+    "timeout_seconds": 10,
+    "memory_bytes": 268435456,
+    "cpus": 1,
+    "pids_limit": 64,
+    "workspace_bytes": 16777216,
+    "output_limit_bytes": 16384
+  }
+}

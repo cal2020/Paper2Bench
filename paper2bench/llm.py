@@ -1,199 +1,79 @@
-"""Unified LLM wrapper that dispatches to OpenAI or Anthropic.
+"""Backward-compatible chat facade with explicit scoped local/cloud routing.
 
-Model-name routing:
-  - ``claude-*``                        → Anthropic
-  - ``gpt-*``, ``o1-*``, ``o3-*``, ``o4-*`` (and anything else)  → OpenAI
-
-API keys are read from the env vars ``OPENAI_API_KEY`` or ``ANTHROPIC_API_KEY``
-(or can be passed explicitly).  The ``anthropic`` package is a soft
-dependency — only required when a Claude model is used.
-
-Call sites pass OpenAI-style messages (``[{"role": "system"|"user"|"assistant",
-"content": "..."}, ...]``); the wrapper handles the Anthropic convention of
-taking the system prompt as a separate argument.
+Legacy calls retain name-based routing. Active profiles select role bindings;
+historical default model arguments cannot silently override a local profile.
 """
-
 from __future__ import annotations
-
 import os
-from dataclasses import dataclass
+import math
+from dataclasses import replace
 from typing import Optional
+from .providers import ChatResponse, ProviderError, get_adapter
+from .runtime_config import ModelRef, get_context, get_role
 
-
-# ---------------------------------------------------------------------------
-# Provider detection
-# ---------------------------------------------------------------------------
 
 def detect_provider(model: str) -> str:
-    """Return ``"anthropic"`` or ``"openai"`` based on the model name."""
     name = (model or "").lower()
-    if name.startswith("claude-") or name.startswith("anthropic/"):
-        return "anthropic"
-    return "openai"
+    return "anthropic" if name.startswith("claude-") or name.startswith("anthropic/") else "openai"
 
 
-# ---------------------------------------------------------------------------
-# Unified response type
-# ---------------------------------------------------------------------------
-
-@dataclass
-class ChatResponse:
-    content: str
-    input_tokens: int = 0
-    output_tokens: int = 0
-    total_tokens: int = 0
-    provider: str = "openai"
-    model: str = ""
-
-
-# ---------------------------------------------------------------------------
-# Public API
-# ---------------------------------------------------------------------------
-
-def chat(
-    model: str,
-    messages: list[dict],
-    *,
-    max_tokens: int = 4096,
-    temperature: float = 0.0,
-    api_key: Optional[str] = None,
-) -> ChatResponse:
-    """Send a chat-completion request to whichever provider owns ``model``.
-
-    Parameters
-    ----------
-    model : str
-        Model ID (e.g. ``"gpt-4o"``, ``"claude-opus-4-6"``).
-    messages : list[dict]
-        OpenAI-style messages.  ``role`` in ``{"system", "user", "assistant"}``.
-        For Anthropic, system messages are extracted and passed via the
-        dedicated ``system`` argument.
-    max_tokens : int
-        Upper bound on output tokens.
-    temperature : float
-        Sampling temperature.
-    api_key : str, optional
-        Explicit key; falls back to the provider's env var.
-
-    Returns
-    -------
-    ChatResponse
-    """
-    provider = detect_provider(model)
-    if provider == "anthropic":
-        return _chat_anthropic(model, messages, max_tokens, temperature, api_key)
-    return _chat_openai(model, messages, max_tokens, temperature, api_key)
-
-
-# ---------------------------------------------------------------------------
-# OpenAI implementation
-# ---------------------------------------------------------------------------
-
-def _chat_openai(
-    model: str,
-    messages: list[dict],
-    max_tokens: int,
-    temperature: float,
-    api_key: Optional[str],
-) -> ChatResponse:
+def chat(model: str, messages: list[dict], *, max_tokens: int = 4096, temperature: float = 0.0,
+         api_key: Optional[str] = None, role: Optional[str] = None,
+         timeout_seconds: Optional[float] = None) -> ChatResponse:
+    context = get_context()
+    selected_role = role or get_role()
+    if context:
+        ref = context.resolve(selected_role)
+        key = context.credential(ref, api_key)
+    else:
+        provider = detect_provider(model)
+        ref = ModelRef.from_dict({"provider": provider, "model": model})
+        key = api_key or os.getenv("ANTHROPIC_API_KEY" if provider == "anthropic" else "OPENAI_API_KEY")
+    if timeout_seconds is not None:
+        if isinstance(timeout_seconds, bool) or not isinstance(timeout_seconds, (float, int)) or not math.isfinite(timeout_seconds) or timeout_seconds <= 0:
+            raise ProviderError("invalid_request", "timeout_seconds must be finite and positive")
+        ref = replace(ref, timeout_seconds=min(ref.timeout_seconds, timeout_seconds))
+    if type(max_tokens) is not int or max_tokens <= 0:
+        raise ProviderError("invalid_request", "max_tokens must be a positive integer")
+    if ref.output_tokens is not None and max_tokens > ref.output_tokens:
+        raise ProviderError("context_overflow", "requested output exceeds configured output token limit")
+    if not isinstance(messages, list) or any(not isinstance(m, dict) or not isinstance(m.get("content"), str) for m in messages):
+        raise ProviderError("invalid_request", "only text message lists are supported")
+    # Conservative byte estimate when a verified endpoint tokenizer is absent.
+    input_estimate = sum(len(m["content"].encode("utf-8")) + 64 for m in messages)
+    if ref.context_tokens is not None and input_estimate + max_tokens > ref.context_tokens:
+        raise ProviderError("context_overflow", "prompt plus output exceeds conservative context estimate; shorten evidence or increase context")
+    adapter = get_adapter(ref.provider)
+    if any(adapter.capabilities().get(name) != "supported" for name in ref.required_capabilities):
+        raise ProviderError("unsupported_capability", "binding requires a capability unsupported by this adapter")
+    # Proven local validation failures do not consume durable billed-work bounds.
+    adapter.validate_request(ref, messages, max_tokens=max_tokens, temperature=temperature, api_key=key)
+    reservation = context.ledger.reserve(selected_role, input_estimate, max_tokens) if context else None
     try:
-        import openai
-    except ImportError as e:
-        raise RuntimeError("openai package required (pip install openai)") from e
-
-    key = api_key or os.getenv("OPENAI_API_KEY")
-    if not key:
-        raise ValueError("OPENAI_API_KEY must be set for model " + model)
-
-    client = openai.OpenAI(api_key=key)
-
-    # Newer OpenAI models accept only max_completion_tokens; older accept
-    # max_tokens.  Try the newer one first, fall back on TypeError for
-    # pinned older SDKs.
-    kwargs = {
-        "model": model,
-        "messages": messages,
-        "temperature": temperature,
-    }
-    try:
-        resp = client.chat.completions.create(
-            max_completion_tokens=max_tokens, **kwargs,
-        )
-    except TypeError:
-        resp = client.chat.completions.create(
-            max_tokens=max_tokens, **kwargs,
-        )
-
-    content = resp.choices[0].message.content or ""
-    usage = getattr(resp, "usage", None)
-    return ChatResponse(
-        content=content,
-        input_tokens=getattr(usage, "prompt_tokens", 0) or 0,
-        output_tokens=getattr(usage, "completion_tokens", 0) or 0,
-        total_tokens=getattr(usage, "total_tokens", 0) or 0,
-        provider="openai",
-        model=model,
-    )
+        response = adapter.generate(ref, messages, max_tokens=max_tokens, temperature=temperature, api_key=key)
+    except Exception:
+        if reservation:
+            # Possibly dispatched/billed calls retain conservative reservations.
+            context.ledger.settle(reservation, None, None)
+        raise
+    if reservation:
+        context.ledger.settle(reservation, response.metadata.get("input_tokens_measured"), response.metadata.get("output_tokens_measured"))
+        response.metadata["budget_pool"] = reservation.pool
+        response.metadata["usage_estimate"] = {"input_tokens": input_estimate, "output_tokens_reserved": max_tokens}
+    response.metadata["role"] = selected_role
+    return response
 
 
-# ---------------------------------------------------------------------------
-# Anthropic implementation
-# ---------------------------------------------------------------------------
+def _chat_openai(model, messages, max_tokens, temperature, api_key):
+    ref = ModelRef.from_dict({"provider": "openai", "model": model})
+    return get_adapter("openai").generate(ref, messages, max_tokens=max_tokens, temperature=temperature,
+                                          api_key=api_key or os.getenv("OPENAI_API_KEY"))
 
-def _chat_anthropic(
-    model: str,
-    messages: list[dict],
-    max_tokens: int,
-    temperature: float,
-    api_key: Optional[str],
-) -> ChatResponse:
-    try:
-        import anthropic
-    except ImportError as e:
-        raise RuntimeError(
-            "anthropic package required for Claude models "
-            "(pip install anthropic)"
-        ) from e
 
-    key = api_key or os.getenv("ANTHROPIC_API_KEY")
-    if not key:
-        raise ValueError("ANTHROPIC_API_KEY must be set for model " + model)
+def _chat_anthropic(model, messages, max_tokens, temperature, api_key):
+    ref = ModelRef.from_dict({"provider": "anthropic", "model": model})
+    return get_adapter("anthropic").generate(ref, messages, max_tokens=max_tokens, temperature=temperature,
+                                             api_key=api_key or os.getenv("ANTHROPIC_API_KEY"))
 
-    # Strip any 'anthropic/' prefix
-    actual_model = model.split("/", 1)[1] if model.startswith("anthropic/") else model
 
-    # Anthropic takes system as a dedicated arg, not a message role.
-    system_parts = []
-    converted = []
-    for m in messages:
-        role = m.get("role")
-        if role == "system":
-            system_parts.append(m.get("content", ""))
-        elif role in ("user", "assistant"):
-            converted.append({"role": role, "content": m.get("content", "")})
-        # ignore other roles
-
-    client = anthropic.Anthropic(api_key=key)
-    resp = client.messages.create(
-        model=actual_model,
-        max_tokens=max_tokens,
-        temperature=temperature,
-        system="\n\n".join(p for p in system_parts if p) or None,
-        messages=converted,
-    )
-
-    # Concatenate all text blocks in the response
-    text = "".join(
-        b.text for b in resp.content if getattr(b, "type", "") == "text"
-    )
-
-    usage = getattr(resp, "usage", None)
-    return ChatResponse(
-        content=text,
-        input_tokens=getattr(usage, "input_tokens", 0) or 0,
-        output_tokens=getattr(usage, "output_tokens", 0) or 0,
-        total_tokens=(getattr(usage, "input_tokens", 0) or 0)
-                     + (getattr(usage, "output_tokens", 0) or 0),
-        provider="anthropic",
-        model=model,
-    )
+__all__ = ["chat", "ChatResponse", "ProviderError", "detect_provider"]

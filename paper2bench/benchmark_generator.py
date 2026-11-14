@@ -26,14 +26,12 @@ import re
 from pathlib import Path
 from typing import Optional
 
-from dotenv import load_dotenv
 
 from .llm import chat
 from .pdf_utils import extract_text_from_pdf
 from .instruction_generator import render_instruction
 from .paper_classifier import classify_paper, PAPER_TYPES
 
-load_dotenv()
 
 # ---------------------------------------------------------------------------
 # Per-type resource schema snippets (injected into the generation prompt)
@@ -441,7 +439,15 @@ def _check_leakage(
         temperature=0.0,
         api_key=api_key,
     )
-    return _parse_json(response.content)
+    from .evaluation import EvaluationError, parse_json_object
+    try:
+        result = parse_json_object(response.content)
+        if type(result.get("leaked")) is not bool:
+            raise EvaluationError("Leakage decision requires a boolean")
+        return dict(result, status="complete", scope="automated_advisory")
+    except EvaluationError:
+        return {"leaked": None, "status": "error", "scope": "automated_advisory",
+                "reason": "invalid_leakage_judgment"}
 
 
 def _build_paper_digest(spec: dict) -> str:
@@ -549,8 +555,8 @@ def _revalidate_task_config(cfg: dict, model: str, api_key: Optional[str]) -> di
     try:
         yaml_text = _yaml.safe_dump(cfg, sort_keys=False)
         yaml_text = _validate_hf_loaders(yaml_text)
-        yaml_text = resolve_unknown_datasets(yaml_text, model=model)
-        yaml_text = find_external_dataset_links(yaml_text, model=model)
+        yaml_text = resolve_unknown_datasets(yaml_text, model=model, api_key=api_key)
+        yaml_text = find_external_dataset_links(yaml_text, model=model, api_key=api_key)
         result = _yaml.safe_load(yaml_text)
         if isinstance(result, dict):
             return result
@@ -563,6 +569,11 @@ def _validate_hf_models(cfg: dict) -> None:
     """Drop any HuggingFace model ID that does not resolve on the Hub.
     Catches fabrications like ``meta-llama/Llama-2-3B`` (does not exist)
     that would waste agent time."""
+    from .runtime_config import get_context
+    context = get_context()
+    if context and context.config.policy.get("data_egress") == "local_only":
+        cfg["resource_validation"] = {"status": "not_run", "reason": "local_only"}
+        return
     try:
         from huggingface_hub import HfApi
         from huggingface_hub.utils import RepositoryNotFoundError

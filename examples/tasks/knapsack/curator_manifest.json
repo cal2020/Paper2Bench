@@ -1,0 +1,6 @@
+{
+  "schema_version": 1,
+  "task_manifest_sha256": "d3a07e8974e042ff9a172a64bfb3ff8b3786b0b7250001fdf8463940ccf23ec7",
+  "scorer": "knapsack_optimum/v1",
+  "reference": {}
+}

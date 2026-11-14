@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "task_manifest_sha256": "3675cbc9d9290abcc29b1f66c78e74f35b77e2c06e6aa62ae495ca5340eb3e5a",
+  "scorer": "linear_predictions/v1",
+  "reference": {
+    "labels": [
+      9,
+      11,
+      21
+    ],
+    "max_mse": 1e-09
+  }
+}

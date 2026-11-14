@@ -1,0 +1,32 @@
+# Operator-trusted local text inference, not an independently verified offline boundary.
+# Set P2B_LOCAL_MODEL to an installed Ollama model. No cloud fallback is permitted.
+schema_version: 1
+profile: local_research
+policy:
+  data_egress: local_only
+  verified_offline_required: false
+  telemetry_content: false
+models:
+  local_text:
+    provider: ollama
+    model_from_env: P2B_LOCAL_MODEL
+    endpoint: http://127.0.0.1:11434
+    hosting: local_server
+    locality_assurance: operator_trusted
+    context_tokens: 32768
+    timeout_seconds: 120
+    required_capabilities: [text_generation]
+roles:
+  author: local_text
+  reference: local_text
+  agent: local_text
+  judge: local_text
+routing:
+  fallback: disabled
+execution:
+  backend: oci
+  network: none
+budgets:
+  authoring: {requests: 40, input_tokens: 500000, output_tokens: 100000}
+  evaluation: {requests: 50, input_tokens: 500000, output_tokens: 100000}
+  experiments: {requests: 40, input_tokens: 500000, output_tokens: 100000, agent_turns: 30}

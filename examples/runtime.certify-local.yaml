@@ -1,0 +1,23 @@
+# Public-fixture live probe of an already installed local model. No download.
+# This records operator-trusted local routing, not an enforced offline boundary.
+schema_version: 1
+profile: certify_local_llama
+models:
+  local:
+    provider: ollama
+    model: llama3.2:latest
+    endpoint: http://127.0.0.1:11434
+    hosting: local_server
+    locality_assurance: operator_trusted
+    timeout_seconds: 30
+    output_tokens: 128
+roles:
+  author: local
+policy:
+  data_egress: local_only
+  verified_offline_required: false
+  telemetry_content: false
+budgets:
+  authoring: {requests: 2, input_tokens: 6000, output_tokens: 256}
+routing:
+  fallback: disabled

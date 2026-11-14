@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "task_id": "knapsack",
+  "revision": 1,
+  "research_question": "Demonstrate independently checked symbolic_optimization execution",
+  "paper_type": "empirical_study",
+  "method_kind": "symbolic_optimization",
+  "task_mode": "adaptation",
+  "readiness": "ready",
+  "source": {
+    "fixture": "synthetic demonstration; not a paper reproduction"
+  },
+  "files": {
+    "solution.py": "e0656bd5733a4038c6e83ee88d9fb72d07379da23ef26436559cc4c934a957f2",
+    "input.json": "6dfa7943814c0d7538b47c1c16fb1cf057e6054f695d70591d7ac0dd015bffc7"
+  },
+  "entrypoint": "solution.py",
+  "inputs": "input.json",
+  "predictions": "predictions.json",
+  "limits": {
+    "timeout_seconds": 10,
+    "memory_bytes": 268435456,
+    "cpus": 1,
+    "pids_limit": 64,
+    "workspace_bytes": 16777216,
+    "output_limit_bytes": 16384
+  }
+}

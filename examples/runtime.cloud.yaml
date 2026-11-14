@@ -1,0 +1,30 @@
+# Existing provider with an explicit model ID and provider-specific key reference.
+schema_version: 1
+profile: hosted_research
+policy:
+  data_egress: allow
+  telemetry_content: false
+models:
+  author_text:
+    provider: openai
+    endpoint: https://api.openai.com/v1
+    hosting: managed_cloud_api
+    model_from_env: P2B_CLOUD_MODEL
+    credential_ref: OPENAI_API_KEY
+    # Omit the temperature parameter for models that do not accept it.
+    parameters:
+      temperature: null
+roles:
+  author: author_text
+  reference: author_text
+  agent: author_text
+  judge: author_text
+routing:
+  fallback: disabled
+execution:
+  backend: oci
+  network: none
+budgets:
+  authoring: {requests: 40, input_tokens: 500000, output_tokens: 100000}
+  evaluation: {requests: 50, input_tokens: 500000, output_tokens: 100000}
+  experiments: {requests: 40, input_tokens: 500000, output_tokens: 100000, agent_turns: 30}

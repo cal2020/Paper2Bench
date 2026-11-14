@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:paper2bench:task-manifest:1",
+  "title": "Paper2Bench task manifest version 1",
+  "type": "object",
+  "required": ["schema_version", "task_id", "revision", "task_mode", "readiness", "files"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "task_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,79}$"},
+    "revision": {"type": "integer", "minimum": 1},
+    "task_mode": {"enum": ["from_scratch", "author_artifact_reexecution", "adaptation"]},
+    "readiness": {"enum": ["draft", "needs_review", "ready", "blocked", "retired"]},
+    "files": {"type": "object", "minProperties": 1, "maxProperties": 128,
+      "additionalProperties": {"type": "string", "pattern": "^[0-9a-f]{64}$"}},
+    "entrypoint": {"type": "string"},
+    "inputs": {"type": "string"},
+    "predictions": {"type": "string"},
+    "limits": {"type": "object", "additionalProperties": false, "properties": {
+      "timeout_seconds": {"type": "integer", "minimum": 1},
+      "memory_bytes": {"type": "integer", "minimum": 1},
+      "cpus": {"type": "number", "exclusiveMinimum": 0},
+      "pids_limit": {"type": "integer", "minimum": 1},
+      "workspace_bytes": {"type": "integer", "minimum": 1},
+      "output_limit_bytes": {"type": "integer", "minimum": 1}
+    }}
+  },
+  "additionalProperties": true
+}

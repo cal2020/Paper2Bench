@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "image": "python:3.11-slim",
+  "ceilings": {
+    "timeout_seconds": 900,
+    "memory_bytes": 1073741824,
+    "cpus": 2,
+    "pids_limit": 128,
+    "workspace_bytes": 67108864,
+    "output_limit_bytes": 65536,
+    "max_files": 1024
+  }
+}

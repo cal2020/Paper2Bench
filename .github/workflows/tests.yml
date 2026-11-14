@@ -1,0 +1,25 @@
+name: Tests
+on: [push, pull_request]
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ['3.10', '3.11', '3.12', '3.13']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - run: python -m pip install -e '.[dev]'
+      - run: python -m pytest -q
+  isolation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install -e '.[dev]'
+      - run: docker pull python:3.11-slim
+      - run: P2B_DOCKER_TESTS=1 python -m pytest -q

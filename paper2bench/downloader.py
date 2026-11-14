@@ -5,14 +5,14 @@ import os
 import re
 import sys
 import time
-import urllib.request
+import tempfile
+import xml.etree.ElementTree as ET
 from difflib import SequenceMatcher
+from pathlib import Path
 from typing import Optional
+from urllib.parse import urlencode
 
-try:
-    import arxiv
-except ImportError:
-    sys.exit("Missing dependency: pip install arxiv")
+from .network import NetworkFetchError, require_external_access, safe_fetch
 
 
 def _safe_print(s: str) -> None:
@@ -48,7 +48,7 @@ def _split_query(query: str) -> tuple[str, str]:
 
 
 # Backoff schedule for arxiv HTTP 429 rate-limits.
-_BACKOFF_SECONDS = (5, 20, 60)
+_BACKOFF_SECONDS = (1, 2)
 
 
 def search_arxiv(query: str, max_results: int = 5) -> list:
@@ -57,39 +57,55 @@ def search_arxiv(query: str, max_results: int = 5) -> list:
     Retries with exponential backoff on HTTP 429 (rate limit) errors from
     the arxiv API, which are common when multiple jobs query in parallel.
     """
-    client = arxiv.Client()
-    search = arxiv.Search(
-        query=query,
-        max_results=max_results,
-        sort_by=arxiv.SortCriterion.Relevance,
-    )
-
-    last_err = None
+    require_external_access("arXiv search")
+    if not isinstance(query, str) or not query.strip() or len(query) > 4096:
+        raise ValueError("arXiv query must contain between 1 and 4096 characters")
+    if type(max_results) is not int or not 1 <= max_results <= 100:
+        raise ValueError("max_results must be between 1 and 100")
+    url = "https://export.arxiv.org/api/query?" + urlencode({
+        "search_query": query, "start": 0, "max_results": max_results,
+        "sortBy": "relevance", "sortOrder": "descending",
+    })
+    last_status = None
     for attempt, delay in enumerate((0,) + _BACKOFF_SECONDS):
         if delay:
             print(f"[arxiv] rate-limited, retrying in {delay}s "
                   f"(attempt {attempt}/{len(_BACKOFF_SECONDS)}) ...")
             time.sleep(delay)
-        try:
-            results = []
-            for r in client.results(search):
-                results.append({
-                    "title": r.title,
-                    "authors": [a.name for a in r.authors],
-                    "published": r.published.strftime("%Y-%m-%d"),
-                    "arxiv_id": r.entry_id.split("/")[-1],
-                    "pdf_url": r.pdf_url,
-                    "abstract": r.summary[:300],
-                })
-            return results
-        except arxiv.HTTPError as e:
-            last_err = e
-            if getattr(e, "status", None) != 429:
-                raise
+        fetched = safe_fetch(url, max_bytes=2 * 1024 * 1024, timeout_seconds=30)
+        last_status = fetched.status
+        if fetched.status == 429:
             continue
-
+        if fetched.status != 200:
+            raise NetworkFetchError(f"arXiv search returned HTTP {fetched.status}")
+        try:
+            text = fetched.body.decode("utf-8")
+            if "<!DOCTYPE" in text.upper() or "<!ENTITY" in text.upper():
+                raise ValueError("XML declarations are prohibited")
+            root = ET.fromstring(text)
+        except (UnicodeError, ET.ParseError, ValueError) as exc:
+            raise NetworkFetchError("arXiv returned an invalid bounded Atom response") from exc
+        namespace = {"a": "http://www.w3.org/2005/Atom"}
+        results = []
+        for entry in root.findall("a:entry", namespace)[:max_results]:
+            def field(name):
+                return (entry.findtext("a:" + name, default="", namespaces=namespace) or "").strip()
+            pdf_url = next((link.attrib.get("href", "") for link in entry.findall("a:link", namespace)
+                            if link.attrib.get("title") == "pdf" or link.attrib.get("type") == "application/pdf"), "")
+            if not pdf_url:
+                continue
+            results.append({
+                "title": " ".join(field("title").split()),
+                "authors": [(author.findtext("a:name", default="", namespaces=namespace) or "").strip()
+                            for author in entry.findall("a:author", namespace)],
+                "published": field("published")[:10],
+                "arxiv_id": field("id").rsplit("/", 1)[-1],
+                "pdf_url": pdf_url,
+                "abstract": " ".join(field("summary").split())[:300],
+            })
+        return results
     raise RuntimeError(
-        f"arxiv search failed after {len(_BACKOFF_SECONDS)} retries: {last_err}"
+        f"arxiv search failed after {len(_BACKOFF_SECONDS)} retries: HTTP {last_status}"
     )
 
 
@@ -106,10 +122,30 @@ def display_results(results: list) -> None:
         print(f"    Abstract:  {r['abstract']}...")
 
 
-def download_pdf(pdf_url: str, output_path: str) -> None:
-    """Download a PDF from a URL."""
+def download_pdf(pdf_url: str, output_path: str, *, max_bytes: int = 32 * 1024 * 1024) -> None:
+    """Fetch a bounded PDF atomically; never follow a destination symlink."""
+    require_external_access("paper PDF download")
+    output = Path(output_path)
+    if output.is_symlink():
+        raise ValueError("PDF destination must not be a symlink")
     print(f"Downloading PDF to {output_path} ...")
-    urllib.request.urlretrieve(pdf_url, output_path)
+    fetched = safe_fetch(pdf_url, max_bytes=max_bytes, timeout_seconds=60)
+    if fetched.status != 200 or not fetched.body.startswith(b"%PDF-"):
+        raise NetworkFetchError("Paper download did not return a successful PDF response")
+    output.parent.mkdir(parents=True, exist_ok=True)
+    temporary = None
+    try:
+        with tempfile.NamedTemporaryFile(prefix=".p2b-download-", dir=output.parent, delete=False) as handle:
+            temporary = Path(handle.name)
+            handle.write(fetched.body)
+            handle.flush()
+            os.fsync(handle.fileno())
+        if output.is_symlink():
+            raise ValueError("PDF destination became a symlink")
+        os.replace(temporary, output)
+    finally:
+        if temporary is not None and temporary.exists():
+            temporary.unlink()
     size_mb = os.path.getsize(output_path) / (1024 * 1024)
     print(f"Downloaded: {size_mb:.1f} MB")
 
@@ -131,6 +167,12 @@ def find_and_download(
     sort is unreliable for short title-style queries (a single noisy hit can
     bump the real paper out of the top slot).
     """
+    if not isinstance(task_id, str) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]{0,127}", task_id):
+        raise ValueError("task_id must be a bounded alphanumeric identifier with underscores or hyphens")
+    if not isinstance(query, str) or not query.strip() or len(query) > 4096:
+        raise ValueError("arXiv query must contain between 1 and 4096 characters")
+    if isinstance(min_similarity, bool) or not isinstance(min_similarity, (int, float)) or not 0 <= min_similarity <= 1:
+        raise ValueError("min_similarity must be between zero and one")
     title_query, author_hint = _split_query(query)
 
     # Strategy: title-field search first (high precision for known titles),

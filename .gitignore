@@ -13,6 +13,10 @@ venv/
 .tox/
 .mypy_cache/
 .pytest_cache/
+.DS_Store
+.sites-runtime/
+.sites-checkout/
+.sites-checkout-*/
 *.pdf
 
 # Local test artifacts and logs

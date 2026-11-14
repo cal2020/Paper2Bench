@@ -4,10 +4,10 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "paper2bench"
-version = "0.3.1"
+version = "0.4.0a2"
 description = "Convert academic papers into benchmark tasks for evaluating AI agents."
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 license = {text = "MIT"}
 authors = [
     {name = "Abhay Anand"},
@@ -35,10 +35,12 @@ dependencies = [
 
 [project.optional-dependencies]
 anthropic = ["anthropic>=0.40"]
+dev = ["pytest>=8.0"]
 
 [project.urls]
-Homepage = "https://github.com/AbhayAnandUCSD/Paper2Bench"
-Issues = "https://github.com/AbhayAnandUCSD/Paper2Bench/issues"
+Homepage = "https://github.com/cal2020/Paper2Bench"
+Issues = "https://github.com/cal2020/Paper2Bench/issues"
+Upstream = "https://github.com/AbhayAnandUCSD/Paper2Bench"
 
 [project.scripts]
 paper2bench = "paper2bench.cli:main"
@@ -47,4 +49,8 @@ paper2bench = "paper2bench.cli:main"
 include = ["paper2bench*"]
 
 [tool.setuptools.package-data]
-paper2bench = ["templates/*.txt"]
+paper2bench = ["templates/*.txt", "schemas/*.json"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["docker: requires the local Docker engine and a staged Python image"]

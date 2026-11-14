@@ -20,12 +20,10 @@ import re
 from pathlib import Path
 from typing import Optional
 
-from dotenv import load_dotenv
 
 from .llm import chat
 from .pdf_utils import extract_text_from_pdf
 
-load_dotenv()
 
 
 PAPER_TYPES = ("llm_evaluation", "novel_architecture", "empirical_study")
@@ -96,12 +94,8 @@ def classify_paper(
     )
     parsed = _parse_json(response.content)
 
-    # Defensive: fall back to llm_evaluation if the model emits junk.
-    if parsed.get("type") not in PAPER_TYPES:
-        print(f"[classify] Unrecognised type '{parsed.get('type')}', "
-              "defaulting to llm_evaluation.")
-        parsed = {"type": "llm_evaluation", "confidence": "low",
-                  "rationale": "classifier output did not match known types"}
+    if not isinstance(parsed, dict) or parsed.get("type") not in PAPER_TYPES:
+        raise ValueError("Classifier output requires review; no archetype was selected")
 
     return parsed
 

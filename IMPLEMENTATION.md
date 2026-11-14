@@ -199,6 +199,11 @@ scorers stay in the controller. Scoring consumes bounded data-only JSON,
 recomputes metrics, and ignores printed gold scores. Hashes establish identity
 and integrity, not scientific truth.
 
+Bundle reads bind regular files and directory components to open descriptors,
+enforce limits on actual bytes read, and reject symlink substitution. Public YAML
+projection also limits expanded nodes and text, including compact alias graphs.
+Source downloads reject contradictory HTTP framing and incomplete bodies.
+
 `execution/v1` checks isolated job completion; `method_output/v1` supports the
 installed linear and knapsack demonstration scorers. Legacy `verify` uses strict
 version-2 claim-F1 or rubric scoring and reports conclusion similarity separately.
@@ -207,6 +212,13 @@ are rejected. `execution_verified` means a successful code block was observed;
 legacy verification does not establish full method fidelity or scientific
 reproduction. New model-generated tasks remain `needs_review`, and
 `instruction_gt.txt` is a reference draft.
+
+Scored runs pin the installed scorer revision; scientific parents also pin the
+scientific evaluator revision. Resume and linked re-execution reject changed or
+missing revision pins. Corrected numeric comparisons retain exact integer and
+binary-float values, so rounding cannot turn a failed discrete objective or a
+zero-tolerance comparison into a pass. Interval equivalence validates the interval
+and its declared construction before using it as evidence.
 
 For an explicitly reviewed contract, `reproduction/v1` and `transfer/v1` freeze
 the exact source, task, code, data, seed schedule, stopping rule, metric criteria,
@@ -269,6 +281,15 @@ outcomes block automatic replay; changed identities are rejected. Task-output
 locking prevents concurrent authors from mixing artifacts. This is historical
 artifact reuse, not a fresh model replication.
 
+Custom template bytes and optional verification data are frozen before authoring.
+Edits during generation cannot change those inputs under the original identity;
+resume rejects changed source inputs or historical snapshot artifacts. The task
+lock covers journal creation through finalization. After a controller crash,
+resume can recover fully settled stages and completed receipts without replaying
+model calls. Running/unknown stages or reserved usage still require reconciliation.
+Cancellation that wins finalization raises an error instead of returning authoring
+success. Checkpoint limits apply to the exact serialized bytes written.
+
 `--split-rqs` retains the legacy orchestration and has no multistage checkpoint
 resume. Standalone stage commands have durable model budgets when a profile is
 used, but no automatic generation-stage orchestration. Model journals default to
@@ -293,6 +314,18 @@ The full local release JUnit report remains at `runs/frozen-release-test-results
 Editable installation reported `0.4.0a2`, and compilation passed. The
 local `runs/swarm-validation.json` receipt records the checks and artifact
 hashes. Full local receipts are intentionally excluded from GitHub and deployment.
+
+The final unrestricted hardening gate passed **577 tests with no failures or
+skips**, with Docker enabled and all fixture modules included, on the core at
+commit `333784c`. All six real Docker cases ran: isolation/deadline checks, both
+installed method examples, local worker-process transport, and a scientific
+contract run. No fixes were needed after this run. The saved local report is
+`runs/hardening-docker-final-test-results.xml`; `runs/hardening-validation.json`
+records its hash, counts, command, and tested source identity. This completes the
+previously interrupted final gate. Compilation, zero-call `doctor`, and executable
+example validation also passed. The earlier restricted 480-test result remains
+in `runs/hardening-local-test-results.xml` as historical evidence. These checks
+supplement the pinned release gate above; they do not replace its stated scope.
 
 ```bash
 .venv/bin/python -m pytest -q

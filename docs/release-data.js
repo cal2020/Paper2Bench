@@ -5,7 +5,7 @@ window.P2B_RELEASE = Object.freeze({
   repository: 'https://github.com/cal2020/Paper2Bench',
   upstream: 'https://github.com/AbhayAnandUCSD/Paper2Bench',
   evidenceDate: '12 November 2026',
-  tests: 572,
+  tests: 577,
   testDate: '13 November 2026',
   scenarios: [
     {

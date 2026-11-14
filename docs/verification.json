@@ -3,7 +3,7 @@
   "version": "0.4.0a2",
   "verification_date": "2026-11-13",
   "test_counts": {
-    "tests": 572,
+    "tests": 577,
     "failures": 0,
     "errors": 0,
     "skipped": 0
@@ -62,7 +62,7 @@
     }
   },
   "receipt_sha256": {
-    "tests": "b5462a5530a112fa7c95b41d68ae97be3dfa67711de41134bdd1a490cbccfa40",
+    "tests": "b9e39940fa82af12c0f0f9cbb3c53e28880fc76ddefda0f84dbe322b2b15c020",
     "local_model_probe": "fe5448208a83d934f195011e9464a23125a0e9fb18e60349991faf23ef65b7d1",
     "isolated_model_broker": "4dcc6354e50c8324e996a94305c42744298261b8a7c5bafe283c790319d602c7",
     "scientific_fixture": "1369201133529945b54dae17d509a294e87823b93cbd263e576cf0972ea6d8ba",
@@ -88,5 +88,20 @@
     "tests_receipt_sha256": "b51d1cd8ccc5c04338e55d8ffc6bafcb0f942dab6dd25c6feab1a15a2b539a87"
   },
   "live_fixture_date": "2026-11-12",
-  "tested_core_commit": "4779b6a3df8ae56692c8e6da2a782d8a34fd9ac4"
+  "tested_core_commit": "333784c153df38badcea0bb34abff2a83b5946a8",
+  "prior_release_gate": {
+    "verification_date": "2026-11-13",
+    "test_counts": {
+      "tests": 572,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "tests_receipt_sha256": "b5462a5530a112fa7c95b41d68ae97be3dfa67711de41134bdd1a490cbccfa40",
+    "tested_core_commit": "4779b6a3df8ae56692c8e6da2a782d8a34fd9ac4"
+  },
+  "pipeline_sha256": "3a995f9506225e0db48e175c75d5f675baade142f75614f2ba617bb47d6d5c1b",
+  "test_duration_seconds": 44.948,
+  "real_docker_cases": 6,
+  "test_scope": "Complete local suite with Docker enabled and all fixture modules included; no failures or skips."
 }

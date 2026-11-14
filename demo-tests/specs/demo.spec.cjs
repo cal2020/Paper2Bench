@@ -109,7 +109,10 @@ test('model broker panel inspects a receipt without making a model request', asy
 
 test('copy command is available through the real clipboard control', async ({ page }) => {
   await openDemo(page);
-  const copy = page.getByRole('button', { name: 'copy', exact: true }).first();
+  // The accessible name changes to "✓ copied" after success. Keep selecting
+  // the same first hero control rather than switching to the next "copy".
+  const copy = page.getByRole('banner').getByRole('button').first();
+  await expect(copy).toHaveText('copy');
   await copy.click();
   await expect(copy).toHaveText('✓ copied');
   expect(await page.evaluate(() => navigator.clipboard.readText())).toBe('pip install git+https://github.com/cal2020/Paper2Bench.git');

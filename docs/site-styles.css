@@ -836,6 +836,13 @@ button:focus-visible, a:focus-visible, summary:focus-visible {
   .capability-row { grid-template-columns: 30px minmax(150px, 0.8fr) minmax(0, 1.2fr); gap: 16px; }
 }
 @media (max-width: 620px) {
+  .section-head { flex-wrap: wrap; gap: 10px; }
+  .section-head .label { max-width: 100%; white-space: normal; }
+  .section-head .rule { flex-basis: 100%; order: 3; }
+  .walk-stage-dot { min-width: 0; padding: 12px 7px; gap: 6px; }
+  .walk-stage-dot .dot-label { white-space: normal; }
+  .pdf-overlay.big { top: 15%; transform: translate(-50%, 0) scale(1); }
+  .pdf-annot { top: auto; bottom: 16px; left: 16px; right: 16px; width: auto; transform: none; }
   .brand-version { display: none; }
   .nav-links { gap: 10px; }
   .guide-nav-link { display: none; }

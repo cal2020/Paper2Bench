@@ -35,7 +35,9 @@ def artifact(tmp_path, monkeypatch):
     hosting = {"project_id": "appgprj_test_identity", "static": {"directory": "dist"}}
     write_json(repository / "deployment/demo/.openai/hosting.json", hosting)
     subprocess.run(["git", "-C", str(repository), "add", "."], check=True)
-    subprocess.run(["git", "-C", str(repository), "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid", "commit", "-qm", "fixture"], check=True)
+    subprocess.run(["git", "-C", str(repository), "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid",
+                    "-c", "commit.gpgSign=false", "-c", "core.hooksPath=" + str(repository / "no-hooks"),
+                    "commit", "-qm", "fixture"], check=True)
     commit = git(repository, "rev-parse", "HEAD")
     monkeypatch.setattr(packager, "ROOT", repository)
     source = tmp_path / "deploy"

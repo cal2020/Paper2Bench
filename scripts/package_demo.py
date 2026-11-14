@@ -17,7 +17,7 @@ import tempfile
 
 ROOT = Path(__file__).resolve().parents[1]
 REPOSITORY = "https://github.com/cal2020/Paper2Bench"
-MAX_FILE_BYTES = 8 * 1024 * 1024
+MAX_FILE_BYTES = 16 * 1024 * 1024
 MAX_TOTAL_BYTES = 64 * 1024 * 1024
 MAX_FILES = 512
 SOURCE_SUFFIXES = {".html", ".css", ".js", ".jsx", ".json", ".zip", ".svg", ".png", ".webp", ".ico", ".txt", ".yaml", ".yml"}
@@ -109,7 +109,7 @@ def _source_inputs(commit):
             continue
         metadata, path = entry.split(b"\t", 1)
         name = path.decode("utf-8")
-        if Path(name).suffix in SOURCE_SUFFIXES:
+        if Path(name).suffix in SOURCE_SUFFIXES and not any(part.startswith(".") for part in Path(name).parts):
             _relative(name)
             if metadata.split()[0] not in {b"100644", b"100755"}:
                 raise ArtifactError("Committed demo inputs must be regular files")
@@ -148,6 +148,8 @@ def validate(source, expected_commit):
     if source.is_symlink() or not source.is_dir():
         raise ArtifactError("Deployment source must be a nonsymlink directory")
     source = source.resolve()
+    if _git("cat-file", "-t", expected_commit).strip() != b"commit":
+        raise ArtifactError("Expected source identity must resolve to a Git commit")
     extras = {p.name for p in source.iterdir()} - {"dist", ".openai", ".git", ".gitignore", "README.md"}
     if extras:
         raise ArtifactError("Deployment root contains unexpected private or source files")
@@ -188,7 +190,8 @@ def validate(source, expected_commit):
             raise ArtifactError("Artifact exceeds its total byte limit")
         payloads["dist/" + name] = raw
     provenance = _json(payloads["dist/build-provenance.json"])
-    if not isinstance(provenance, dict) or provenance.get("schema_version") != 1 or provenance.get("kind") != "paper2bench-static-demo":
+    if (not isinstance(provenance, dict) or type(provenance.get("schema_version")) is not int
+            or provenance["schema_version"] != 1 or provenance.get("kind") != "paper2bench-static-demo"):
         raise ArtifactError("Invalid build provenance")
     origin, build, declared_hosting = (provenance.get(name) for name in ("source", "build", "hosting"))
     if (not all(isinstance(value, dict) for value in (origin, build, declared_hosting))
@@ -279,7 +282,7 @@ def extract_archive(archive, destination, expected_commit):
         try:
             with tarfile.open(fileobj=io.BytesIO(raw_tar), mode="r:") as archive_file:
                 for member in archive_file:
-                    if not member.isfile() or member.name in names or len(names) >= MAX_FILES + 2:
+                    if member.type not in {tarfile.REGTYPE, tarfile.AREGTYPE} or member.name in names or len(names) >= MAX_FILES + 2:
                         raise ArtifactError("Archive allows only unique bounded regular files")
                     name = member.name
                     if name != ".openai/hosting.json":

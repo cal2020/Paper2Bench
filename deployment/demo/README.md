@@ -13,7 +13,7 @@ It does not fetch application libraries or compile JSX in the visitor's browser.
 Hosted fonts are optional; system-font fallbacks work when outside requests are
 blocked. The original `docs/` HTML remains available for source inspection.
 
-Use Python 3.10+ and Node.js 24. Install the two checked-in npm lockfiles from the
+Use Python 3.10+ and Node.js 24 (CI pins 24.22.2). Install the two checked-in npm lockfiles from the
 repository root:
 
 ```bash

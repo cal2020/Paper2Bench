@@ -18,7 +18,7 @@ const WSTAGES = [
   {
     n: 3,
     label: 'Render the briefs',
-    desc: 'instruction.txt is what the agent literally reads. instruction_gt.txt appends a 9-task ground-truth plan for the evaluator. Same prefix, +75 lines, claim-scored later by paper2bench verify.',
+    desc: 'instruction.txt is what the agent literally reads. instruction_gt.txt appends a generated reference plan for curator review. The example illustrates authoring output; conclusion scoring does not validate the scientific method.',
   },
 ];
 

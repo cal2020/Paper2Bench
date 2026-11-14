@@ -1,0 +1,92 @@
+{
+  "schema_version": 1,
+  "version": "0.4.0a2",
+  "verification_date": "2026-11-13",
+  "test_counts": {
+    "tests": 572,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "docker_tests_enabled": true,
+  "checks": {
+    "numerical_fixture": {
+      "method": "linear fit",
+      "metric": "mean_squared_error",
+      "value": 0,
+      "execution": "isolated local Docker",
+      "source": "examples/tasks/linear-fit"
+    },
+    "symbolic_fixture": {
+      "method": "dynamic programming, independent exhaustive oracle",
+      "objective": 12,
+      "feasible": true,
+      "execution": "isolated local Docker",
+      "source": "examples/tasks/knapsack"
+    },
+    "scientific_contract_fixture": {
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "mean_squared_errors": [
+        0,
+        0,
+        0
+      ],
+      "critical_criteria": [
+        "execution",
+        "curator_attested_fidelity",
+        "empirical_agreement"
+      ],
+      "status": "passed",
+      "review_scope": "synthetic test author review",
+      "uncertainty": "not_assessed_without_prespecified_bounds_and_independence",
+      "source": "examples/protocols"
+    },
+    "local_model_probe": {
+      "provider": "ollama",
+      "model": "llama3.2:latest",
+      "status": "passed",
+      "identity_assurance": "server_reported_digest_stable",
+      "fixture": "public arithmetic text fixture"
+    },
+    "isolated_model_broker": {
+      "model_calls": 1,
+      "replay_model_calls": 0,
+      "worker_network": "none",
+      "credential_absence_asserted": true,
+      "both_worker_cleanups_confirmed": true,
+      "status": "passed"
+    }
+  },
+  "receipt_sha256": {
+    "tests": "b5462a5530a112fa7c95b41d68ae97be3dfa67711de41134bdd1a490cbccfa40",
+    "local_model_probe": "fe5448208a83d934f195011e9464a23125a0e9fb18e60349991faf23ef65b7d1",
+    "isolated_model_broker": "4dcc6354e50c8324e996a94305c42744298261b8a7c5bafe283c790319d602c7",
+    "scientific_fixture": "1369201133529945b54dae17d509a294e87823b93cbd263e576cf0972ea6d8ba",
+    "fresh_scientific_fixture": "9971c4d030ce9fbfa03853e5d6fdf10a18fecb10e72f711150e1ddaa65a15ae5",
+    "evidence_index": "838babb4c933c7e9a7788a6d7c8c02454f81171e6101537ed4b73f5a2996f7a0",
+    "selected_context": "c647eec5367ffae5c1fccdac45526392f313f9f48918fc9761dbebaa3a945118"
+  },
+  "scope": "Sanitized facts selected from saved local verification receipts. This static page is not a live execution service; hashes identify records and do not provide independent attestation.",
+  "unverified": [
+    "hosted cloud inference",
+    "external SSH host",
+    "NVIDIA hardware execution",
+    "published-paper scientific reproduction"
+  ],
+  "prior_gate": {
+    "verification_date": "2026-11-12",
+    "test_counts": {
+      "tests": 488,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "tests_receipt_sha256": "b51d1cd8ccc5c04338e55d8ffc6bafcb0f942dab6dd25c6feab1a15a2b539a87"
+  },
+  "live_fixture_date": "2026-11-12",
+  "tested_core_commit": "4779b6a3df8ae56692c8e6da2a782d8a34fd9ac4"
+}

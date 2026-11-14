@@ -33,6 +33,7 @@ function ExampleApp() {
     <React.Fragment>
       <window.Nav />
       <ExampleHeader paper={paper} />
+      <div className="container"><p className="scope-note draft-banner"><strong>Illustrative paper draft.</strong> This upstream-derived content has not been validated as a reproduction of the published paper. Model names, loaders, assumptions and reference plans require source and curator review.</p></div>
 
       <section className="section walkthrough-section container" id="walkthrough">
         <window.Walkthrough paper={paper} />
@@ -42,13 +43,13 @@ function ExampleApp() {
         <div className="section-head reveal">
           <span className="label accent">§ The agent brief vs the evaluator's key</span>
           <span className="rule" />
-          <span className="label">{paper.title} · real files</span>
+          <span className="label">{paper.title} · illustrative draft</span>
         </div>
         <h2 className="section-title reveal">
           What the <span className="italic-accent">agent</span> sees vs what the <span className="italic-accent">evaluator</span> sees.
         </h2>
         <p className="section-lede reveal" data-delay="1">
-          <code style={{ background: 'var(--surface-2)', padding: '1px 6px', fontSize: 13 }}>instruction_gt.txt</code> = <code style={{ background: 'var(--surface-2)', padding: '1px 6px', fontSize: 13 }}>instruction.txt</code> with a ground-truth experimental plan appended. The agent never sees the addition; <code style={{ background: 'var(--surface-2)', padding: '1px 6px', fontSize: 13 }}>paper2bench verify</code> scores the agent's conclusion against it.
+          <code style={{ background: 'var(--surface-2)', padding: '1px 6px', fontSize: 13 }}>instruction_gt.txt</code> = <code style={{ background: 'var(--surface-2)', padding: '1px 6px', fontSize: 13 }}>instruction.txt</code> with a generated reference plan appended for review. The candidate does not receive the evaluator addition; <code style={{ background: 'var(--surface-2)', padding: '1px 6px', fontSize: 13 }}>paper2bench verify</code> scores conclusion similarity. That score does not establish execution or method fidelity.
         </p>
         <div className="reveal" data-delay="2">
           <window.FullDiff paper={paper} />

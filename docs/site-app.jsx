@@ -24,10 +24,13 @@ function Nav() {
         <div>
           <a href="index.html" className="brand-link" aria-label="Paper2Bench home">
             <span className="brand">Paper2Bench</span>
+            <span className="brand-version">v{window.P2B_RELEASE.version}</span>
           </a>
         </div>
         <div className="nav-links">
-          <a className="icon-link" href="https://github.com/AbhayAnandUCSD/Paper2Bench" target="_blank" rel="noreferrer" aria-label="GitHub repository" title="GitHub">
+          <a href="index.html#demo" className="demo-nav-link">Try the demo</a>
+          <a href={window.P2B_RELEASE.repository + "/blob/main/IMPLEMENTATION.md"} target="_blank" rel="noreferrer" className="guide-nav-link">Guide</a>
+          <a className="icon-link" href={window.P2B_RELEASE.repository} target="_blank" rel="noreferrer" aria-label="GitHub repository" title="GitHub">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
               <path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.1.79-.25.79-.56v-2.16c-3.2.7-3.87-1.36-3.87-1.36-.52-1.32-1.27-1.67-1.27-1.67-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.18 1.76 1.18 1.03 1.76 2.7 1.25 3.36.96.1-.75.4-1.25.73-1.54-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.18-3.09-.12-.29-.51-1.46.11-3.04 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.79 0c2.21-1.49 3.18-1.18 3.18-1.18.62 1.58.23 2.75.11 3.04.74.8 1.18 1.83 1.18 3.09 0 4.42-2.69 5.4-5.26 5.68.41.36.78 1.06.78 2.14v3.18c0 .31.21.67.8.56 4.57-1.52 7.85-5.83 7.85-10.91C23.5 5.65 18.35.5 12 .5z"/>
             </svg>
@@ -118,37 +121,37 @@ function Hero() {
     <header className="hero container">
       <div className="hero-grid">
         <div className="hero-copy">
+          <div className="release-eyebrow reveal"><span className="release-dot" /> Portable execution alpha · v{window.P2B_RELEASE.version}</div>
           <h1 className="reveal">
-            Every paper is a <span className="italic-accent">benchmark</span> waiting to be{' '}
-            <TypeCycle words={['unpacked', 'decomposed', 'reproduced', 'scored', 'evaluated']} />.
+            Papers become <span className="italic-accent">protocols.</span><br />Evidence follows.
           </h1>
           <p className="lede reveal" data-delay="1">
-            Convert any research paper across materials, biology, and ML into a reliable benchmark you can score agents against.
+            Build reviewable benchmark drafts, run isolated computational tasks, and keep each result tied to its source, method and runtime.
           </p>
         </div>
         <div className="install-card reveal" data-delay="1">
           <div className="install-card-head">
-            <span className="label accent">Get started</span>
+            <span className="label accent">Start with a real fixture</span>
           </div>
-          <h3>One command.</h3>
+          <h3>No model required.</h3>
           <div className="install-step">
             <span className="install-step-num">1</span>
             <div className="install-step-body">
-              <span className="install-step-label">Install</span>
+              <span className="install-step-label">Install this extension</span>
               <Copyable cmd={D.install.pip} />
             </div>
           </div>
           <div className="install-step">
             <span className="install-step-num">2</span>
             <div className="install-step-body">
-              <span className="install-step-label">Run on a paper</span>
-              <Copyable cmd="paper2bench run --pdf paper.pdf --auto" />
+              <span className="install-step-label">Check the execution runtime</span>
+              <Copyable cmd="paper2bench doctor --execution" />
             </div>
           </div>
         </div>
       </div>
-      <a className="hero-scroll-cue" onClick={() => document.getElementById('walkthrough')?.scrollIntoView({ behavior: 'smooth' })}>
-        <span>Scroll to see the pipeline</span>
+      <a className="hero-scroll-cue" href="#demo">
+        <span>Explore the demo and evidence</span>
         <span className="hero-scroll-arrow">↓</span>
       </a>
     </header>
@@ -167,9 +170,10 @@ function DiffSection() {
   return (
     <section className="section container" id="diff">
       <h2 className="section-title reveal">
-        We generate <span className="italic-accent">agent instructions</span> and a <span className="italic-accent">ground-truth key</span> for evaluation.
+        Inspect <span className="italic-accent">agent instructions</span> beside a <span className="italic-accent">reference draft.</span>
       </h2>
       <div className="reveal" data-delay="1" style={{ marginTop: 36 }}>
+        <p className="scope-note">These upstream-derived examples illustrate authoring output. Reference plans need curator review; conclusion similarity alone does not validate execution or scientific fidelity.</p>
         <window.FullDiff />
       </div>
     </section>
@@ -181,8 +185,9 @@ function Examples() {
   return (
     <section className="section container" id="examples">
       <h2 className="section-title reveal">
-        Five papers, run end-to-end.
+        Five paper drafts, open for inspection.
       </h2>
+      <p className="section-lede reveal">Explore illustrative extracted questions, problem trees and reference plans from the original project. These are not validated reproductions of the papers.</p>
       <div className="examples-grid" style={{ marginTop: 36 }}>
         {D.papers.map((paper, i) => (
           <a
@@ -207,61 +212,17 @@ function Examples() {
 }
 
 function Install() {
-  const D = window.P2B_DATA;
+  const R = window.P2B_RELEASE;
   return (
     <section className="section container" id="install">
-      <h2 className="section-title reveal">
-        Two-line install. <span className="italic-accent">Nine stages</span> on one command.
-      </h2>
-
-      <div className="reveal" data-delay="1" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 32, marginTop: 8 }}>
-        <div>
-          <span className="label" style={{ display: 'block', marginBottom: 10 }}>1 · install from GitHub</span>
-          <Copyable cmd={D.install.pip} />
-          <div style={{ marginTop: 14, fontSize: 12.5, color: 'var(--muted)', lineHeight: 1.5 }}>
-            For Claude support, install the optional <code style={{ background: 'var(--surface-2)', padding: '1px 5px', fontSize: 11 }}>anthropic</code> extra:
-          </div>
-          <div style={{ marginTop: 6 }}>
-            <Copyable cmd={D.install.pipa} dark />
-          </div>
-        </div>
-        <div>
-          <span className="label" style={{ display: 'block', marginBottom: 10 }}>2 · one-shot pipeline</span>
-          <div className="code-block" style={{ whiteSpace: 'pre' }}>
-            <span className="prompt">$</span>
-            paper2bench run \{'\n'}
-            {'  '}--task-id reversal_curse \{'\n'}
-            {'  '}--query "The Reversal Curse Berglund" \{'\n'}
-            {'  '}--research-question "If an LLM is{'\n'}
-            {'    '}fine-tuned on 'A is B,' does it{'\n'}
-            {'    '}learn 'B is A'?" \{'\n'}
-            {'  '}--output-dir ./output/ --auto
-          </div>
-          <div style={{ marginTop: 14, fontSize: 12.5, color: 'var(--muted)', lineHeight: 1.5 }}>
-            Or use the Python SDK: <code style={{ background: 'var(--surface-2)', padding: '1px 5px', fontSize: 11 }}>import paper2bench; paper2bench.run(pdf=...)</code>.
-          </div>
-        </div>
+      <div className="section-head reveal"><span className="label accent">Take it to your own runtime</span><span className="rule" /></div>
+      <h2 className="section-title reveal">Inspect the source. <span className="italic-accent">Run the fixtures.</span></h2>
+      <div className="install-grid reveal">
+        <div><span className="label">1 · clone this extension</span><Copyable cmd={'git clone ' + R.repository + '.git'} /><Copyable cmd="cd Paper2Bench && python -m pip install -e '.[dev]'" /></div>
+        <div><span className="label">2 · stage a trusted worker image</span><Copyable cmd="docker pull python:3.11-slim" /><Copyable cmd="paper2bench doctor --execution" /></div>
       </div>
-
-      <div className="reveal" data-delay="2" style={{ marginTop: 32 }}>
-        <span className="label" style={{ display: 'block', marginBottom: 14 }}>Or run any stage on its own</span>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 10 }}>
-          {Object.entries({
-            download: D.cli.download,
-            parse:    D.cli.parse,
-            classify: D.cli.classify,
-            extract:  D.cli.extract,
-            render:   D.cli.render,
-            plan:     D.cli.plan,
-            verify:   D.cli.verify,
-          }).map(([k, v]) => (
-            <div key={k} style={{ background: 'var(--surface)', border: '1px solid var(--rule)', padding: '12px 14px', borderRadius: 2 }}>
-              <span className="label accent" style={{ display: 'block' }}>{k}</span>
-              <code style={{ display: 'block', marginTop: 6, fontSize: 11, color: 'var(--fg)', wordBreak: 'break-all', lineHeight: 1.5 }}>{v}</code>
-            </div>
-          ))}
-        </div>
-      </div>
+      <p className="section-lede reveal">Python 3.10+ and a running Docker engine are required for the isolated examples. Foundation-model authoring uses an explicit runtime profile; choose your model and export its credential when hosted inference is needed.</p>
+      <div className="release-links reveal"><a className="primary-button" href={R.repository + '/blob/main/IMPLEMENTATION.md'} target="_blank" rel="noreferrer">Read the implementation guide ↗</a><a className="text-link" href={R.repository + '/tree/main/examples'} target="_blank" rel="noreferrer">Browse runtime profiles & examples ↗</a></div>
     </section>
   );
 }
@@ -269,10 +230,10 @@ function Install() {
 function Footer() {
   return (
     <footer className="container footer">
-      <span>paper2bench · v0.3.0 · MIT</span>
-      <span style={{ color: 'var(--faint)' }}>made for researchers who'd rather be reading papers than writing eval harnesses</span>
+      <span>Paper2Bench · v{window.P2B_RELEASE.version} · MIT</span>
+      <span style={{ color: 'var(--faint)' }}>Portable execution extension · upstream attribution preserved</span>
       <span>
-        <a href="https://github.com/AbhayAnandUCSD/Paper2Bench" style={{ color: 'var(--accent)' }}>GitHub ↗</a>
+        <a href={window.P2B_RELEASE.repository} style={{ color: 'var(--accent)' }}>GitHub ↗</a>
       </span>
     </footer>
   );
@@ -287,7 +248,7 @@ function MadeBy() {
   return (
     <section className="section container made-by-section">
       <div className="made-by reveal">
-        <span className="label">Made by</span>
+        <span className="label">Original upstream authors</span>
         <div className="made-by-names">
           {authors.map((a, i) => (
             <React.Fragment key={a.url}>
@@ -309,11 +270,73 @@ function App() {
     <React.Fragment>
       <Nav />
       <Hero />
+      <ExecutionDemo />
+      <ReleaseCapabilities />
       <WalkthroughSection />
       <DiffSection />
       <Examples />
+      <Install />
       <MadeBy />
+      <Footer />
     </React.Fragment>
+  );
+}
+
+function ReleaseCapabilities() {
+  const entries = [
+    ['01', 'Choose the runtime', 'Route author, reference, agent and judge roles to local Ollama, hosted OpenAI or Anthropic, or explicit compatible endpoints. No automatic cloud fallback.'],
+    ['02', 'Keep evidence attached', 'Index source spans and exact citations. Select bounded context with visible omissions, then keep generated requirements in a reviewable draft state.'],
+    ['03', 'Run within a boundary', 'Use isolated Docker workers, pinned SSH workers, or explicitly selected NVIDIA devices. The controller broker keeps model credentials outside candidate code.'],
+    ['04', 'Preserve the experiment', 'Freeze reviewed protocols and fixed seed schedules. Recompute metrics with installed scorers, checkpoint authoring stages, and retain unknown outcomes for reconciliation.']
+  ];
+  return (
+    <section className="section container" id="capabilities" aria-labelledby="capabilities-title">
+      <div className="section-head reveal"><span className="label accent">The portable execution extension</span><span className="rule" /><span className="label">v{window.P2B_RELEASE.version}</span></div>
+      <h2 className="section-title reveal" id="capabilities-title">From a paper draft to <span className="italic-accent">inspectable evidence.</span></h2>
+      <div className="capability-list">
+        {entries.map(([n, title, description]) => (
+          <article className="capability-row reveal" key={n}>
+            <span className="capability-number">{n}</span><h3>{title}</h3><p>{description}</p>
+          </article>
+        ))}
+      </div>
+      <p className="scope-note reveal">Local Docker and Llama fixtures were exercised. Hosted accounts, external SSH hosts and physical NVIDIA execution remain unverified. Full training and simulation integrations require additional method plugins.</p>
+    </section>
+  );
+}
+
+function ExecutionDemo() {
+  const R = window.P2B_RELEASE;
+  const [scenarioId, setScenarioId] = React.useState('linear');
+  const [result, setResult] = React.useState(null);
+  const scenario = R.scenarios.find(item => item.id === scenarioId);
+  const choose = (id) => { setScenarioId(id); setResult(null); };
+  const run = () => setResult(window.P2B_runBrowserFixture(scenarioId));
+  return (
+    <section className="section container" id="demo" aria-labelledby="demo-title">
+      <div className="section-head reveal"><span className="label accent">Try the small things. Inspect the hard things.</span><span className="rule" /><span className="label">Browser only · no API key</span></div>
+      <h2 className="section-title reveal" id="demo-title">Explore the <span className="italic-accent">execution evidence.</span></h2>
+      <p className="section-lede reveal">Run two small computations in your browser, or inspect recorded protocol and model-broker fixtures. This static demo never launches a container or sends a model request.</p>
+      <div className="execution-demo reveal">
+        <div className="demo-selector" role="group" aria-label="Choose an execution scenario">
+          {R.scenarios.map(item => <button type="button" key={item.id} aria-pressed={scenarioId === item.id} className={scenarioId === item.id ? 'scenario-button active' : 'scenario-button'} onClick={() => choose(item.id)}>{item.title}<span>{item.kind}</span></button>)}
+        </div>
+        <div className="demo-detail">
+          <div className="demo-heading"><span className="label accent">{scenario.paradigm}</span><span className="evidence-chip">{scenario.kind}</span></div>
+          <h3>{scenario.title}</h3>
+          <p className="demo-description">{scenario.description}</p>
+          <ol className="demo-stages">{scenario.stages.map((step, i) => <li key={step}><span>{String(i + 1).padStart(2, '0')}</span>{step}</li>)}</ol>
+          <dl className="demo-facts">{scenario.facts.map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>
+          <div className="demo-action-row"><button className="primary-button" type="button" onClick={run}>{scenario.button}<span aria-hidden> ↗</span></button><a className="text-link" href={R.repository + '/blob/main/' + scenario.source} target="_blank" rel="noreferrer">Inspect source ↗</a></div>
+          <div className="demo-result" role="status" aria-live="polite" aria-atomic="true">
+            {result ? <React.Fragment><span className="label accent">{result.origin}</span><strong>{result.result}</strong><p>{result.detail}</p></React.Fragment> : <p>Choose a scenario and use the button above to see its scoped result.</p>}
+          </div>
+          <p className="demo-scope">{scenario.scope}</p>
+          <details className="demo-reproduce"><summary>Run the Python fixture yourself</summary><Copyable cmd={scenario.command} /><p>Use the repository checkout and staged Docker image. The local-model probe additionally needs the named Ollama model installed. See the <a className="text-link" href={R.repository + '/blob/main/IMPLEMENTATION.md'} target="_blank" rel="noreferrer">implementation guide</a> for setup and limits.</p></details>
+        </div>
+      </div>
+      <div className="verification-strip reveal"><div><strong>{R.tests}</strong><span>passing tests</span></div><div><strong>3</strong><span>fixed synthetic seeds</span></div><div><strong>1 → 0</strong><span>broker call → replay calls</span></div><p>Release tests · {R.testDate}. Recorded local fixtures · {R.evidenceDate}. Synthetic fixtures establish software behavior within the stated scope, not published-paper reproduction. <a className="text-link" href="verification.json" target="_blank" rel="noreferrer">View the sanitized evidence summary ↗</a></p></div>
+    </section>
   );
 }
 

@@ -286,9 +286,10 @@ CPU consumption or a provider invoice.
 
 ## Verification evidence and remaining limits
 
-The final local gate passed **488 tests** with real Docker tests enabled; the
+The release core gate passed **572 tests** on 13 November 2026 in an isolated
+checkout of commit `4779b6a`, with real Docker tests enabled; the
 public verification summary is [docs/verification.json](docs/verification.json).
-The full local JUnit report remains at `runs/swarm-test-results.xml`.
+The full local release JUnit report remains at `runs/frozen-release-test-results.xml`.
 Editable installation reported `0.4.0a2`, and compilation passed. The
 local `runs/swarm-validation.json` receipt records the checks and artifact
 hashes. Full local receipts are intentionally excluded from GitHub and deployment.

@@ -486,11 +486,11 @@ Please design and execute experiments to investigate this research question. Doc
   window.P2B_DATA = {
     papers,
     install: {
-      pip:  'pip install paper2bench',
-      pipa: 'pip install "paper2bench[anthropic]"',
+      pip:  'pip install git+https://github.com/cal2020/Paper2Bench.git',
+      pipa: 'pip install -e ".[dev]"',
     },
     cli: {
-      run: 'paper2bench run --task-id reversal_curse --pdf paper.pdf --auto',
+      run: 'paper2bench run --pdf paper.pdf --research-question "Does the stated method improve the primary metric?" --runtime-config examples/runtime.local.yaml',
       download:  'paper2bench download "Paper title" -o ./papers/',
       parse:     'paper2bench parse paper.pdf -o tree.json',
       classify:  'paper2bench classify --pdf paper.pdf',

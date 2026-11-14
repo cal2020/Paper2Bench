@@ -327,6 +327,15 @@ example validation also passed. The earlier restricted 480-test result remains
 in `runs/hardening-local-test-results.xml` as historical evidence. These checks
 supplement the pinned release gate above; they do not replace its stated scope.
 
+GitHub Actions also passed for commit
+[`e8838f4`](https://github.com/cal2020/Paper2Bench/commit/e8838f4344a87a40538f61bb65a0e640883446ee)
+on 13 November 2026:
+[Tests run 43553168548](https://github.com/cal2020/Paper2Bench/actions/runs/43553168548).
+All five jobs completed successfully: the Python 3.10, 3.11, 3.12, and 3.13 unit
+matrix and the Docker-enabled `isolation` job. The public verification summary
+records the exact tested commit, run, and job identities separately from the
+local test receipts.
+
 ```bash
 .venv/bin/python -m pytest -q
 P2B_DOCKER_TESTS=1 .venv/bin/python -m pytest -q
@@ -348,7 +357,6 @@ credential/curator denial, SSRF/redirects, cancellation, persistent reservations
 restart behavior, worker deadlines, evidence citations, protocol contradictions,
 and output tampering. Fixture tests make no billable provider calls. Hosted model
 accounts, external SSH, and physical NVIDIA execution remain untested here.
-Remote CI configuration exists; this local result does not establish a remote
-CI run. Cluster scheduling, full training/simulation integrations, real expert
+Cluster scheduling, full training/simulation integrations, real expert
 calibration studies, paper-family holdouts, authenticated team hosting, and
 general scientific reproduction remain further work.

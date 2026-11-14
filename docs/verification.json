@@ -70,7 +70,7 @@
     "evidence_index": "838babb4c933c7e9a7788a6d7c8c02454f81171e6101537ed4b73f5a2996f7a0",
     "selected_context": "c647eec5367ffae5c1fccdac45526392f313f9f48918fc9761dbebaa3a945118"
   },
-  "scope": "Sanitized facts selected from saved local verification receipts. This static page is not a live execution service; hashes identify records and do not provide independent attestation.",
+  "scope": "Sanitized facts selected from saved local verification receipts and the linked GitHub Actions run. This static page is not a live execution service; hashes identify records and do not provide independent attestation.",
   "unverified": [
     "hosted cloud inference",
     "external SSH host",
@@ -103,5 +103,55 @@
   "pipeline_sha256": "3a995f9506225e0db48e175c75d5f675baade142f75614f2ba617bb47d6d5c1b",
   "test_duration_seconds": 44.948,
   "real_docker_cases": 6,
-  "test_scope": "Complete local suite with Docker enabled and all fixture modules included; no failures or skips."
+  "test_scope": "Complete local suite with Docker enabled and all fixture modules included; no failures or skips.",
+  "github_actions": {
+    "workflow": "Tests",
+    "run_id": 43553168548,
+    "url": "https://github.com/cal2020/Paper2Bench/actions/runs/43553168548",
+    "tested_commit": "e8838f4344a87a40538f61bb65a0e640883446ee",
+    "event": "push",
+    "status": "completed",
+    "conclusion": "success",
+    "verification_date": "2026-11-13",
+    "created_at": "2026-11-14T03:44:29Z",
+    "updated_at": "2026-11-14T03:45:49Z",
+    "jobs": [
+      {
+        "id": 132319993417,
+        "name": "isolation",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/cal2020/Paper2Bench/actions/runs/43553168548/job/132319993417"
+      },
+      {
+        "id": 132319993269,
+        "name": "unit (3.10)",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/cal2020/Paper2Bench/actions/runs/43553168548/job/132319993269"
+      },
+      {
+        "id": 132319993431,
+        "name": "unit (3.11)",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/cal2020/Paper2Bench/actions/runs/43553168548/job/132319993431"
+      },
+      {
+        "id": 132319993497,
+        "name": "unit (3.12)",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/cal2020/Paper2Bench/actions/runs/43553168548/job/132319993497"
+      },
+      {
+        "id": 132319993448,
+        "name": "unit (3.13)",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/cal2020/Paper2Bench/actions/runs/43553168548/job/132319993448"
+      }
+    ],
+    "scope": "GitHub-hosted Ubuntu Python 3.10-3.13 unit matrix and the Docker-enabled isolation job."
+  }
 }

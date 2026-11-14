@@ -55,9 +55,14 @@ def parser_limits_profile() -> dict:
 
 
 _WORKER = r'''
-import json, math, sys
+import json, math, os, sys
 sys.dont_write_bytecode = True
 limits = json.loads(sys.argv[1])
+# Reserve stdout for the controller protocol. Both Python prints and native
+# parser writes to fd 1 go to stderr, whose parent-side byte cap still applies.
+protocol = os.fdopen(os.dup(sys.stdout.fileno()), "w", encoding="utf-8")
+os.dup2(sys.stderr.fileno(), sys.stdout.fileno())
+sys.stdout = sys.stderr
 try:
     import resource
     seconds = max(1, math.ceil(limits["timeout_seconds"]))
@@ -70,7 +75,13 @@ try:
     resource.setrlimit(resource.RLIMIT_NOFILE, (64, 64))
     if hasattr(resource, "RLIMIT_NPROC"):
         resource.setrlimit(resource.RLIMIT_NPROC, (32, 32))
-    import fitz
+    try:
+        import pymupdf as fitz
+    except ModuleNotFoundError as exc:
+        if exc.name != "pymupdf":
+            raise
+        # PyMuPDF 1.23 predates the canonical module name.
+        import fitz
     data = sys.stdin.buffer.read(limits["max_file_bytes"] + 1)
     if len(data) > limits["max_file_bytes"]:
         raise ValueError("input_limit")
@@ -89,10 +100,10 @@ try:
                     raise ValueError("text_limit")
                 pages.append(marked)
         result = {"text": "\n\n".join(pages), "pages": document.page_count}
-    print(json.dumps(result, ensure_ascii=False))
+    print(json.dumps(result, ensure_ascii=False), file=protocol, flush=True)
 except BaseException as exc:
     message = str(exc) if isinstance(exc, ValueError) and str(exc) in {"input_limit", "encrypted_pdf", "page_limit", "text_limit", "unsupported_memory_limit"} else type(exc).__name__
-    print(json.dumps({"error": message}))
+    print(json.dumps({"error": message}), file=protocol, flush=True)
     sys.exit(2)
 '''
 

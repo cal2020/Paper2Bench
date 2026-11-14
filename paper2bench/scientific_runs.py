@@ -25,7 +25,8 @@ from .runtime_config import get_context
 
 _ACTIVE = {"running", "reconciling", "cancellation_requested"}
 _METRICS = {"linear_predictions/v1": ("mean_squared_error", "target_units_squared"),
-            "knapsack_optimum/v1": ("feasible_optimal_objective", "objective_units")}
+            "knapsack_optimum/v1": ("feasible_optimal_objective", "objective_units"),
+            "adam_counterexample/v1": ("adam_vs_amsgrad_average_regret_gap", "loss_per_round")}
 
 
 def _check_implementation(spec):
@@ -198,6 +199,10 @@ def _metric_record(seed, child, report, scorer):
         # An infeasible subset's numeric objective is not a valid observation of
         # the constrained objective, even when it coincides with the optimum.
         return dict(base, status="failed", value=None, failure_reason="infeasible_solution")
+    if scorer == "adam_counterexample/v1" and metric.get("observation_valid") is not True:
+        # A fabricated trajectory can preserve a paired scalar by cancellation.
+        # It cannot become scientific evidence merely by matching that scalar.
+        return dict(base, status="failed", value=None, failure_reason="invalid_algorithm_trace")
     finite_number(metric.get("value"), "trusted metric")
     n = metric.get("samples") if scorer == "linear_predictions/v1" else 1
     if type(n) is not int or n <= 0:

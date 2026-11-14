@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "C": 3,
+  "beta1": 0.0,
+  "beta2": 0.1,
+  "alpha": 0.1,
+  "epsilon": 0.0,
+  "bias_correction": false,
+  "initial_position": 1.0,
+  "domain": [-1.0, 1.0],
+  "steps": 30000,
+  "recording": "pre_update"
+}

@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "profile": "adam_paper_local_20261113",
+  "policy": {
+    "data_egress": "local_only",
+    "verified_offline_required": false,
+    "telemetry_content": false
+  },
+  "models": {
+    "local": {
+      "provider": "ollama",
+      "model": "qwen3-coder:30b",
+      "endpoint": "http://127.0.0.1:11434",
+      "hosting": "local_server",
+      "locality_assurance": "operator_trusted",
+      "context_tokens": 262144,
+      "output_tokens": 16384,
+      "timeout_seconds": 900,
+      "revision": "sha256:06c1097efce0431c2045fe7b2e5108366e43bee1b4603a7aded8f21689e90bca",
+      "parameters": {
+        "temperature": 0,
+        "seed": 0
+      }
+    }
+  },
+  "roles": {
+    "author": "local",
+    "reference": "local",
+    "agent": "local",
+    "judge": "local"
+  },
+  "routing": {
+    "fallback": "disabled"
+  },
+  "execution": {
+    "backend": "oci",
+    "network": "none"
+  },
+  "budgets": {
+    "authoring": {
+      "requests": 12,
+      "input_tokens": 2000000,
+      "output_tokens": 120000
+    },
+    "evaluation": {
+      "requests": 8,
+      "input_tokens": 500000,
+      "output_tokens": 40000
+    },
+    "experiments": {
+      "requests": 8,
+      "input_tokens": 500000,
+      "output_tokens": 50000,
+      "agent_turns": 4
+    }
+  }
+}

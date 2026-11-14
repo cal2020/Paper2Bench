@@ -12,6 +12,17 @@ publicly accessible without signing in; its build is documented in
 inference and a Docker → model broker → Llama → Docker round trip passed;
 external SSH, NVIDIA hardware, and hosted model accounts remain untested here.
 
+The public demo now includes a [recorded published-paper experiment](https://paper2bench-portable-demo.escape4242.chatgpt.site/#real-paper):
+the Appendix A counterexample from *On the Convergence of Adam and Beyond*
+(ICLR 2018). Four actual local Qwen authoring calls produced reviewable drafts.
+Source review found incorrect generated steps and metrics; a separately curated,
+digest-bound implementation ran 30,000 steps in each of three fresh isolated
+containers. Adam average regret was **0.667180**, versus **0.052132** for AMSGrad.
+This is an assisted finite check, not autonomous full-paper reproduction. The
+[task and correction audit](examples/papers/adam-counterexample/README.md),
+[public receipt](docs/results/adam-counterexample.json), and
+[raw trajectories](docs/results/adam-predictions.json) are committed together.
+
 The extension is implemented in this checkout, not in the upstream release tags
 linked below. The original generation workflows remain available. Legacy
 conclusion scoring remains separate from method fidelity and scientific

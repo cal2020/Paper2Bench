@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "source_paper_sha256": "75a949b0751e81c490e7eee76efadd1eb8868c64f44275d8d1542a8f42cb7c01",
+  "authoring_run_id": "b18646a99c0a44e985d83a351e033cee",
+  "authoring_source_commit": "7179845fee5318bc95d3ce84118f1aa4028d470c",
+  "authoring_pipeline_sha256": "3a995f9506225e0db48e175c75d5f675baade142f75614f2ba617bb47d6d5c1b",
+  "authoring_stage_receipts": {
+    "parse": "968d9c5d12738f72bf8c5c83dc5fc9ecee1fa7b046eaf76ae6b0c327b484abab",
+    "classify": "f6ae7b87cf4f729bc336d1518c1c440c8eb1ce80458f353ad007585fdbc5fcdc",
+    "extract": "63063ce4237092e10858b42f2abb64a31f1312b8715e722181dd6887fcc0db67",
+    "render": "6e51082def31a70c867d245befe617c5a855da9ec6d9fb46d3834a881a60e702",
+    "plan": "17708b31af81ce809a9aad1e6840a38886a8dbe1e095d7608e59038e7a928235"
+  },
+  "draft_config_sha256": "55f6e5e808ec789fa33cc35c771dd14c4a6467852f3855480d613452df6352fa",
+  "draft_instruction_sha256": "f16d0066c2c15aacaaa5265d890d342a55c54c31465e972f97648c4fa434de65",
+  "draft_plan_sha256": "89189597e1cba017e42cc6159eee66e706b58bbb5c04665124a91fa944f5983b",
+  "model": "qwen3-coder:30b",
+  "provider": "ollama",
+  "model_digest": "sha256:06c1097efce0431c2045fe7b2e5108366e43bee1b4603a7aded8f21689e90bca",
+  "draft_status": "needs_review",
+  "executed_model_draft": false,
+  "decision": "Use the independently source-reviewed curated implementation; retain failed draft requirements as audit findings. Bind this authoring record before final scientific execution.",
+  "corrections": [
+    "Decaying alpha/sqrt(t), projection onto [-1,1], and pre-update linear regret must replace the generated constant-rate, unprojected, squared-distance method.",
+    "Reject unprespecified beta2 sweeps and unsupported numerical-exactness claims in generated plan.",
+    "Use fixed 30000-step horizon, pre-update x_T and separate post-update x_(T+1).",
+    "Classify the executed task as deterministic optimization adaptation and preserve the narrow finite scope."
+  ],
+  "candidate_sha256": "4e4a27a7ca3275a3f37c5a39c131753dc9f84c03c50bb7a204a1b25a8d04d2cc",
+  "review_evidence": "SOURCE_REVIEW.md"
+}

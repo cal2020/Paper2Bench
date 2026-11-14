@@ -1,12 +1,13 @@
 """Trusted, bounded example scorers independent of candidate implementations.
 
-These are computational demos, not validated paper-reproduction protocols.
+Scientific claims additionally require a source-bound, reviewed protocol.
 Never load a scorer or Python plugin named by a candidate task.
 """
 import itertools
 import math
 
 from .bundles import BundleError
+from .adam_benchmark import score_adam
 
 # Installed names remain compatible with alpha curator bundles. The separate
 # immutable protocol identities distinguish corrected numerical verdicts from
@@ -14,6 +15,7 @@ from .bundles import BundleError
 SCORER_PROTOCOLS = {
     "linear_predictions/v1": "linear_predictions/v2",
     "knapsack_optimum/v1": "knapsack_optimum/v2",
+    "adam_counterexample/v1": "adam_counterexample/v1",
 }
 SCORERS = set(SCORER_PROTOCOLS)
 
@@ -53,6 +55,8 @@ def score(scorer, inputs, predictions, reference):
         raise BundleError("Scorer is not an installed trusted scorer")
     if not isinstance(inputs, dict) or not isinstance(predictions, dict) or not isinstance(reference, dict):
         raise BundleError("Scoring inputs must be typed objects")
+    if scorer == "adam_counterexample/v1":
+        return score_adam(inputs, predictions, reference)
     if scorer == "linear_predictions/v1":
         actual, labels = predictions.get("predictions"), reference.get("labels")
         tests = inputs.get("test")

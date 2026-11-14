@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "task_id": "adam-appendix-a-counterexample",
+  "revision": 1,
+  "research_question": "At the prescribed finite horizon, does the Appendix A cyclic convex sequence distinguish Adam from AMSGrad?",
+  "paper_type": "theoretical_study",
+  "method_kind": "optimization",
+  "task_mode": "adaptation",
+  "readiness": "ready",
+  "source": {
+    "paper_sha256": "75a949b0751e81c490e7eee76efadd1eb8868c64f44275d8d1542a8f42cb7c01",
+    "url": "https://arxiv.org/abs/1904.09237",
+    "scope": "Appendix A finite numerical check; not Figure 1, neural experiments, or an asymptotic proof",
+    "authoring_run_id": "b18646a99c0a44e985d83a351e033cee",
+    "curation_sha256": "d965dd3ca0bccb7a63e3244390870ed1b66a375b1361c759d25218d312a0031e"
+  },
+  "files": {
+    "solution.py": "4e4a27a7ca3275a3f37c5a39c131753dc9f84c03c50bb7a204a1b25a8d04d2cc",
+    "input.json": "841d46b90348d7ac4178d545e585622b9ef1debdbf206944557e345fda0bf30b"
+  },
+  "entrypoint": "solution.py",
+  "inputs": "input.json",
+  "predictions": "predictions.json",
+  "limits": {
+    "timeout_seconds": 30,
+    "memory_bytes": 268435456,
+    "cpus": 1,
+    "pids_limit": 64,
+    "workspace_bytes": 16777216,
+    "output_limit_bytes": 16384
+  }
+}

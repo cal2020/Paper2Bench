@@ -1,0 +1,92 @@
+{
+  "schema_version": 1,
+  "profile": "reproduction/v1",
+  "protocol_id": "reddi-2018-appendix-a-finite-30000-v1",
+  "task_manifest_sha256": "b1b104f281cabbfbf544e35bdc03b30b67a65265ea6c5b3346f4de9e6a5b958e",
+  "submission_sha256": "4e4a27a7ca3275a3f37c5a39c131753dc9f84c03c50bb7a204a1b25a8d04d2cc",
+  "source": {
+    "paper_sha256": "75a949b0751e81c490e7eee76efadd1eb8868c64f44275d8d1542a8f42cb7c01",
+    "citations": [
+      {
+        "id": "adam-update",
+        "locator": "arXiv1904.09237v1 PDF p3 Algorithm1 and Eq1",
+        "claim": "Projected Adam update; zero initialized moments; no debiasing."
+      },
+      {
+        "id": "amsgrad-update",
+        "locator": "arXiv1904.09237v1 PDF p5 Algorithm2",
+        "claim": "AMSGrad retains the coordinatewise largest second moment."
+      },
+      {
+        "id": "cyclic-counterexample",
+        "locator": "arXiv1904.09237v1 PDF pp10-11 AppendixA proof of Theorem1",
+        "claim": "Cyclic convex gradients [C,-1,-1], initial x1=1, beta1=0, beta2=1/(1+C*C), alpha/sqrt(t)."
+      }
+    ]
+  },
+  "datasets": {
+    "input.json": "841d46b90348d7ac4178d545e585622b9ef1debdbf206944557e345fda0bf30b"
+  },
+  "plan": {
+    "seed_schedule": [
+      0,
+      1,
+      2
+    ],
+    "stopping_rule": "fixed_schedule",
+    "variability_source": "Deterministic optimizer trajectories; seeds exercise fresh execution isolation, not population uncertainty. All outcomes retained.",
+    "independence_assumption": false
+  },
+  "criteria": [
+    {
+      "id": "execution",
+      "kind": "execution",
+      "dimension": "execution",
+      "critical": true,
+      "depends_on": []
+    },
+    {
+      "id": "method-fidelity",
+      "kind": "review",
+      "dimension": "implementation_fidelity",
+      "critical": true,
+      "depends_on": [
+        "execution"
+      ],
+      "review_id": "source-fidelity"
+    },
+    {
+      "id": "finite-agreement",
+      "kind": "metric",
+      "dimension": "empirical_agreement",
+      "critical": true,
+      "depends_on": [
+        "execution",
+        "method-fidelity"
+      ],
+      "metric_id": "adam_vs_amsgrad_average_regret_gap",
+      "units": "loss_per_round",
+      "rule": "absolute_tolerance",
+      "reference": 0.6150479326113306,
+      "tolerance": 1e-10,
+      "min_samples_per_run": 1
+    }
+  ],
+  "reviews": [
+    {
+      "id": "source-fidelity",
+      "reviewer": "Automated source-review agent, independent of implementation agent; no external human review",
+      "status": "pass",
+      "submission_sha256": "4e4a27a7ca3275a3f37c5a39c131753dc9f84c03c50bb7a204a1b25a8d04d2cc",
+      "paper_sha256": "75a949b0751e81c490e7eee76efadd1eb8868c64f44275d8d1542a8f42cb7c01",
+      "source_citations": [
+        "adam-update",
+        "amsgrad-update",
+        "cyclic-counterexample"
+      ],
+      "evidence_refs": [
+        "examples/papers/adam-counterexample/SOURCE_REVIEW.md"
+      ]
+    }
+  ]
+}

@@ -28,6 +28,7 @@ function Nav() {
           </a>
         </div>
         <div className="nav-links">
+          {window.P2B_REAL_PAPER && <a href="index.html#real-paper" className="paper-nav-link">Paper run</a>}
           <a href="index.html#demo" className="demo-nav-link">Try the demo</a>
           <a href={window.P2B_RELEASE.repository + "/blob/main/IMPLEMENTATION.md"} target="_blank" rel="noreferrer" className="guide-nav-link">Guide</a>
           <a className="icon-link" href={window.P2B_RELEASE.repository} target="_blank" rel="noreferrer" aria-label="GitHub repository" title="GitHub">
@@ -128,6 +129,7 @@ function Hero() {
           <p className="lede reveal" data-delay="1">
             Build reviewable benchmark drafts, run isolated computational tasks, and keep each result tied to its source, method and runtime.
           </p>
+          {window.P2B_REAL_PAPER && <a className="text-link paper-hero-link reveal" href="#real-paper">Inspect the recorded real-paper run ↘</a>}
         </div>
         <div className="install-card reveal" data-delay="1">
           <div className="install-card-head">
@@ -270,6 +272,7 @@ function App() {
     <React.Fragment>
       <Nav />
       <Hero />
+      <RealPaperStudy />
       <ExecutionDemo />
       <ReleaseCapabilities />
       <WalkthroughSection />
@@ -338,6 +341,142 @@ function ExecutionDemo() {
       <div className="verification-strip reveal"><div><strong>{R.tests}</strong><span>passing tests</span></div><div><strong>3</strong><span>fixed synthetic seeds</span></div><div><strong>1 → 0</strong><span>broker call → replay calls</span></div><p>Release tests · {R.testDate}. Recorded local fixtures · {R.evidenceDate}. Synthetic fixtures establish software behavior within the stated scope, not published-paper reproduction. <a className="text-link" href="verification.json" target="_blank" rel="noreferrer">View the sanitized evidence summary ↗</a></p></div>
     </section>
   );
+}
+
+function paperNumber(value, precision = 6) {
+  if (typeof value !== 'number' || !Number.isFinite(value)) return value == null ? 'Not recorded' : String(value);
+  const digits = Number.isInteger(precision) ? Math.max(0, Math.min(12, precision)) : 6;
+  return value.toLocaleString('en-US', { maximumFractionDigits: digits });
+}
+
+function RealPaperStudy() {
+  const study = window.P2B_REAL_PAPER;
+  if (!study || study.schema_version !== 1 || !study.paper?.title) return null;
+  return <RealPaperStudyContent study={study} />;
+}
+
+function RealPaperStudyContent({ study }) {
+  const [metric, setMetric] = React.useState('position');
+  const checkpoints = React.useMemo(() => (Array.isArray(study.checkpoints) ? study.checkpoints : [])
+    .filter(point => Number.isInteger(point.step) && point.step >= 0)
+    .sort((a, b) => a.step - b.step), [study]);
+  const [selectedIndex, setSelectedIndex] = React.useState(Math.max(0, checkpoints.length - 1));
+  const selected = checkpoints[Math.min(selectedIndex, checkpoints.length - 1)];
+  const paper = study.paper;
+  const authoring = study.authoring || {};
+  const execution = study.execution || {};
+  const hasRegret = checkpoints.length > 1 && checkpoints.every(point =>
+    Number.isFinite(point.adam_average_regret) && Number.isFinite(point.amsgrad_average_regret));
+  const hasPositions = checkpoints.length > 1 && checkpoints.every(point =>
+    Number.isFinite(point.adam_position) && Number.isFinite(point.amsgrad_position));
+  const canPlot = metric === 'position' ? hasPositions : hasRegret;
+  const sourceHref = typeof paper.url === 'string' && /^https:\/\//.test(paper.url) ? paper.url : undefined;
+  const sourcePath = study.reproduction?.source_path;
+  const sourceCodeHref = typeof sourcePath === 'string' && /^[a-zA-Z0-9_/-]+$/.test(sourcePath) && !sourcePath.split('/').includes('..')
+    ? window.P2B_RELEASE.repository + '/tree/main/' + sourcePath : undefined;
+  const metrics = Array.isArray(study.metrics) ? study.metrics : [];
+  const steps = [
+    ['01', 'Source paper', [paper.venue, paper.year].filter(Boolean).join(' · '), 'PDF identity pinned'],
+    ['02', 'Parse · extract · plan', authoring.model || 'Authoring runtime recorded in receipt', authoring.status || 'See receipt'],
+    ['03', 'Isolated execution', execution.steps ? paperNumber(execution.steps, 0) + ' iterations per run' : 'See recorded protocol', execution.status || 'See receipt'],
+    ['04', 'Trusted metrics', 'Recomputed from recorded trajectories', 'Controller-side scoring'],
+  ];
+  const identities = [
+    ['Paper PDF', paper.pdf_sha256], ['Task', execution.task_sha256],
+    ['Submission', execution.submission_sha256], ['Protocol', execution.protocol_sha256],
+    ['Container image', execution.image_id], ['Model digest', authoring.model_digest],
+  ].filter(([, value]) => value);
+  return (
+    <section className="section container real-paper" id="real-paper" aria-labelledby="real-paper-title">
+      <div className="section-head reveal"><span className="label accent">Recorded research case study</span><span className="rule" /><span className="label">A published paper · an explicit scope</span></div>
+      <h2 className="section-title reveal" id="real-paper-title">A real paper, <span className="italic-accent">through the pipeline.</span></h2>
+      <div className="paper-intro reveal">
+        <div>
+          <p className="paper-citation">{(Array.isArray(paper.authors) ? paper.authors : []).join(', ')}{paper.year ? ' · ' + paper.year : ''}{paper.venue ? ' · ' + paper.venue : ''}</p>
+          <h3>{sourceHref ? <a href={sourceHref} target="_blank" rel="noreferrer">{paper.title} ↗</a> : paper.title}</h3>
+          <p className="paper-question">{study.question}</p>
+        </div>
+        <aside className="paper-scope-box">
+          <span className="label accent">What this run establishes</span>
+          <p>{study.scope || 'A finite, paper-grounded computational experiment.'}</p>
+          <p className="paper-finite-warning">Finite-horizon evidence, not a proof of asymptotic convergence or a full-paper reproduction.</p>
+        </aside>
+      </div>
+      <ol className="paper-pipeline reveal" aria-label="Recorded paper pipeline">
+        {steps.map(([number, label, detail, status]) => <li key={number}><span className="label accent">{number}</span><h4>{label}</h4><p>{detail}</p><span className="paper-step-state">{status}</span></li>)}
+      </ol>
+      <div className="paper-metrics reveal" aria-label="Recorded trusted metrics">
+        {metrics.map((item, i) => <div key={item.label + '-' + i} data-testid={'paper-metric-' + i}><span>{item.label}</span><strong>{paperNumber(item.value, item.precision)}</strong>{item.unit && <small>{item.unit}</small>}</div>)}
+      </div>
+      <div className="paper-chart-card reveal">
+        <div className="paper-chart-heading">
+          <div><span className="label accent">Inspect the recorded checkpoints</span><h3>Two optimizers, one prescribed sequence.</h3></div>
+          <div className="paper-chart-tabs" role="group" aria-label="Recorded trace metric">
+            <button type="button" onClick={() => setMetric('position')} aria-pressed={metric === 'position'} disabled={!hasPositions}>Position</button>
+            <button type="button" onClick={() => setMetric('regret')} aria-pressed={metric === 'regret'} disabled={!hasRegret}>Average regret</button>
+          </div>
+        </div>
+        {canPlot ? <RecordedPaperChart checkpoints={checkpoints} metric={metric} selectedIndex={Math.min(selectedIndex, checkpoints.length - 1)} /> : <p className="paper-chart-empty">No numeric trace was published for this run.</p>}
+        {checkpoints.length > 1 && <div className="paper-checkpoint-control">
+          <label htmlFor="paper-checkpoint">Recorded checkpoint <strong>{selected ? 'Iteration ' + paperNumber(selected.step, 0) : ''}</strong></label>
+          <input id="paper-checkpoint" type="range" min="0" max={checkpoints.length - 1} step="1" value={Math.min(selectedIndex, checkpoints.length - 1)} onChange={event => setSelectedIndex(Number(event.target.value))} aria-label="Recorded checkpoint" aria-valuetext={selected ? 'Iteration ' + selected.step : ''} />
+          <div className="paper-checkpoint-values" aria-live="polite">
+            <span><i className="paper-swatch adam" />Adam <strong>{paperNumber(selected?.[metric === 'position' ? 'adam_position' : 'adam_average_regret'])}</strong></span>
+            <span><i className="paper-swatch amsgrad" />AMSGrad <strong>{paperNumber(selected?.[metric === 'position' ? 'amsgrad_position' : 'amsgrad_average_regret'])}</strong></span>
+          </div>
+        </div>}
+        <p className="paper-chart-caption">Recorded checkpoints are joined for inspection; the plot does not rerun the experiment. Values shown here are rounded. Complete numeric evidence is available in the receipt.</p>
+      </div>
+      <div className="paper-assurance reveal">
+        <div><h3>Authored, then checked.</h3><p>{authoring.review || 'Model-generated authoring artifacts are drafts. The executed method and protocol require a separate source and implementation review.'}</p><p>{study.assurance?.method_fidelity || 'No independent human expert certification is asserted.'}</p></div>
+        <div><h3>Every limit stays visible.</h3><ul>{(Array.isArray(study.limitations) ? study.limitations : []).map((limit, i) => <li key={i}>{limit}</li>)}</ul><p>{study.assurance?.scientific_scope}</p></div>
+      </div>
+      {Array.isArray(authoring.stages) && authoring.stages.length > 0 && <ol className="paper-authoring-stages reveal" aria-label="Recorded authoring stages">{authoring.stages.map((stage, i) => <li key={i}><strong>{stage.label}</strong><span>{stage.status}</span>{stage.detail && <p>{stage.detail}</p>}</li>)}</ol>}
+      <div className="paper-evidence-bar reveal">
+        <a className="primary-button" href="results/adam-counterexample.json" download>Download recorded run JSON ↓</a>
+        {study.reproduction?.raw_predictions_path && <a className="text-link" href={study.reproduction.raw_predictions_path} download>Download full trajectories ↓</a>}
+        {sourceCodeHref && <a className="text-link" href={sourceCodeHref} target="_blank" rel="noreferrer">Inspect the executable task ↗</a>}
+        {study.recorded_at && <span className="paper-recorded-at">Recorded <time dateTime={study.recorded_at}>{study.recorded_at}</time></span>}
+      </div>
+      <details className="paper-run-details reveal"><summary>Inspect source, runtime, and run identities</summary>
+        <dl>{identities.map(([label, value]) => <div key={label}><dt>{label}</dt><dd><code>{value}</code></dd></div>)}</dl>
+        <p>{authoring.model_calls != null ? paperNumber(authoring.model_calls, 0) + ' recorded model calls. ' : ''}{authoring.input_tokens != null ? paperNumber(authoring.input_tokens, 0) + ' input tokens. ' : ''}{authoring.output_tokens != null ? paperNumber(authoring.output_tokens, 0) + ' output tokens. ' : ''}{execution.cleanup_confirmed === true ? 'Worker cleanup confirmed.' : 'Worker cleanup: see receipt.'}</p>
+        {Array.isArray(execution.seed_schedule) && <p>Prescribed seeds: {execution.seed_schedule.join(', ')}. A deterministic sequence is not a set of independent population samples.</p>}
+        {execution.parameters && <pre>{JSON.stringify(execution.parameters, null, 2)}</pre>}
+        {study.reproduction?.command && <React.Fragment><h4>Re-run the committed task locally</h4><Copyable cmd={study.reproduction.command} /></React.Fragment>}
+      </details>
+    </section>
+  );
+}
+
+function RecordedPaperChart({ checkpoints, metric, selectedIndex }) {
+  const x = step => 64 + (Math.log10(step + 1) - Math.log10(checkpoints[0].step + 1)) / Math.max(1e-12, Math.log10(checkpoints[checkpoints.length - 1].step + 1) - Math.log10(checkpoints[0].step + 1)) * 722;
+  const keys = metric === 'position' ? ['adam_position', 'amsgrad_position'] : ['adam_average_regret', 'amsgrad_average_regret'];
+  const values = checkpoints.flatMap(point => keys.map(key => point[key]));
+  const low = Math.min(metric === 'position' ? -1 : 0, ...values);
+  const high = Math.max(metric === 'position' ? 1 : 0, ...values);
+  const span = Math.max(1e-9, high - low);
+  const bottom = low - span * 0.06, top = high + span * 0.06;
+  const y = value => 274 - (value - bottom) / (top - bottom) * 242;
+  const pathFor = key => checkpoints.map((point, i) => `${i ? 'L' : 'M'}${x(point.step).toFixed(2)},${y(point[key]).toFixed(2)}`).join(' ');
+  const selected = checkpoints[selectedIndex];
+  const ticks = [0, 1, 2, 3, 4].map(index => low + (high - low) * index / 4);
+  const xTicks = [...new Set([0, Math.floor((checkpoints.length - 1) / 2), checkpoints.length - 1])];
+  return <figure className="paper-figure">
+    <div className="paper-legend"><span><i className="paper-swatch adam" />Adam</span><span><i className="paper-swatch amsgrad" />AMSGrad</span><span>{metric === 'position' ? 'Position in the constrained domain' : 'Average regret against the prescribed comparator'}</span></div>
+    <svg className="paper-trace-chart" viewBox="0 0 820 330" role="img" aria-labelledby="paper-chart-title paper-chart-description">
+      <title id="paper-chart-title">Recorded Adam and AMSGrad {metric === 'position' ? 'positions' : 'average regret'}</title>
+      <desc id="paper-chart-description">A finite recorded trajectory. The horizontal axis uses a logarithmic iteration scale. Use the checkpoint slider for exact displayed values; full precision is in the JSON receipt.</desc>
+      {ticks.map((value, i) => <g key={i}><line x1="64" x2="786" y1={y(value)} y2={y(value)} className="paper-grid-line" /><text x="52" y={y(value) + 4} textAnchor="end">{paperNumber(value, 3)}</text></g>)}
+      <line x1="64" x2="786" y1="274" y2="274" className="paper-axis-line" />
+      {xTicks.map(index => <text key={index} x={x(checkpoints[index].step)} y="296" textAnchor="middle">{paperNumber(checkpoints[index].step, 0)}</text>)}
+      <text x="425" y="320" textAnchor="middle">Iteration · logarithmic scale</text>
+      <path d={pathFor(keys[0])} className="paper-trace adam" />
+      <path d={pathFor(keys[1])} className="paper-trace amsgrad" />
+      <line x1={x(selected.step)} x2={x(selected.step)} y1="24" y2="274" className="paper-selected-line" />
+      {keys.map((key, index) => <circle key={key} cx={x(selected.step)} cy={y(selected[key])} r="5" className={'paper-point ' + (index ? 'amsgrad' : 'adam')} />)}
+    </svg>
+  </figure>;
 }
 
 window.App = App;

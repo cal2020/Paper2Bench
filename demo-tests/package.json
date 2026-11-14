@@ -1,0 +1,16 @@
+{
+  "name": "paper2bench-demo-regressions",
+  "version": "0.4.0-alpha.2",
+  "private": true,
+  "description": "CI browser checks for the packaged, offline-capable Paper2Bench demo.",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "playwright test",
+    "test:list": "playwright test --list"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.65.1"
+  }
+}

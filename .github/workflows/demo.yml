@@ -1,0 +1,73 @@
+name: Demo artifact
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: demo-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  demo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.11'
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            demo-tests/package-lock.json
+      - name: Install locked build and browser-test dependencies
+        run: |
+          npm ci --no-audit --no-fund
+          npm ci --prefix demo-tests --no-audit --no-fund
+      - name: Check build admission and artifact integrity regressions
+        run: |
+          python -m pip install 'pytest>=8.0'
+          python -m pytest -q tests/test_demo_build.py tests/test_release_artifact.py
+      - name: Build the exact committed production demo
+        run: python scripts/build_demo.py --release
+      - name: Validate and package the release artifact
+        env:
+          P2B_EXPECTED_COMMIT: ${{ github.sha }}
+        run: |
+          python scripts/package_demo.py --source deployment/demo --output "$RUNNER_TEMP/paper2bench-demo.tar.gz" --expected-commit "$P2B_EXPECTED_COMMIT"
+      - name: Checksum the artifact with portable filenames
+        working-directory: ${{ runner.temp }}
+        run: sha256sum paper2bench-demo.tar.gz > paper2bench-demo.tar.gz.sha256
+      - name: Install Chromium on the GitHub runner
+        run: npm exec --prefix demo-tests -- playwright install --with-deps chromium
+      - name: Exercise desktop and mobile demos with external requests blocked
+        run: npm test --prefix demo-tests
+      - name: Save the tested artifact
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: paper2bench-demo-${{ github.sha }}
+          path: |
+            ${{ runner.temp }}/paper2bench-demo.tar.gz
+            ${{ runner.temp }}/paper2bench-demo.tar.gz.sha256
+          if-no-files-found: error
+          retention-days: 14
+      - name: Save browser reports and failure evidence
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: demo-browser-report-${{ github.sha }}
+          path: |
+            demo-tests/playwright-report/
+            demo-tests/test-results/
+          if-no-files-found: ignore
+          retention-days: 7

@@ -307,6 +307,13 @@ CPU consumption or a provider invoice.
 
 ## Verification evidence and remaining limits
 
+The demo has a separate reproducible release pipeline. Its production assets
+bundle locked application dependencies locally and carry GitHub source and file
+hashes. CI exercises the demo in desktop and mobile Chromium with external
+requests blocked, then saves the exact validated artifact for private Site
+publication. See [demo deployment](deployment/demo/README.md) for build,
+verification, artifact retention, and publication commands.
+
 The release core gate passed **572 tests** on 13 November 2026 in an isolated
 checkout of commit `4779b6a`, with real Docker tests enabled; the
 public verification summary is [docs/verification.json](docs/verification.json).

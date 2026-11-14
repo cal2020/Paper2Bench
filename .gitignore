@@ -13,6 +13,9 @@ venv/
 .tox/
 .mypy_cache/
 .pytest_cache/
+node_modules/
+demo-tests/playwright-report/
+demo-tests/test-results/
 .DS_Store
 .sites-runtime/
 .sites-checkout/

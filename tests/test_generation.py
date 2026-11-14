@@ -322,3 +322,27 @@ def test_receipt_byte_limit_matches_the_bytes_written(tmp_path, monkeypatch):
     resumed.ensure_resumable()
     assert resumed.run_stage("parse", lambda: pytest.fail("No replay")) == values
     assert resumed.completed_result() == {"values": values}
+
+
+@pytest.mark.parametrize("changed", ["source_data", "snapshot_data", "template_snapshot"])
+def test_completed_resume_validates_frozen_authoring_inputs(tmp_path, monkeypatch, changed):
+    stages = Stages(monkeypatch)
+    monkeypatch.setattr("paper2bench.verify.verify_instruction_gt", lambda *a, **k: {"pass": False})
+
+    class Executor:
+        def preflight(self):
+            return {"image_id": "sha256:" + "a" * 64}
+
+    data = tmp_path / "output/tasks/study/data"
+    data.mkdir(parents=True)
+    (data / "input.json").write_text('{"observations": [1, 2]}')
+    template = tmp_path / "template.txt"
+    template.write_text("Template v1")
+    result = start(tmp_path, verify=True, executor=Executor(), template=template)
+    target = {"source_data": data / "input.json",
+              "snapshot_data": Path(result.extras["verification_data_snapshot"]) / "input.json",
+              "template_snapshot": Path(result.extras["template_snapshot"])}[changed]
+    target.write_text("Changed input identity")
+    with pytest.raises(ValueError, match="changed|identity|artifact"):
+        api.resume_generation(result.extras["model_run_id"], model_runs_dir=tmp_path / "runs")
+    assert stages.calls["plan"] == 1

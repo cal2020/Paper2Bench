@@ -76,6 +76,7 @@ def _run(
     executor=None,
     execution_options=None,
     checkpoint=None,
+    verification_data_dir=None,
 ) -> BenchmarkResult:
     """Run the full Paper2Bench pipeline on a local PDF.
 
@@ -192,7 +193,7 @@ def _run(
         verify_metrics = stage("verify", lambda: verify_instruction_gt(
             str(instruction_gt_path),
             str(pdf_path),
-            data_dir=str(tasks_dir / "data") if (tasks_dir / "data").exists() else None,
+            data_dir=str(verification_data_dir) if verification_data_dir is not None else None,
             agent_model=agent_model or model,
             eval_model=eval_model or model,
             api_key=api_key,
@@ -236,8 +237,8 @@ def run(
     remains needs_review until a curator installs an appropriate protocol.
     """
     from .runtime_config import get_context, load_runtime_config
-    from .bundles import digest, write_draft_manifest, atomic_bytes
-    from .generation import GenerationCheckpoint, pipeline_identity, task_output_lock
+    from .bundles import digest, write_draft_manifest, atomic_bytes, canonical_json, _read_regular_file
+    from .generation import GenerationCheckpoint, pipeline_identity, task_output_lock, read_verification_data
     if runtime_config is not None and (agent_model is not None or eval_model is not None):
         raise ValueError("With a runtime profile, configure agent/judge role models in that profile")
     from .model_runs import durable_runtime_scope
@@ -251,13 +252,19 @@ def run(
     effective_task_id = task_id or _slugify(pdf_path.stem)
     if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]{0,79}", effective_task_id):
         raise ValueError("task_id must be a normalized identifier, not a path")
+    template_bytes = _read_regular_file(Path(template), 8 * 1024 * 1024) if template else None
+    if template_bytes is not None:
+        template_bytes.decode("utf-8")
+    data_bytes = read_verification_data(Path(output_dir) / "tasks" / effective_task_id / "data") if verify else None
+    data_identity = {name: digest(raw) for name, raw in data_bytes.items()} if data_bytes is not None else None
     resolved_config = load_runtime_config(runtime_config) if runtime_config is not None else None
     plan = {"pdf": str(pdf_path), "paper_sha256": digest(source_bytes), "research_question": research_question,
             "task_id": effective_task_id, "paper_type": paper_type, "model": model,
             "template": str(Path(template).resolve()) if template else None,
-            "template_sha256": digest(Path(template).read_bytes()) if template else None,
+            "template_sha256": digest(template_bytes) if template_bytes is not None else None,
             "output_dir": str(Path(output_dir).resolve()), "validate_hf_loaders": validate_hf_loaders,
             "verify": verify, "eval_mode": eval_mode, "execution_options": execution_options,
+            "verification_data": data_identity,
             "pipeline_sha256": pipeline_identity(), "runtime": resolved_config.to_dict() if resolved_config else None}
     if generation_run_id and resolved_config is None:
         raise ValueError("Generation resume requires the original explicit runtime profile")
@@ -282,13 +289,41 @@ def run(
                 raise ValueError("Immutable source snapshot identity changed")
         else:
             atomic_bytes(snapshot, source_bytes)
+        template_snapshot = None
+        if template_bytes is not None:
+            template_snapshot = Path(output_dir).resolve() / ".paper2bench/templates" / (plan["template_sha256"] + ".txt")
+            if template_snapshot.exists():
+                if digest(_read_regular_file(template_snapshot, 8 * 1024 * 1024)) != plan["template_sha256"]:
+                    raise ValueError("Immutable template snapshot identity changed")
+            else:
+                atomic_bytes(template_snapshot, template_bytes)
+        data_snapshot = None
+        if data_bytes is not None:
+            data_snapshot = Path(output_dir).resolve() / ".paper2bench/data" / digest(canonical_json(data_identity))
+            prior_data = read_verification_data(data_snapshot)
+            if prior_data is not None and any(name not in data_identity or digest(raw) != data_identity[name]
+                                              for name, raw in prior_data.items()):
+                raise ValueError("Immutable verification data snapshot identity changed")
+            data_snapshot.mkdir(parents=True, exist_ok=True, mode=0o700)
+            for name, raw in data_bytes.items():
+                if prior_data is None or name not in prior_data:
+                    atomic_bytes(data_snapshot / name, raw)
+            actual_data = read_verification_data(data_snapshot)
+            if actual_data is None or {name: digest(raw) for name, raw in actual_data.items()} != data_identity:
+                raise ValueError("Immutable verification data snapshot identity changed")
         result = _run(pdf=snapshot, research_question=research_question, paper_type=paper_type,
                       api_key=api_key, output_dir=output_dir, task_id=effective_task_id, model=model,
-                      template=template, validate_hf_loaders=validate_hf_loaders, verify=verify,
+                      template=template_snapshot, validate_hf_loaders=validate_hf_loaders, verify=verify,
                       eval_mode=eval_mode, agent_model=agent_model, eval_model=eval_model,
-                      executor=executor, execution_options=execution_options, checkpoint=checkpoint)
+                      executor=executor, execution_options=execution_options, checkpoint=checkpoint,
+                      verification_data_dir=data_snapshot)
         result.pdf_path = pdf_path
         result.extras["source_snapshot"] = str(snapshot)
+        if template_snapshot is not None:
+            result.extras["template_snapshot"] = str(template_snapshot)
+        if data_snapshot is not None:
+            result.extras["verification_data_snapshot"] = str(data_snapshot)
+            result.extras["verification_data_sha256"] = data_identity
         candidate = write_draft_manifest(result.config_path.parent,
                         dict(result.config, task_id=result.task_id, research_question=research_question),
                         source={"paper_sha256": plan["paper_sha256"]})
@@ -311,8 +346,8 @@ def run(
 
 def resume_generation(run_id, *, model_runs_dir="./runs", runtime_config=None, api_key=None):
     from .journal import RunJournal, JournalError
-    from .generation import GenerationCheckpoint, pipeline_identity, task_output_lock
-    from .bundles import digest
+    from .generation import GenerationCheckpoint, pipeline_identity, task_output_lock, read_verification_data
+    from .bundles import digest, _read_regular_file
     from .runtime_config import load_runtime_config
     journal = RunJournal(model_runs_dir)
     run_record = journal.get(run_id)
@@ -324,8 +359,13 @@ def resume_generation(run_id, *, model_runs_dir="./runs", runtime_config=None, a
         raise JournalError("Source paper changed since authoring")
     if pipeline_identity() != plan["pipeline_sha256"]:
         raise JournalError("Authoring software or prompts changed; create a new run")
-    if plan.get("template") and digest(Path(plan["template"]).read_bytes()) != plan["template_sha256"]:
+    if plan.get("template") and digest(_read_regular_file(Path(plan["template"]), 8 * 1024 * 1024)) != plan["template_sha256"]:
         raise JournalError("Authoring template changed; create a new run")
+    if plan["verify"]:
+        current = read_verification_data(Path(plan["output_dir"]) / "tasks" / plan["task_id"] / "data")
+        identity = {name: digest(raw) for name, raw in current.items()} if current is not None else None
+        if identity != plan.get("verification_data"):
+            raise JournalError("Authoring verification data changed; create a new run")
     if load_runtime_config(runtime_config or plan["runtime"]).to_dict() != plan["runtime"]:
         raise JournalError("Authoring runtime configuration changed; create a new run")
     with task_output_lock(Path(plan["output_dir"]) / "tasks" / plan["task_id"]):

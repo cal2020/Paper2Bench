@@ -33,9 +33,12 @@ def durable_runtime_scope(source, *, api_key=None, runs_dir="./runs", run_id=Non
     try:
         with runtime_scope(config, api_key=api_key, budget_journal=journal, budget_run_id=run_id) as context:
             yield context
-        journal.finish(run_id, attempt_id, "succeeded", {"budget": journal.get(run_id)["budget"]})
     except BaseException as error:
         # Unknown or incomplete model usage stays reserved even after the caller exits.
         status = "reconciling" if journal.get(run_id)["budget"]["reserved"] else "failed"
         journal.finish(run_id, attempt_id, status, {"error_type": type(error).__name__})
         raise
+    else:
+        state = journal.finish(run_id, attempt_id, "succeeded", {"budget": journal.get(run_id)["budget"]})
+        if state == "cancelled":
+            raise RuntimeError("Authoring was cancelled before finalization")

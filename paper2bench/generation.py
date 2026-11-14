@@ -47,6 +47,38 @@ def pipeline_identity():
     return digest(canonical_json(identities))
 
 
+def read_verification_data(root):
+    """Freeze the exact bounded public inputs admitted to legacy verification."""
+    from .bundles import read_artifact
+    from .verify import MAX_DATA_BYTES, MAX_DATA_FILES, _RESTRICTED_NAMES
+    root = Path(root)
+    if root.is_symlink():
+        raise GenerationCheckpointError("Verification data must not be a symlink")
+    if not root.exists():
+        return None
+    if not root.is_dir():
+        raise GenerationCheckpointError("Verification data must be a directory")
+    files, total = {}, 0
+    for index, path in enumerate(root.rglob("*")):
+        if index >= MAX_DATA_FILES * 4:
+            raise GenerationCheckpointError("Verification data directory count exceeds its bound")
+        if path.is_symlink():
+            raise GenerationCheckpointError("Verification data must not contain symlinks")
+        if path.is_dir():
+            continue
+        relative = path.relative_to(root)
+        if any(part.startswith(".") or part.lower() in _RESTRICTED_NAMES for part in relative.parts):
+            raise GenerationCheckpointError("Restricted verification data path")
+        if len(files) >= MAX_DATA_FILES:
+            raise GenerationCheckpointError("Verification data file count exceeds its bound")
+        raw = read_artifact(root, relative.as_posix(), limit=max(1, MAX_DATA_BYTES - total))
+        total += len(raw)
+        if total > MAX_DATA_BYTES:
+            raise GenerationCheckpointError("Verification data exceeds its byte bound")
+        files[relative.as_posix()] = raw
+    return files
+
+
 class GenerationCheckpoint:
     def __init__(self, root, run_id, plan, *, resume=False, max_attempts=3):
         if not isinstance(run_id, str) or not re.fullmatch(r"[0-9a-f]{32}", run_id):
@@ -173,6 +205,11 @@ class GenerationCheckpoint:
             if source.is_symlink() or not source.is_file() or source.stat().st_size > 32 * 1024 * 1024:
                 raise GenerationCheckpointError("Source snapshot artifact is unavailable")
             artifacts[str(source.resolve())] = digest(source.read_bytes())
+        template_snapshot = extras.get("template_snapshot")
+        if template_snapshot:
+            from .bundles import _read_regular_file
+            template = Path(template_snapshot)
+            artifacts[str(template.resolve())] = digest(_read_regular_file(template, MAX_STAGE_BYTES))
         self.state.update(state="succeeded", result_sha256=digest(canonical_json(record)),
                           finished_at=time.time(), cache_hits=list(self.cache_hits), artifact_sha256=artifacts)
         self._save()
@@ -187,4 +224,9 @@ class GenerationCheckpoint:
             path = Path(name)
             if path.is_symlink() or not path.is_file() or path.stat().st_size > 32 * 1024 * 1024 or digest(path.read_bytes()) != expected:
                 raise GenerationCheckpointError("Completed generation artifact changed or is unavailable")
+        extras = record["value"].get("extras", {})
+        if extras.get("verification_data_snapshot"):
+            current = read_verification_data(extras["verification_data_snapshot"])
+            if current is None or {name: digest(raw) for name, raw in current.items()} != extras["verification_data_sha256"]:
+                raise GenerationCheckpointError("Completed verification data identity changed")
         return record["value"]

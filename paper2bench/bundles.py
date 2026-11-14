@@ -131,7 +131,7 @@ def _artifact_parts(name):
 def read_artifact(root, name, *, limit=MAX_FILE_BYTES):
     """Read bounded public bytes through nonsymlink directory/file descriptors."""
     parts = _artifact_parts(name)
-    if type(limit) is not int or not 1 <= limit <= MAX_FILE_BYTES:
+    if type(limit) is not int or not 1 <= limit <= 64 * 1024 * 1024:
         raise BundleError("Invalid artifact size limit")
     directory = None
     directory_flags = os.O_RDONLY | os.O_DIRECTORY | getattr(os, "O_NOFOLLOW", 0)

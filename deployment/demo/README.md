@@ -6,7 +6,8 @@ accept provider credentials, or expose the controller runtime.
 
 Source: `docs/` in [cal2020/Paper2Bench](https://github.com/cal2020/Paper2Bench).
 The Site's stable identity and static directory are tracked in
-[.openai/hosting.json](.openai/hosting.json). Access remains owner-private.
+[.openai/hosting.json](.openai/hosting.json). The demo and GitHub repository are
+publicly accessible; the demo does not require a sign-in.
 
 The production build bundles React and the existing JSX into local JavaScript.
 It does not fetch application libraries or compile JSX in the visitor's browser.

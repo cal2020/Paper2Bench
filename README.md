@@ -7,7 +7,7 @@ GPU selection, an opt-in target-model file broker, and reviewed fixed-protocol
 scientific execution. Start with [IMPLEMENTATION.md](IMPLEMENTATION.md) for usable
 commands, verification evidence, and capability limits. The updated
 [interactive demo](https://paper2bench-portable-demo.escape4242.chatgpt.site) is
-deployed as an owner-private Site; its build is documented in
+publicly accessible without signing in; its build is documented in
 [deployment/demo](deployment/demo/README.md). Actual local Llama
 inference and a Docker → model broker → Llama → Docker round trip passed;
 external SSH, NVIDIA hardware, and hosted model accounts remain untested here.
@@ -51,7 +51,7 @@ Both workflows auto-detect the paper's archetype (`llm_evaluation` / `novel_arch
 
 ## Install
 
-Install this implementation from your private GitHub repository:
+Install this implementation from the public GitHub repository:
 
 ```bash
 gh repo clone cal2020/Paper2Bench

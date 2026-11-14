@@ -310,7 +310,7 @@ CPU consumption or a provider invoice.
 The demo has a separate reproducible release pipeline. Its production assets
 bundle locked application dependencies locally and carry GitHub source and file
 hashes. CI exercises the demo in desktop and mobile Chromium with external
-requests blocked, then saves the exact validated artifact for private Site
+requests blocked, then saves the exact validated artifact for Site
 publication. See [demo deployment](deployment/demo/README.md) for build,
 verification, artifact retention, and publication commands.
 

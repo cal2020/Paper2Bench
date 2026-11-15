@@ -36,6 +36,19 @@ dependencies = [
 [project.optional-dependencies]
 anthropic = ["anthropic>=0.40"]
 dev = ["pytest>=8.0"]
+# The reproducibility core is optional and has its own Python 3.11+ CLI guard.
+repro = [
+    "pydantic>=2.10,<3; python_version >= '3.11'",
+    "httpx>=0.27,<1; python_version >= '3.11'",
+    "pypdf>=5,<7; python_version >= '3.11'",
+]
+repro-api = [
+    "pydantic>=2.10,<3; python_version >= '3.11'",
+    "httpx>=0.27,<1; python_version >= '3.11'",
+    "pypdf>=5,<7; python_version >= '3.11'",
+    "fastapi>=0.115,<1; python_version >= '3.11'",
+    "uvicorn>=0.34,<1; python_version >= '3.11'",
+]
 
 [project.urls]
 Homepage = "https://github.com/cal2020/Paper2Bench"
@@ -44,6 +57,7 @@ Upstream = "https://github.com/AbhayAnandUCSD/Paper2Bench"
 
 [project.scripts]
 paper2bench = "paper2bench.cli:main"
+paper2bench-repro = "paper2bench.repro.cli:main"
 
 [tool.setuptools.packages.find]
 include = ["paper2bench*"]

@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "repository": "https://github.com/cal2020/Paper2Bench",
+  "saved_records": [
+    {
+      "id": "paper2bench-repro-verification-capsule-v1",
+      "name": "Paper2Bench Repro — unbound protected verification capsule",
+      "hash": "d41cf2a06b9ee876269efb27fb083257ce1d40932ab9521e9d2dc97b9a519e9b",
+      "kind": "capsule",
+      "saved_at": "2026-11-15T14:52:42.600Z"
+    },
+    {
+      "id": "paper2bench-repro-protected-verification-v1",
+      "name": "Paper2Bench Repro — protected offline verification",
+      "hash": "f359ff8cc28038500f18e688c52642a6ca60fed9ed2111e090767b60bf56272d",
+      "kind": "workflow",
+      "saved_at": "2026-11-15T14:52:37.787Z"
+    }
+  ],
+  "execution_status": "not_run",
+  "repository_binding": "unbound",
+  "note": "Native Agent Lab Control Center save and readback verified. No Mac verification or model calls were dispatched."
+}

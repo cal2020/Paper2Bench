@@ -1,0 +1,50 @@
+{
+  "files": {
+    "README.txt": {
+      "bytes": 2238,
+      "sha256": "6ea5db182c9e281822281d29ef3ac51854a961ea526886f8c6fd7d179269cd68"
+    },
+    "evidence-v0.2.zip": {
+      "bytes": 88472,
+      "sha256": "21675b79e71b97d68a7bef918614ccbe3c69ddedb26ca51af1da20033372b9b8"
+    },
+    "optimization-v0.2.json": {
+      "bytes": 50605,
+      "sha256": "ca5e89abdc98ef4a38c03ff34caf19f75f3e0ceff566ae4ac278ee64c260fec3"
+    },
+    "seeded-study-v0.2.json": {
+      "bytes": 33189,
+      "sha256": "6c5a96d181ce487e443b6e27b2540b4806e57ff85ebcc18d7753bb685c1cf633"
+    },
+    "verification-v0.2.json": {
+      "bytes": 1241,
+      "sha256": "cf271f08023356386990c68f9aba8f2532b95d24327fa8ab8a6c834ffcef0ea8"
+    }
+  },
+  "generator": "scripts/export_repro_demo.py",
+  "generator_sha256": "b8145abf84f05c35207bb0258ec7b3e822707a282f556909475476e27ba0bf5a",
+  "kind": "paper2bench_selected_repro_evidence",
+  "schema_version": 1,
+  "source_inputs": {
+    "optimization-v0.2.zip": {
+      "bytes": 98965,
+      "sha256": "eaa0225285972542213ba68bc3dd29f7397c7032fe5c20885fcdbc9eacd15a27"
+    },
+    "seeded-study-v0.2.json": {
+      "bytes": 19980,
+      "sha256": "05feaa3d1c0e9f5862374268d1c4264befa4fa6f1a254b8f63997630317bc6a2"
+    },
+    "seeded-study-v0.2.zip": {
+      "bytes": 569190,
+      "sha256": "d6bdb609a1b6eae62d686a81d7eb1de0d1525743df6c038fe163c943aaff00e4"
+    },
+    "verification-v0.2.json": {
+      "bytes": 827,
+      "sha256": "120b6b59659f131a7938d2271bddfb96c7f44ec529aabf873c4ed46a52fcd8a0"
+    },
+    "verification-v0.2.xml": {
+      "bytes": 82896,
+      "sha256": "18c1ca610f7442d286a50a85c48f00ac32bb19c7646da6abcd621e5538ae29ad"
+    }
+  }
+}

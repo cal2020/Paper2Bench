@@ -1,0 +1,41 @@
+{
+  "id": "paper2bench-repro-protected-verification-v1",
+  "name": "Paper2Bench Repro — protected offline verification",
+  "version": "1.0.0",
+  "category": "Testing",
+  "description": "Inspect the enrolled Paper2Bench revision and run deterministic reproducibility-core checks in the bridge's network-disabled verification sandbox. The companion capsule is unbound until its repository and staged image are selected.",
+  "provenance": "Paper2Bench integration using observed Agent Lab Control Center repo.inspect and sandbox.verify contracts. Saving this workflow is not execution evidence.",
+  "risks": [
+    "Requires an owner-enrolled Paper2Bench repository and an explicitly staged Python dependency image on the paired Mac.",
+    "Do not substitute an unrelated enrolled repository ID.",
+    "The verifier exercises trusted synthetic algorithms; it does not execute generated code, call models, or reproduce a published paper."
+  ],
+  "context": [
+    "Companion capsule: paper2bench-repro-verification-capsule-v1",
+    "Repository: https://github.com/cal2020/Paper2Bench",
+    "Setup and evidence rules: docs/CONTROL_CENTER.md"
+  ],
+  "tags": ["Paper2Bench", "Offline checks", "No model calls", "Protected verifier"],
+  "steps": [
+    {
+      "id": "inspect",
+      "name": "Inspect enrolled Paper2Bench revision",
+      "mode": "tool",
+      "tool": "repo.inspect",
+      "prompt": ""
+    },
+    {
+      "id": "approve",
+      "name": "Review the fixed isolated verifier",
+      "mode": "approval",
+      "prompt": "Confirm the capsule is bound to the intended Paper2Bench revision and a locally staged dependency image. Run only its fixed protected verification command, with no model calls, package installation, nested Docker, or external network."
+    },
+    {
+      "id": "verify",
+      "name": "Execute protected reproducibility checks",
+      "mode": "verify",
+      "tool": "sandbox.verify",
+      "prompt": ""
+    }
+  ]
+}

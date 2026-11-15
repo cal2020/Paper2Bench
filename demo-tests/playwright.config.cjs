@@ -20,6 +20,9 @@ module.exports = defineConfig({
     ['junit', { outputFile: 'test-results/junit.xml' }],
   ],
   use: {
+    launchOptions: process.env.P2B_CHROMIUM_EXECUTABLE
+      ? { executablePath: process.env.P2B_CHROMIUM_EXECUTABLE }
+      : {},
     baseURL: `http://127.0.0.1:${port}`,
     serviceWorkers: 'block',
     reducedMotion: 'reduce',

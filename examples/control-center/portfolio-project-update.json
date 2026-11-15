@@ -1,0 +1,167 @@
+{
+  "projects": [
+    {
+      "id": "paper2bench",
+      "name": "Paper2Bench",
+      "shortName": "P2B",
+      "purpose": "Turn research papers into source-linked experimental specifications, runnable implementations, and reproducible benchmark evidence. The existing task-generation framework and optional reproducibility core retain separate workflows and scientific scope.",
+      "category": "Engineering / portfolio",
+      "stage": "Validation",
+      "color": "blue",
+      "repo": "https://github.com/cal2020/Paper2Bench",
+      "repoNote": "Canonical public fork. This import records locally verified integration work; publication of the new commit, its GitHub CI, and the updated demo must be checked separately. No pending merge is recorded as complete.",
+      "live": "",
+      "demo": "https://paper2bench-portable-demo.escape4242.chatgpt.site",
+      "platform": "Python framework and optional Python 3.11+ reproducibility core; static browser demo; Agent Lab Mac bridge integration assets",
+      "siteId": "",
+      "nextAction": "Publish the reviewed integration, inspect its exact GitHub CI and deployed demo revision, then update these pending signals from final receipts. Bind the Agent Lab capsule only after Paper2Bench is enrolled on the Mac bridge.",
+      "blocker": "Live Portfolio Control Center update is blocked: the authenticated API request returned HTTP 403 with Cloudflare browser_signature_banned. This JSON is a prepared import, not evidence of a live portfolio change. No retry or alternate route was attempted. Agent Lab execution is also unbound pending repository/image configuration.",
+      "deployment": {
+        "state": "unverified",
+        "label": "New demo deployment pending",
+        "detail": "The public demo URL belongs to the existing release. The updated integration has passed local browser checks; the new live revision and its interactive behavior must be verified after publication.",
+        "source": "https://paper2bench-portable-demo.escape4242.chatgpt.site",
+        "at": "2026-11-15"
+      },
+      "ci": {
+        "state": "unknown",
+        "label": "New GitHub CI not yet verified",
+        "detail": "Local verification passed 1308 Python tests plus 93 subtests with zero skips, and 38 browser checks. Those local results do not establish the status of GitHub Actions for a future merge commit.",
+        "source": "https://github.com/cal2020/Paper2Bench/actions",
+        "at": "2026-11-15"
+      },
+      "readme": {
+        "state": "reported",
+        "label": "Updated local documentation prepared",
+        "detail": "The local integration includes the existing framework, the optional reproducibility core, and a dedicated Control Center guide. Verify the new documents at the published commit; main-branch links may still show the preceding release until merge.",
+        "source": "https://github.com/cal2020/Paper2Bench/blob/main/README.md",
+        "at": "2026-11-15"
+      },
+      "license": {
+        "state": "verified",
+        "label": "MIT license preserved in source",
+        "detail": "The canonical checkout retains the upstream MIT license. This records the presence of that source license, not a legal review of third-party papers, data, or model assets.",
+        "source": "https://github.com/cal2020/Paper2Bench/blob/main/LICENSE",
+        "at": "2026-11-15"
+      },
+      "screenshots": {
+        "state": "unknown",
+        "label": "Published screenshot set not checked",
+        "detail": "Local browser checks passed. A published screenshot set tied to the final deployed revision has not been established by this import.",
+        "source": "",
+        "at": "2026-11-15"
+      },
+      "behavior": {
+        "state": "verified",
+        "label": "Local combined verification passed",
+        "detail": "The final local combined gate recorded 1308 passing Python tests plus 93 subtests, zero skips, and 38 passing browser checks. These establish scoped software behavior in the checked workspace, not new GitHub CI, hosted inference, a live deployment, or published-paper reproduction.",
+        "source": "",
+        "at": "2026-11-15"
+      },
+      "mocks": "The interactive site is a static demo with browser computations and retained evidence; it does not launch live models or containers. Reproducibility-core tests include mocked HTTP and runtime boundaries as well as separately recorded isolated execution evidence. Synthetic fixtures remain distinct from published-paper work. The recorded Adam counterexample used a separately reviewed curated implementation after correcting model-authored drafts; it is an assisted finite experiment, not autonomous full-paper reproduction.",
+      "constraints": [
+        "Do not equate a successful build or numerical check with faithful paper reproduction.",
+        "Keep local tests, GitHub CI, committed source, deployment identity, and live interaction evidence separate.",
+        "Retain historical 577-test release evidence, original 642-test Repro evidence plus 93 subtests, and the later 646-test Repro gate as separate records; do not replace them with the combined 1308-test count.",
+        "Foundation-model, paid-provider, GPU, external SSH, and remote-cloud readiness require their own evidence; none is established by the new local combined gate.",
+        "Portable artifact integrity and score recomputation do not provide independent authentication or remote runtime attestation.",
+        "The saved Agent Lab workflow and capsule remain unbound; enrollment of the intended repository and staging of its dependency image are prerequisites to execution.",
+        "Do not retry the blocked Portfolio API or bypass its Cloudflare denial. Import only through an authorized supported workflow.",
+        "Use add_only for the initial portfolio import so an existing paper2bench record is skipped rather than overwritten. Review any later merge field by field."
+      ],
+      "evidence": [
+        {
+          "id": "paper2bench-local-combined-gate-20261115",
+          "claim": "Local combined Python and browser gates passed",
+          "state": "verified",
+          "kind": "test",
+          "detail": "Root verification recorded 1308 Python tests passed plus 93 subtests, with zero skipped, and 38 browser checks passed. Final publication and remote CI remain pending. No commit or Actions run is invented in this template.",
+          "source": "",
+          "at": "2026-11-15",
+          "provenance": "manual record",
+          "ref": "Local final gate before publication; stamp exact published revision separately"
+        },
+        {
+          "id": "paper2bench-historical-framework-gate-577",
+          "claim": "The preceding framework release retained a 577-test receipt",
+          "state": "reported",
+          "kind": "test",
+          "detail": "The pre-existing verification.json records 577 tests with zero failures, errors, or skips. This historical framework result is not the count for the newly integrated reproducibility core.",
+          "source": "https://github.com/cal2020/Paper2Bench/blob/main/docs/verification.json",
+          "at": "2026-11-13",
+          "provenance": "source snapshot",
+          "ref": "docs/verification.json"
+        },
+        {
+          "id": "paper2bench-historical-repro-gate-642",
+          "claim": "The original Repro receipt retained 642 tests plus 93 subtests",
+          "state": "reported",
+          "kind": "test",
+          "detail": "The retained verification-v0.2.json reports 642 pytest cases plus 93 subtests. It belongs to the original standalone-core evidence and must not be restated as the new integration gate.",
+          "source": "https://github.com/cal2020/Paper2Bench/blob/main/docs/repro/verification-v0.2.json",
+          "at": "2026-11-15",
+          "provenance": "source snapshot",
+          "ref": "docs/repro/verification-v0.2.json; publication of this new path pending"
+        },
+        {
+          "id": "paper2bench-later-repro-gate-646",
+          "claim": "A later standalone Repro gate was reported as 646 passing tests",
+          "state": "reported",
+          "kind": "test",
+          "detail": "The integration work recorded a later standalone-core count of 646 tests. Preserve that report separately from the retained 642-test receipt, the historical 577-test framework receipt, and the final combined 1308-test gate.",
+          "source": "",
+          "at": "2026-11-15",
+          "provenance": "historical report",
+          "ref": "Standalone-core report; no new CI receipt asserted"
+        },
+        {
+          "id": "paper2bench-agent-lab-saved-20261115",
+          "claim": "Agent Lab workflow and capsule were saved and read back",
+          "state": "verified",
+          "kind": "source",
+          "detail": "Native Agent Lab records paper2bench-repro-protected-verification-v1 and paper2bench-repro-verification-capsule-v1 were saved and read back. Registration explicitly records execution_status not_run and repository_binding unbound. This does not establish a Mac execution.",
+          "source": "https://github.com/cal2020/Paper2Bench/blob/main/examples/control-center/agent-lab-registration.json",
+          "at": "2026-11-15",
+          "provenance": "manual record",
+          "ref": "examples/control-center/agent-lab-registration.json; public path pending merge"
+        },
+        {
+          "id": "paper2bench-portfolio-live-update-blocked-20261115",
+          "claim": "Live Portfolio Control Center mutation was not completed",
+          "state": "blocked",
+          "kind": "constraint",
+          "detail": "The authenticated Portfolio API request received HTTP 403 and Cloudflare browser_signature_banned. This import artifact is prepared for supported manual import; it is not a live update receipt. The denied route was not retried.",
+          "source": "",
+          "at": "2026-11-15",
+          "provenance": "HTTP observation",
+          "ref": "Live Portfolio API denial; no retry or bypass"
+        }
+      ],
+      "history": [
+        {
+          "id": "paper2bench-portfolio-import-prepared-20261115",
+          "at": "2026-11-15",
+          "title": "Prepared a scoped portfolio import after local integration checks",
+          "detail": "Prepared one Paper2Bench project record with separate local-test, CI, deployment, historical-receipt, and Agent Lab states. The live Portfolio update remains blocked; initial add_only import preserves any existing project record. Review final commit and deployment receipts before changing pending signals.",
+          "source": "https://github.com/cal2020/Paper2Bench",
+          "kind": "note"
+        }
+      ],
+      "tasks": [
+        {"id": "paper2bench-publish-integration", "title": "Publish and verify the integrated revision", "done": false, "priority": "High", "detail": "Record the actual merge commit, its GitHub Actions receipt, and the deployed demo identity. Current local checks do not complete this task."},
+        {"id": "paper2bench-portfolio-import", "title": "Import through the supported Portfolio UI", "done": false, "priority": "High", "detail": "Choose add_only first. If paper2bench already exists, inspect its current evidence and manually review a later merge. Do not retry the denied API route."},
+        {"id": "paper2bench-agent-lab-binding", "title": "Bind the saved Agent Lab capsule", "done": false, "priority": "Medium", "detail": "Enroll the actual Paper2Bench checkout on the Mac bridge and stage/pin the dependency image before any native verification run."}
+      ],
+      "proposals": [],
+      "refs": [
+        {"label": "Canonical GitHub repository", "url": "https://github.com/cal2020/Paper2Bench", "detail": "Public source; inspect the final revision separately."},
+        {"label": "Public demo", "url": "https://paper2bench-portable-demo.escape4242.chatgpt.site", "detail": "Existing public address; the new deployed revision remains unverified until publication."},
+        {"label": "Control Center integration guide", "url": "https://github.com/cal2020/Paper2Bench/blob/main/docs/CONTROL_CENTER.md", "detail": "New guide and prerequisites; path becomes current after merge."},
+        {"label": "Optional reproducibility core", "url": "https://github.com/cal2020/Paper2Bench/tree/main/paper2bench/repro", "detail": "New source namespace; publication pending at preparation time."},
+        {"label": "Historical framework evidence", "url": "https://github.com/cal2020/Paper2Bench/blob/main/docs/verification.json", "detail": "Pre-existing 577-test receipt; separate from the new combined gate."}
+      ],
+      "notes": "This is a full-schema, one-project import template, not a patch or a live portfolio receipt. Initial import mode must be add_only to skip an existing paper2bench project rather than replace its fields. Review current records before authorizing merge. Agent Lab native save/readback is complete, but its workflow is unbound pending actual repository enrollment and a staged immutable image. The root agent may attach final commit, CI, and deployed-build evidence after publication; this artifact intentionally does not predict those outcomes. No unrelated project data, workstation IDs, credentials, or private filesystem paths are included.",
+      "updatedAt": "2026-11-15"
+    }
+  ]
+}

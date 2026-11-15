@@ -162,3 +162,98 @@ test('main and detail pages fit the viewport without document overflow', async (
     expect(dimensions.document, `${url} must not scroll horizontally`).toBeLessThanOrEqual(dimensions.viewport + 1);
   }
 });
+
+test('repro runtime workbench selects boundaries without dispatching work', async ({ page }) => {
+  await openDemo(page);
+  const workbench = page.locator('#repro-runtime');
+  await expect(workbench.getByRole('heading', { name: 'A reproducibility workbench.' })).toBeVisible();
+  const controls = workbench.getByRole('group', { name: 'Choose a reproducibility boundary' });
+  const frozen = controls.getByRole('button', { name: /Frozen experiments$/ });
+  const workers = controls.getByRole('button', { name: /Fenced remote workers$/ });
+  await expect(frozen).toHaveAttribute('aria-pressed', 'true');
+  await workers.click();
+  await expect(workers).toHaveAttribute('aria-pressed', 'true');
+  await expect(frozen).toHaveAttribute('aria-pressed', 'false');
+  const panel = workbench.locator('#repro-panel');
+  await expect(panel.getByRole('heading', { name: 'Fenced remote workers', exact: true })).toBeVisible();
+  await expect(panel).toContainText('Worker scope does not grant administrator routes');
+  await expect(panel).toContainText('not hardware attestation');
+  await expect(panel.getByRole('link', { name: 'Remote protocol ↗' })).toHaveAttribute('href', 'https://github.com/cal2020/Paper2Bench/blob/main/paper2bench/repro/remote.py');
+  await expect(workbench.getByRole('textbox')).toHaveCount(0);
+  await expect(workbench).toContainText('This static walkthrough never connects to a runtime');
+  await expect(workbench).toContainText('Use an active Python 3.11+ virtual environment');
+});
+
+test('repro boundary controls support keyboard navigation and disclose scoring scope', async ({ page }) => {
+  await openDemo(page);
+  const workbench = page.locator('#repro-runtime');
+  const controls = workbench.getByRole('group', { name: 'Choose a reproducibility boundary' });
+  const frozen = controls.getByRole('button', { name: /Frozen experiments$/ });
+  const scoring = controls.getByRole('button', { name: /Independent scoring$/ });
+  await frozen.focus();
+  await frozen.press('Tab');
+  await expect(scoring).toBeFocused();
+  await scoring.press('Space');
+  await expect(scoring).toHaveAttribute('aria-pressed', 'true');
+  const panel = workbench.locator('#repro-panel');
+  await expect(panel.getByRole('heading', { name: 'Independent scoring', exact: true })).toBeVisible();
+  await expect(panel).toContainText('Candidates return predictions or selected item indices');
+  await expect(panel).toContainText('a synthetic software fixture');
+  await expect(panel.getByRole('link', { name: 'Inspect checks ↗' })).toHaveAttribute('href', 'https://github.com/cal2020/Paper2Bench/blob/main/tests/repro/test_optimization.py');
+});
+
+test('repro uncertainty, quotas and container limits stay explicit', async ({ page }) => {
+  await openDemo(page);
+  const workbench = page.locator('#repro-runtime');
+  const controls = workbench.getByRole('group', { name: 'Choose a reproducibility boundary' });
+  const panel = workbench.locator('#repro-panel');
+  await controls.getByRole('button', { name: /Multi-seed replay$/ }).click();
+  await expect(panel).toContainText('Inconclusive; no successful-only selection');
+  await expect(panel).toContainText('not publisher authentication or verified seed consumption');
+  await controls.getByRole('button', { name: /Shared model quotas$/ }).click();
+  await expect(panel).toContainText('Unknown without a verified price schedule');
+  await expect(panel).toContainText('not a promise about an external provider’s final invoice');
+  await controls.getByRole('button', { name: /Crash and parser boundaries$/ }).click();
+  await expect(panel).toContainText('The in-container deadline remains active');
+  await expect(panel).toContainText('OCR and equation reconstruction are unsupported');
+  await expect(panel.getByRole('link', { name: 'Isolated PDF parser ↗' })).toHaveAttribute('href', 'https://github.com/cal2020/Paper2Bench/blob/main/paper2bench/repro/parsers.py');
+});
+
+test('selected repro assets resolve and the evidence ZIP is labeled honestly', async ({ page, baseURL }) => {
+  await openDemo(page);
+  const workbench = page.locator('#repro-runtime');
+  for (const [label, path] of [
+    ['Runtime verification receipt ↗', 'repro/verification-v0.2.json'],
+    ['Synthetic optimization report ↗', 'repro/optimization-v0.2.json'],
+    ['Synthetic multi-seed study ↗', 'repro/seeded-study-v0.2.json'],
+    ['Inspect selected asset hashes ↗', 'repro/manifest.json'],
+  ]) {
+    await expect(workbench.getByRole('link', { name: label, exact: true })).toHaveAttribute('href', path);
+    const response = await page.request.get(new URL(path, baseURL).href);
+    expect(response.ok(), path + ' is packaged').toBeTruthy();
+    expect(await response.json()).toBeTruthy();
+  }
+  await expect(workbench).toContainText('Sanitized reports and hashes; not a full replay bundle.');
+  const downloadEvent = page.waitForEvent('download');
+  await workbench.getByRole('link', { name: 'Download selected evidence ZIP ↓', exact: true }).click();
+  const download = await downloadEvent;
+  expect(download.suggestedFilename()).toBe('paper2bench-repro-selected-evidence-v0.2.zip');
+  const zip = fs.readFileSync(await download.path());
+  expect(zip.subarray(0, 4).equals(Buffer.from([0x50, 0x4b, 0x03, 0x04]))).toBeTruthy();
+  await expect(workbench.getByRole('link', { name: 'Read the reproducibility runtime guide ↗' })).toHaveAttribute('href', 'https://github.com/cal2020/Paper2Bench/blob/main/docs/REPRODUCIBILITY.md');
+});
+
+test('repro workbench fits each viewport with every boundary selected', async ({ page }) => {
+  await openDemo(page);
+  const workbench = page.locator('#repro-runtime');
+  const controls = workbench.getByRole('group', { name: 'Choose a reproducibility boundary' });
+  for (const name of ['Frozen experiments', 'Independent scoring', 'Fenced remote workers', 'Crash and parser boundaries', 'Shared model quotas', 'Multi-seed replay']) {
+    await controls.getByRole('button', { name: new RegExp(name + '$') }).click();
+    await expect(workbench.locator('#repro-panel').getByRole('heading', { name, exact: true })).toBeVisible();
+    const dimensions = await page.evaluate(() => ({
+      viewport: document.documentElement.clientWidth,
+      document: document.documentElement.scrollWidth,
+    }));
+    expect(dimensions.document, name + ' must fit the viewport').toBeLessThanOrEqual(dimensions.viewport + 1);
+  }
+});

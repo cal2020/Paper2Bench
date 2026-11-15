@@ -1,0 +1,37 @@
+{
+  "canonical_repository_verification": {
+    "status": "separate_run_required",
+    "test_count": null
+  },
+  "checks": [
+    "Docker classification and optimization",
+    "Authenticated remote-worker protocol",
+    "Host-worker SIGKILL deadline",
+    "Isolated PDF parsing",
+    "Multi-seed score recomputation"
+  ],
+  "cloud_deployment_created": false,
+  "counts": {
+    "errors": 0,
+    "failures": 0,
+    "junit_tests": 735,
+    "pytest_passed": 642,
+    "skipped": 0,
+    "subtests_passed": 93
+  },
+  "kind": "paper2bench_recorded_repro_verification",
+  "live_paid_model_calls": false,
+  "origin": {
+    "component_version": "0.2.0",
+    "junit_sha256": "18c1ca610f7442d286a50a85c48f00ac32bb19c7646da6abcd621e5538ae29ad",
+    "kind": "archived_local_verification",
+    "receipt_sha256": "120b6b59659f131a7938d2271bddfb96c7f44ec529aabf873c4ed46a52fcd8a0"
+  },
+  "published_paper_demo": {
+    "relationship": "separate finite published-paper case study",
+    "separate_asset": "../results/adam-counterexample.json"
+  },
+  "recorded_at": "2026-11-13T07:01:12.719622+00:00",
+  "schema_version": 1,
+  "scope": "Historical local core verification only. These are not current canonical repository test counts or published-paper evidence."
+}

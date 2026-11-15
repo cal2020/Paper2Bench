@@ -1,0 +1,1936 @@
+{
+  "assessment": {
+    "bootstrap_samples": 2000,
+    "bootstrap_seed": 3681840326672871555,
+    "confidence": 0.95,
+    "confidence_interval": {
+      "lower": -0.15,
+      "method": "two_way_crossed_percentile_bootstrap",
+      "upper": 0.475
+    },
+    "implementation_fidelity": "unverified",
+    "metric": "accuracy_difference",
+    "minimum_effect": 0.02,
+    "protocol_fidelity": "unverified"
+  },
+  "data": {
+    "test": [
+      {
+        "id": "test-000",
+        "x": [
+          -1.0
+        ],
+        "y": "a"
+      },
+      {
+        "id": "test-001",
+        "x": [
+          1.001
+        ],
+        "y": "b"
+      },
+      {
+        "id": "test-002",
+        "x": [
+          -1.002
+        ],
+        "y": "a"
+      },
+      {
+        "id": "test-003",
+        "x": [
+          1.003
+        ],
+        "y": "b"
+      },
+      {
+        "id": "test-004",
+        "x": [
+          -1.004
+        ],
+        "y": "a"
+      },
+      {
+        "id": "test-005",
+        "x": [
+          1.005
+        ],
+        "y": "b"
+      },
+      {
+        "id": "test-006",
+        "x": [
+          -1.006
+        ],
+        "y": "a"
+      },
+      {
+        "id": "test-007",
+        "x": [
+          1.007
+        ],
+        "y": "b"
+      },
+      {
+        "id": "test-008",
+        "x": [
+          -1.008
+        ],
+        "y": "a"
+      },
+      {
+        "id": "test-009",
+        "x": [
+          1.009
+        ],
+        "y": "b"
+      },
+      {
+        "id": "test-010",
+        "x": [
+          -1.01
+        ],
+        "y": "a"
+      },
+      {
+        "id": "test-011",
+        "x": [
+          1.011
+        ],
+        "y": "b"
+      },
+      {
+        "id": "test-012",
+        "x": [
+          -1.012
+        ],
+        "y": "a"
+      },
+      {
+        "id": "test-013",
+        "x": [
+          1.013
+        ],
+        "y": "b"
+      },
+      {
+        "id": "test-014",
+        "x": [
+          -1.014
+        ],
+        "y": "a"
+      },
+      {
+        "id": "test-015",
+        "x": [
+          1.015
+        ],
+        "y": "b"
+      },
+      {
+        "id": "test-016",
+        "x": [
+          -1.016
+        ],
+        "y": "a"
+      },
+      {
+        "id": "test-017",
+        "x": [
+          1.017
+        ],
+        "y": "b"
+      },
+      {
+        "id": "test-018",
+        "x": [
+          -1.018
+        ],
+        "y": "a"
+      },
+      {
+        "id": "test-019",
+        "x": [
+          1.019
+        ],
+        "y": "b"
+      },
+      {
+        "id": "test-020",
+        "x": [
+          -1.02
+        ],
+        "y": "a"
+      },
+      {
+        "id": "test-021",
+        "x": [
+          1.021
+        ],
+        "y": "b"
+      },
+      {
+        "id": "test-022",
+        "x": [
+          -1.022
+        ],
+        "y": "a"
+      },
+      {
+        "id": "test-023",
+        "x": [
+          1.023
+        ],
+        "y": "b"
+      },
+      {
+        "id": "test-024",
+        "x": [
+          -1.024
+        ],
+        "y": "a"
+      },
+      {
+        "id": "test-025",
+        "x": [
+          1.025
+        ],
+        "y": "b"
+      },
+      {
+        "id": "test-026",
+        "x": [
+          -1.026
+        ],
+        "y": "a"
+      },
+      {
+        "id": "test-027",
+        "x": [
+          1.027
+        ],
+        "y": "b"
+      },
+      {
+        "id": "test-028",
+        "x": [
+          -1.028
+        ],
+        "y": "a"
+      },
+      {
+        "id": "test-029",
+        "x": [
+          1.029
+        ],
+        "y": "b"
+      },
+      {
+        "id": "test-030",
+        "x": [
+          -1.03
+        ],
+        "y": "a"
+      },
+      {
+        "id": "test-031",
+        "x": [
+          1.031
+        ],
+        "y": "b"
+      },
+      {
+        "id": "test-032",
+        "x": [
+          -1.032
+        ],
+        "y": "a"
+      },
+      {
+        "id": "test-033",
+        "x": [
+          1.033
+        ],
+        "y": "b"
+      },
+      {
+        "id": "test-034",
+        "x": [
+          -1.034
+        ],
+        "y": "a"
+      },
+      {
+        "id": "test-035",
+        "x": [
+          1.035
+        ],
+        "y": "b"
+      },
+      {
+        "id": "test-036",
+        "x": [
+          -1.036
+        ],
+        "y": "a"
+      },
+      {
+        "id": "test-037",
+        "x": [
+          1.037
+        ],
+        "y": "b"
+      },
+      {
+        "id": "test-038",
+        "x": [
+          -1.038
+        ],
+        "y": "a"
+      },
+      {
+        "id": "test-039",
+        "x": [
+          1.039
+        ],
+        "y": "b"
+      },
+      {
+        "id": "test-040",
+        "x": [
+          -1.04
+        ],
+        "y": "a"
+      },
+      {
+        "id": "test-041",
+        "x": [
+          1.041
+        ],
+        "y": "b"
+      },
+      {
+        "id": "test-042",
+        "x": [
+          -1.042
+        ],
+        "y": "a"
+      },
+      {
+        "id": "test-043",
+        "x": [
+          1.043
+        ],
+        "y": "b"
+      },
+      {
+        "id": "test-044",
+        "x": [
+          -1.044
+        ],
+        "y": "a"
+      },
+      {
+        "id": "test-045",
+        "x": [
+          1.045
+        ],
+        "y": "b"
+      },
+      {
+        "id": "test-046",
+        "x": [
+          -1.046
+        ],
+        "y": "a"
+      },
+      {
+        "id": "test-047",
+        "x": [
+          1.047
+        ],
+        "y": "b"
+      },
+      {
+        "id": "test-048",
+        "x": [
+          -1.048
+        ],
+        "y": "a"
+      },
+      {
+        "id": "test-049",
+        "x": [
+          1.049
+        ],
+        "y": "b"
+      },
+      {
+        "id": "test-050",
+        "x": [
+          -1.05
+        ],
+        "y": "a"
+      },
+      {
+        "id": "test-051",
+        "x": [
+          1.051
+        ],
+        "y": "b"
+      },
+      {
+        "id": "test-052",
+        "x": [
+          -1.052
+        ],
+        "y": "a"
+      },
+      {
+        "id": "test-053",
+        "x": [
+          1.053
+        ],
+        "y": "b"
+      },
+      {
+        "id": "test-054",
+        "x": [
+          -1.054
+        ],
+        "y": "a"
+      },
+      {
+        "id": "test-055",
+        "x": [
+          1.055
+        ],
+        "y": "b"
+      },
+      {
+        "id": "test-056",
+        "x": [
+          -1.056
+        ],
+        "y": "a"
+      },
+      {
+        "id": "test-057",
+        "x": [
+          1.057
+        ],
+        "y": "b"
+      },
+      {
+        "id": "test-058",
+        "x": [
+          -1.058
+        ],
+        "y": "a"
+      },
+      {
+        "id": "test-059",
+        "x": [
+          1.059
+        ],
+        "y": "b"
+      },
+      {
+        "id": "test-060",
+        "x": [
+          -1.06
+        ],
+        "y": "a"
+      },
+      {
+        "id": "test-061",
+        "x": [
+          1.061
+        ],
+        "y": "b"
+      },
+      {
+        "id": "test-062",
+        "x": [
+          -1.062
+        ],
+        "y": "a"
+      },
+      {
+        "id": "test-063",
+        "x": [
+          1.063
+        ],
+        "y": "b"
+      },
+      {
+        "id": "test-064",
+        "x": [
+          -1.064
+        ],
+        "y": "a"
+      },
+      {
+        "id": "test-065",
+        "x": [
+          1.065
+        ],
+        "y": "b"
+      },
+      {
+        "id": "test-066",
+        "x": [
+          -1.066
+        ],
+        "y": "a"
+      },
+      {
+        "id": "test-067",
+        "x": [
+          1.067
+        ],
+        "y": "b"
+      },
+      {
+        "id": "test-068",
+        "x": [
+          -1.068
+        ],
+        "y": "a"
+      },
+      {
+        "id": "test-069",
+        "x": [
+          1.069
+        ],
+        "y": "b"
+      },
+      {
+        "id": "test-070",
+        "x": [
+          -1.07
+        ],
+        "y": "a"
+      },
+      {
+        "id": "test-071",
+        "x": [
+          1.071
+        ],
+        "y": "b"
+      },
+      {
+        "id": "test-072",
+        "x": [
+          -1.072
+        ],
+        "y": "a"
+      },
+      {
+        "id": "test-073",
+        "x": [
+          1.073
+        ],
+        "y": "b"
+      },
+      {
+        "id": "test-074",
+        "x": [
+          -1.074
+        ],
+        "y": "a"
+      },
+      {
+        "id": "test-075",
+        "x": [
+          1.075
+        ],
+        "y": "b"
+      },
+      {
+        "id": "test-076",
+        "x": [
+          -1.076
+        ],
+        "y": "a"
+      },
+      {
+        "id": "test-077",
+        "x": [
+          1.077
+        ],
+        "y": "b"
+      },
+      {
+        "id": "test-078",
+        "x": [
+          -1.078
+        ],
+        "y": "a"
+      },
+      {
+        "id": "test-079",
+        "x": [
+          1.079
+        ],
+        "y": "b"
+      }
+    ],
+    "train": [
+      {
+        "id": "train-a1",
+        "x": [
+          -2.0
+        ],
+        "y": "a"
+      },
+      {
+        "id": "train-a2",
+        "x": [
+          -1.0
+        ],
+        "y": "a"
+      },
+      {
+        "id": "train-b1",
+        "x": [
+          1.0
+        ],
+        "y": "b"
+      },
+      {
+        "id": "train-b2",
+        "x": [
+          2.0
+        ],
+        "y": "b"
+      }
+    ]
+  },
+  "kind": "paper2bench_recorded_repro_seed_study",
+  "limitations": [
+    "Only three supplied seeds; actual seed consumption and independent fits are unverified.",
+    "Interval assumes exchangeable seed pairs and independent test cases.",
+    "Positive observed effect remains inconclusive; this does not establish paper reproduction."
+  ],
+  "origin": {
+    "component_version": "0.2.0",
+    "kind": "recorded_local_synthetic_fixture",
+    "plan_sha256": "b7b6339230bf1a6dbc71effbbda65d9a8212ebbe9967dd0a43318b7829aad022",
+    "result_sha256": "dd78459eb954f3d17882468d42fae81ff4f4641454a39bbd7592746244dd7da1",
+    "source_bundle_sha256": "d6bdb609a1b6eae62d686a81d7eb1de0d1525743df6c038fe163c943aaff00e4",
+    "source_report_sha256": "05feaa3d1c0e9f5862374268d1c4264befa4fa6f1a254b8f63997630317bc6a2"
+  },
+  "recomputed": {
+    "differences": [
+      [
+        -1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        -1,
+        1
+      ],
+      [
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1
+      ],
+      [
+        -1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        -1,
+        1
+      ]
+    ],
+    "method": "paired_correctness_and_crossed_bootstrap"
+  },
+  "schema_version": 1,
+  "scope": "Six recorded synthetic Docker trials; no published paper reproduced. Static evidence; no model calls or new executions.",
+  "summary": {
+    "baseline_accuracy": 0.5,
+    "candidate_accuracy": 0.6666666666666666,
+    "effect": 0.16666666666666666,
+    "sample_count": 80,
+    "seeds": [
+      11,
+      22,
+      33
+    ],
+    "trial_count": 6,
+    "verdict": "inconclusive"
+  },
+  "trials": [
+    {
+      "accuracy": 0.5,
+      "predictions": {
+        "ids": [
+          "test-000",
+          "test-001",
+          "test-002",
+          "test-003",
+          "test-004",
+          "test-005",
+          "test-006",
+          "test-007",
+          "test-008",
+          "test-009",
+          "test-010",
+          "test-011",
+          "test-012",
+          "test-013",
+          "test-014",
+          "test-015",
+          "test-016",
+          "test-017",
+          "test-018",
+          "test-019",
+          "test-020",
+          "test-021",
+          "test-022",
+          "test-023",
+          "test-024",
+          "test-025",
+          "test-026",
+          "test-027",
+          "test-028",
+          "test-029",
+          "test-030",
+          "test-031",
+          "test-032",
+          "test-033",
+          "test-034",
+          "test-035",
+          "test-036",
+          "test-037",
+          "test-038",
+          "test-039",
+          "test-040",
+          "test-041",
+          "test-042",
+          "test-043",
+          "test-044",
+          "test-045",
+          "test-046",
+          "test-047",
+          "test-048",
+          "test-049",
+          "test-050",
+          "test-051",
+          "test-052",
+          "test-053",
+          "test-054",
+          "test-055",
+          "test-056",
+          "test-057",
+          "test-058",
+          "test-059",
+          "test-060",
+          "test-061",
+          "test-062",
+          "test-063",
+          "test-064",
+          "test-065",
+          "test-066",
+          "test-067",
+          "test-068",
+          "test-069",
+          "test-070",
+          "test-071",
+          "test-072",
+          "test-073",
+          "test-074",
+          "test-075",
+          "test-076",
+          "test-077",
+          "test-078",
+          "test-079"
+        ],
+        "labels": [
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b"
+        ]
+      },
+      "result_sha256": "e5b28a69eda9e19f2133413cc60faacc2129afe4c87d3eab429dbac2acf444f6",
+      "role": "candidate",
+      "seed": 11,
+      "spec_sha256": "98689c257d3f446650e837e9d9970ad510ee08ab6e368ca056aba3181ab2e63c",
+      "state": "completed"
+    },
+    {
+      "accuracy": 0.5,
+      "predictions": {
+        "ids": [
+          "test-000",
+          "test-001",
+          "test-002",
+          "test-003",
+          "test-004",
+          "test-005",
+          "test-006",
+          "test-007",
+          "test-008",
+          "test-009",
+          "test-010",
+          "test-011",
+          "test-012",
+          "test-013",
+          "test-014",
+          "test-015",
+          "test-016",
+          "test-017",
+          "test-018",
+          "test-019",
+          "test-020",
+          "test-021",
+          "test-022",
+          "test-023",
+          "test-024",
+          "test-025",
+          "test-026",
+          "test-027",
+          "test-028",
+          "test-029",
+          "test-030",
+          "test-031",
+          "test-032",
+          "test-033",
+          "test-034",
+          "test-035",
+          "test-036",
+          "test-037",
+          "test-038",
+          "test-039",
+          "test-040",
+          "test-041",
+          "test-042",
+          "test-043",
+          "test-044",
+          "test-045",
+          "test-046",
+          "test-047",
+          "test-048",
+          "test-049",
+          "test-050",
+          "test-051",
+          "test-052",
+          "test-053",
+          "test-054",
+          "test-055",
+          "test-056",
+          "test-057",
+          "test-058",
+          "test-059",
+          "test-060",
+          "test-061",
+          "test-062",
+          "test-063",
+          "test-064",
+          "test-065",
+          "test-066",
+          "test-067",
+          "test-068",
+          "test-069",
+          "test-070",
+          "test-071",
+          "test-072",
+          "test-073",
+          "test-074",
+          "test-075",
+          "test-076",
+          "test-077",
+          "test-078",
+          "test-079"
+        ],
+        "labels": [
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a"
+        ]
+      },
+      "result_sha256": "7b6bc93d0fc7bb4db95a184b2b4cad0e4ef09b40bf09764248415699673b1b93",
+      "role": "baseline",
+      "seed": 11,
+      "spec_sha256": "75839cc540e0db960fd692a964580b1d912527af87739567cf4fbf0b4a3f3523",
+      "state": "completed"
+    },
+    {
+      "accuracy": 1.0,
+      "predictions": {
+        "ids": [
+          "test-000",
+          "test-001",
+          "test-002",
+          "test-003",
+          "test-004",
+          "test-005",
+          "test-006",
+          "test-007",
+          "test-008",
+          "test-009",
+          "test-010",
+          "test-011",
+          "test-012",
+          "test-013",
+          "test-014",
+          "test-015",
+          "test-016",
+          "test-017",
+          "test-018",
+          "test-019",
+          "test-020",
+          "test-021",
+          "test-022",
+          "test-023",
+          "test-024",
+          "test-025",
+          "test-026",
+          "test-027",
+          "test-028",
+          "test-029",
+          "test-030",
+          "test-031",
+          "test-032",
+          "test-033",
+          "test-034",
+          "test-035",
+          "test-036",
+          "test-037",
+          "test-038",
+          "test-039",
+          "test-040",
+          "test-041",
+          "test-042",
+          "test-043",
+          "test-044",
+          "test-045",
+          "test-046",
+          "test-047",
+          "test-048",
+          "test-049",
+          "test-050",
+          "test-051",
+          "test-052",
+          "test-053",
+          "test-054",
+          "test-055",
+          "test-056",
+          "test-057",
+          "test-058",
+          "test-059",
+          "test-060",
+          "test-061",
+          "test-062",
+          "test-063",
+          "test-064",
+          "test-065",
+          "test-066",
+          "test-067",
+          "test-068",
+          "test-069",
+          "test-070",
+          "test-071",
+          "test-072",
+          "test-073",
+          "test-074",
+          "test-075",
+          "test-076",
+          "test-077",
+          "test-078",
+          "test-079"
+        ],
+        "labels": [
+          "a",
+          "b",
+          "a",
+          "b",
+          "a",
+          "b",
+          "a",
+          "b",
+          "a",
+          "b",
+          "a",
+          "b",
+          "a",
+          "b",
+          "a",
+          "b",
+          "a",
+          "b",
+          "a",
+          "b",
+          "a",
+          "b",
+          "a",
+          "b",
+          "a",
+          "b",
+          "a",
+          "b",
+          "a",
+          "b",
+          "a",
+          "b",
+          "a",
+          "b",
+          "a",
+          "b",
+          "a",
+          "b",
+          "a",
+          "b",
+          "a",
+          "b",
+          "a",
+          "b",
+          "a",
+          "b",
+          "a",
+          "b",
+          "a",
+          "b",
+          "a",
+          "b",
+          "a",
+          "b",
+          "a",
+          "b",
+          "a",
+          "b",
+          "a",
+          "b",
+          "a",
+          "b",
+          "a",
+          "b",
+          "a",
+          "b",
+          "a",
+          "b",
+          "a",
+          "b",
+          "a",
+          "b",
+          "a",
+          "b",
+          "a",
+          "b",
+          "a",
+          "b",
+          "a",
+          "b"
+        ]
+      },
+      "result_sha256": "2ab9ebf4c7c554a2d68fd0ceb29415f5592178328412f4dc16edfc850d53818f",
+      "role": "candidate",
+      "seed": 22,
+      "spec_sha256": "ae778020c58ea4e35f8c01f9b6ca9f5e6e6df66011d0c4809acbc0dc123c2e76",
+      "state": "completed"
+    },
+    {
+      "accuracy": 0.5,
+      "predictions": {
+        "ids": [
+          "test-000",
+          "test-001",
+          "test-002",
+          "test-003",
+          "test-004",
+          "test-005",
+          "test-006",
+          "test-007",
+          "test-008",
+          "test-009",
+          "test-010",
+          "test-011",
+          "test-012",
+          "test-013",
+          "test-014",
+          "test-015",
+          "test-016",
+          "test-017",
+          "test-018",
+          "test-019",
+          "test-020",
+          "test-021",
+          "test-022",
+          "test-023",
+          "test-024",
+          "test-025",
+          "test-026",
+          "test-027",
+          "test-028",
+          "test-029",
+          "test-030",
+          "test-031",
+          "test-032",
+          "test-033",
+          "test-034",
+          "test-035",
+          "test-036",
+          "test-037",
+          "test-038",
+          "test-039",
+          "test-040",
+          "test-041",
+          "test-042",
+          "test-043",
+          "test-044",
+          "test-045",
+          "test-046",
+          "test-047",
+          "test-048",
+          "test-049",
+          "test-050",
+          "test-051",
+          "test-052",
+          "test-053",
+          "test-054",
+          "test-055",
+          "test-056",
+          "test-057",
+          "test-058",
+          "test-059",
+          "test-060",
+          "test-061",
+          "test-062",
+          "test-063",
+          "test-064",
+          "test-065",
+          "test-066",
+          "test-067",
+          "test-068",
+          "test-069",
+          "test-070",
+          "test-071",
+          "test-072",
+          "test-073",
+          "test-074",
+          "test-075",
+          "test-076",
+          "test-077",
+          "test-078",
+          "test-079"
+        ],
+        "labels": [
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a"
+        ]
+      },
+      "result_sha256": "f6adac9f3fc5026a1963e943faf7668dbe7468d75674ab49745b1a3d021b0b67",
+      "role": "baseline",
+      "seed": 22,
+      "spec_sha256": "39bcbcaa25661061d72cb1600aa21430b92ef784dca6ededa0d63174348bc3cc",
+      "state": "completed"
+    },
+    {
+      "accuracy": 0.5,
+      "predictions": {
+        "ids": [
+          "test-000",
+          "test-001",
+          "test-002",
+          "test-003",
+          "test-004",
+          "test-005",
+          "test-006",
+          "test-007",
+          "test-008",
+          "test-009",
+          "test-010",
+          "test-011",
+          "test-012",
+          "test-013",
+          "test-014",
+          "test-015",
+          "test-016",
+          "test-017",
+          "test-018",
+          "test-019",
+          "test-020",
+          "test-021",
+          "test-022",
+          "test-023",
+          "test-024",
+          "test-025",
+          "test-026",
+          "test-027",
+          "test-028",
+          "test-029",
+          "test-030",
+          "test-031",
+          "test-032",
+          "test-033",
+          "test-034",
+          "test-035",
+          "test-036",
+          "test-037",
+          "test-038",
+          "test-039",
+          "test-040",
+          "test-041",
+          "test-042",
+          "test-043",
+          "test-044",
+          "test-045",
+          "test-046",
+          "test-047",
+          "test-048",
+          "test-049",
+          "test-050",
+          "test-051",
+          "test-052",
+          "test-053",
+          "test-054",
+          "test-055",
+          "test-056",
+          "test-057",
+          "test-058",
+          "test-059",
+          "test-060",
+          "test-061",
+          "test-062",
+          "test-063",
+          "test-064",
+          "test-065",
+          "test-066",
+          "test-067",
+          "test-068",
+          "test-069",
+          "test-070",
+          "test-071",
+          "test-072",
+          "test-073",
+          "test-074",
+          "test-075",
+          "test-076",
+          "test-077",
+          "test-078",
+          "test-079"
+        ],
+        "labels": [
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b",
+          "b"
+        ]
+      },
+      "result_sha256": "33c9afe59e54d637b00eb59b22cf7a6359e85526ddb4f8708966f9ec66fe1a56",
+      "role": "candidate",
+      "seed": 33,
+      "spec_sha256": "da1260d227b2709536c265dafa4a208f754011a06fd22831b1d04ed5107e4e05",
+      "state": "completed"
+    },
+    {
+      "accuracy": 0.5,
+      "predictions": {
+        "ids": [
+          "test-000",
+          "test-001",
+          "test-002",
+          "test-003",
+          "test-004",
+          "test-005",
+          "test-006",
+          "test-007",
+          "test-008",
+          "test-009",
+          "test-010",
+          "test-011",
+          "test-012",
+          "test-013",
+          "test-014",
+          "test-015",
+          "test-016",
+          "test-017",
+          "test-018",
+          "test-019",
+          "test-020",
+          "test-021",
+          "test-022",
+          "test-023",
+          "test-024",
+          "test-025",
+          "test-026",
+          "test-027",
+          "test-028",
+          "test-029",
+          "test-030",
+          "test-031",
+          "test-032",
+          "test-033",
+          "test-034",
+          "test-035",
+          "test-036",
+          "test-037",
+          "test-038",
+          "test-039",
+          "test-040",
+          "test-041",
+          "test-042",
+          "test-043",
+          "test-044",
+          "test-045",
+          "test-046",
+          "test-047",
+          "test-048",
+          "test-049",
+          "test-050",
+          "test-051",
+          "test-052",
+          "test-053",
+          "test-054",
+          "test-055",
+          "test-056",
+          "test-057",
+          "test-058",
+          "test-059",
+          "test-060",
+          "test-061",
+          "test-062",
+          "test-063",
+          "test-064",
+          "test-065",
+          "test-066",
+          "test-067",
+          "test-068",
+          "test-069",
+          "test-070",
+          "test-071",
+          "test-072",
+          "test-073",
+          "test-074",
+          "test-075",
+          "test-076",
+          "test-077",
+          "test-078",
+          "test-079"
+        ],
+        "labels": [
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a",
+          "a"
+        ]
+      },
+      "result_sha256": "4dece0e29dc579d61acf1ab9916d2a536f74f63ae08591dd6cfaed14fd7085a7",
+      "role": "baseline",
+      "seed": 33,
+      "spec_sha256": "856e136a0e9fb165ee8e3d778bdc23e72ec1f4c68c59d856fe7eb13000cc25cd",
+      "state": "completed"
+    }
+  ]
+}

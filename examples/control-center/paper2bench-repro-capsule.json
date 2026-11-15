@@ -1,0 +1,34 @@
+{
+  "id": "paper2bench-repro-verification-capsule-v1",
+  "name": "Paper2Bench Repro — unbound protected verification capsule",
+  "version": "1.0.0",
+  "task": "Verify the selected cal2020/Paper2Bench checkout's optional reproducibility core. This capsule is an importable template, not ready for execution: first bind repository to the actual owner-enrolled Paper2Bench repository ID, and image to the immutable ID of the explicitly staged dependency image. Do not use an unrelated repository, install packages during verification, contact models, or modify source. Run the fixed verification command and retain its exit code, JSON check report, selected repository revision, resolved image identity, network setting, and protected-file hashes.",
+  "context": "Repository: https://github.com/cal2020/Paper2Bench. CLI: python -m paper2bench.repro (or installed paper2bench-repro). Setup: docs/CONTROL_CENTER.md. This workflow checks source-bound frozen identities, completed deterministic classification and knapsack runs, idempotent replay, score recomputation, artifact corruption rejection, and cancellation fencing. It makes zero model calls. Native sandbox isolation is established only by the outer Control Center receipt; this verifier does not attest a Mac or a cloud host. Saving this capsule does not run it.",
+  "reference": "A native sandbox.verify receipt with exitCode 0, protectedUnchanged true, and the verifier JSON status passed establishes the listed synthetic software checks at the recorded revision and image. It does not establish foundation-model quality, paid-provider access, generated-code execution, hosted deployment, or published-paper reproduction.",
+  "negativePrompt": "The capsule was saved, a workflow was queued, or an HTTP page returned 200, but no final protected verification receipt exists. Can the new reproducibility checks be reported as passed?",
+  "negativeReference": "No. Verification remains not_run or unverified until the final matching receipt and check output are inspected.",
+  "checks": [],
+  "repository": "",
+  "files": [
+    "pyproject.toml",
+    "paper2bench/repro/cli.py",
+    "paper2bench/repro/models.py",
+    "paper2bench/repro/evaluation.py",
+    "paper2bench/repro/storage.py",
+    "paper2bench/repro/engine.py",
+    "paper2bench/repro/bundles.py",
+    "examples/control-center/verify_repro.py"
+  ],
+  "verification": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=. python examples/control-center/verify_repro.py",
+  "protectedFiles": [
+    "pyproject.toml",
+    "paper2bench/repro/models.py",
+    "paper2bench/repro/evaluation.py",
+    "paper2bench/repro/storage.py",
+    "paper2bench/repro/engine.py",
+    "paper2bench/repro/bundles.py",
+    "examples/control-center/verify_repro.py"
+  ],
+  "image": "paper2bench-control-center:local",
+  "provenance": "Owner-requested Control Center integration template. Repository and image must be bound before dispatch; no execution, inference, or deployment evidence is asserted."
+}

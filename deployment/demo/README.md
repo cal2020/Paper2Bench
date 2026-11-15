@@ -86,3 +86,37 @@ Production: https://paper2bench-portable-demo.escape4242.chatgpt.site
 
 The Python CLI/SDK is installed from GitHub and executes on an operator's local
 or SSH Docker worker. This static deployment has no compute API or job service.
+
+## Optional reproduction-core evidence
+
+`docs/repro/` contains selected reports from the archived local v0.2 reproduction
+core. Its recorded 642 pytest cases and 93 subtests are historical verification,
+separate from the canonical repository's current test run and the published-paper
+Adam case study. The optimization and multi-seed datasets are synthetic; the
+multi-seed verdict remains inconclusive. The static site does not rerun them.
+
+The exporter verifies source artifact hashes, nested trial identities, frozen
+seed schedules, predictions, exhaustive knapsack optima, and the crossed
+bootstrap interval. It selects public fields and omits local paths, host/worker
+identifiers, credentials, raw logs, databases, and original source archives.
+The downloadable ZIP contains these selected reports and their hashes; it is
+not a full runtime replay bundle or a Python distribution.
+
+Regenerate only when the original local evidence is available, review and commit
+the resulting public files, then use the existing clean release build:
+
+```bash
+python3 scripts/export_repro_demo.py --source-dist /path/to/repro-core/dist
+python3 scripts/export_repro_demo.py --verify-only
+python3 -m pytest -q tests/test_repro_demo_assets.py
+python3 scripts/build_demo.py --release
+```
+
+The existing recursive static build includes the JSON/TXT/ZIP assets and records
+their hashes in the unchanged build provenance and asset manifests. Readback
+verification needs no local runtime state. Install the integrated optional core
+with `python3 -m pip install -e '.[repro]'` and use `paper2bench-repro`; archived
+standalone `paper2bench-0.2.0` wheels are deliberately not redistributed, because
+they would replace the canonical distribution instead of extending it. Fresh
+demo runs and optional provider setup are documented in
+[`docs/REPRODUCIBILITY.md`](../../docs/REPRODUCIBILITY.md).

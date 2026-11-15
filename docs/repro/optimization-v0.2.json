@@ -1,0 +1,3132 @@
+{
+  "assessment": {
+    "confidence": 0.95,
+    "confidence_interval": {
+      "lower": 0.8481596345229238,
+      "method": "hoeffding",
+      "upper": 1
+    },
+    "criterion": "optimality_equivalence",
+    "criterion_band": {
+      "lower": 0.8,
+      "upper": 1.0
+    },
+    "implementation_fidelity": "unverified",
+    "metric": "optimality_ratio",
+    "protocol_fidelity": "unverified"
+  },
+  "data": {
+    "instances": [
+      {
+        "capacity": 20,
+        "id": "knapsack-000",
+        "values": [
+          4,
+          1,
+          8,
+          13,
+          14,
+          9,
+          17,
+          11
+        ],
+        "weights": [
+          9,
+          7,
+          5,
+          6,
+          5,
+          3,
+          9,
+          5
+        ]
+      },
+      {
+        "capacity": 20,
+        "id": "knapsack-001",
+        "values": [
+          18,
+          7,
+          11,
+          18,
+          4,
+          3,
+          10,
+          14
+        ],
+        "weights": [
+          7,
+          3,
+          9,
+          1,
+          3,
+          4,
+          3,
+          9
+        ]
+      },
+      {
+        "capacity": 20,
+        "id": "knapsack-002",
+        "values": [
+          14,
+          12,
+          19,
+          2,
+          12,
+          2,
+          16,
+          12
+        ],
+        "weights": [
+          2,
+          9,
+          8,
+          3,
+          7,
+          9,
+          6,
+          1
+        ]
+      },
+      {
+        "capacity": 20,
+        "id": "knapsack-003",
+        "values": [
+          12,
+          2,
+          9,
+          3,
+          9,
+          7,
+          18,
+          18
+        ],
+        "weights": [
+          1,
+          7,
+          4,
+          2,
+          9,
+          4,
+          4,
+          9
+        ]
+      },
+      {
+        "capacity": 20,
+        "id": "knapsack-004",
+        "values": [
+          4,
+          19,
+          19,
+          9,
+          11,
+          1,
+          2,
+          12
+        ],
+        "weights": [
+          9,
+          3,
+          5,
+          5,
+          6,
+          6,
+          3,
+          6
+        ]
+      },
+      {
+        "capacity": 20,
+        "id": "knapsack-005",
+        "values": [
+          3,
+          16,
+          1,
+          19,
+          17,
+          5,
+          13,
+          16
+        ],
+        "weights": [
+          1,
+          8,
+          5,
+          8,
+          1,
+          4,
+          5,
+          5
+        ]
+      },
+      {
+        "capacity": 20,
+        "id": "knapsack-006",
+        "values": [
+          18,
+          10,
+          11,
+          11,
+          2,
+          6,
+          14,
+          3
+        ],
+        "weights": [
+          7,
+          3,
+          4,
+          5,
+          3,
+          2,
+          4,
+          1
+        ]
+      },
+      {
+        "capacity": 20,
+        "id": "knapsack-007",
+        "values": [
+          8,
+          8,
+          18,
+          9,
+          19,
+          6,
+          10,
+          2
+        ],
+        "weights": [
+          5,
+          5,
+          7,
+          8,
+          2,
+          9,
+          2,
+          9
+        ]
+      },
+      {
+        "capacity": 20,
+        "id": "knapsack-008",
+        "values": [
+          3,
+          15,
+          7,
+          8,
+          16,
+          11,
+          7,
+          12
+        ],
+        "weights": [
+          8,
+          7,
+          8,
+          4,
+          9,
+          7,
+          9,
+          8
+        ]
+      },
+      {
+        "capacity": 20,
+        "id": "knapsack-009",
+        "values": [
+          11,
+          12,
+          6,
+          7,
+          10,
+          14,
+          12,
+          15
+        ],
+        "weights": [
+          1,
+          9,
+          7,
+          1,
+          6,
+          3,
+          9,
+          4
+        ]
+      },
+      {
+        "capacity": 20,
+        "id": "knapsack-010",
+        "values": [
+          15,
+          15,
+          15,
+          17,
+          5,
+          18,
+          18,
+          16
+        ],
+        "weights": [
+          2,
+          9,
+          2,
+          9,
+          1,
+          4,
+          9,
+          3
+        ]
+      },
+      {
+        "capacity": 20,
+        "id": "knapsack-011",
+        "values": [
+          11,
+          7,
+          2,
+          9,
+          4,
+          17,
+          1,
+          1
+        ],
+        "weights": [
+          8,
+          1,
+          5,
+          5,
+          3,
+          1,
+          8,
+          6
+        ]
+      },
+      {
+        "capacity": 20,
+        "id": "knapsack-012",
+        "values": [
+          8,
+          1,
+          13,
+          4,
+          14,
+          2,
+          18,
+          2
+        ],
+        "weights": [
+          2,
+          8,
+          5,
+          4,
+          2,
+          1,
+          8,
+          9
+        ]
+      },
+      {
+        "capacity": 20,
+        "id": "knapsack-013",
+        "values": [
+          13,
+          1,
+          17,
+          11,
+          3,
+          2,
+          10,
+          11
+        ],
+        "weights": [
+          4,
+          9,
+          5,
+          5,
+          6,
+          6,
+          9,
+          7
+        ]
+      },
+      {
+        "capacity": 20,
+        "id": "knapsack-014",
+        "values": [
+          15,
+          4,
+          9,
+          8,
+          3,
+          14,
+          10,
+          7
+        ],
+        "weights": [
+          6,
+          2,
+          6,
+          3,
+          9,
+          4,
+          8,
+          5
+        ]
+      },
+      {
+        "capacity": 20,
+        "id": "knapsack-015",
+        "values": [
+          14,
+          15,
+          17,
+          13,
+          17,
+          5,
+          18,
+          5
+        ],
+        "weights": [
+          8,
+          6,
+          3,
+          4,
+          9,
+          3,
+          5,
+          2
+        ]
+      },
+      {
+        "capacity": 20,
+        "id": "knapsack-016",
+        "values": [
+          6,
+          5,
+          8,
+          14,
+          18,
+          11,
+          18,
+          15
+        ],
+        "weights": [
+          3,
+          9,
+          6,
+          8,
+          5,
+          7,
+          2,
+          4
+        ]
+      },
+      {
+        "capacity": 20,
+        "id": "knapsack-017",
+        "values": [
+          12,
+          1,
+          4,
+          11,
+          16,
+          3,
+          14,
+          3
+        ],
+        "weights": [
+          9,
+          3,
+          5,
+          4,
+          8,
+          5,
+          9,
+          4
+        ]
+      },
+      {
+        "capacity": 20,
+        "id": "knapsack-018",
+        "values": [
+          11,
+          15,
+          11,
+          5,
+          5,
+          9,
+          10,
+          13
+        ],
+        "weights": [
+          9,
+          7,
+          4,
+          3,
+          2,
+          5,
+          2,
+          5
+        ]
+      },
+      {
+        "capacity": 20,
+        "id": "knapsack-019",
+        "values": [
+          7,
+          18,
+          12,
+          14,
+          13,
+          9,
+          3,
+          10
+        ],
+        "weights": [
+          6,
+          9,
+          3,
+          7,
+          2,
+          5,
+          4,
+          4
+        ]
+      },
+      {
+        "capacity": 20,
+        "id": "knapsack-020",
+        "values": [
+          13,
+          14,
+          9,
+          10,
+          15,
+          6,
+          14,
+          7
+        ],
+        "weights": [
+          7,
+          4,
+          6,
+          1,
+          1,
+          1,
+          6,
+          8
+        ]
+      },
+      {
+        "capacity": 20,
+        "id": "knapsack-021",
+        "values": [
+          7,
+          12,
+          17,
+          5,
+          19,
+          16,
+          15,
+          3
+        ],
+        "weights": [
+          4,
+          4,
+          6,
+          4,
+          4,
+          7,
+          2,
+          8
+        ]
+      },
+      {
+        "capacity": 20,
+        "id": "knapsack-022",
+        "values": [
+          11,
+          8,
+          11,
+          13,
+          7,
+          6,
+          16,
+          1
+        ],
+        "weights": [
+          3,
+          4,
+          7,
+          7,
+          4,
+          7,
+          7,
+          8
+        ]
+      },
+      {
+        "capacity": 20,
+        "id": "knapsack-023",
+        "values": [
+          9,
+          16,
+          5,
+          7,
+          6,
+          9,
+          5,
+          2
+        ],
+        "weights": [
+          8,
+          2,
+          7,
+          8,
+          2,
+          3,
+          8,
+          1
+        ]
+      },
+      {
+        "capacity": 20,
+        "id": "knapsack-024",
+        "values": [
+          10,
+          13,
+          17,
+          9,
+          19,
+          2,
+          1,
+          18
+        ],
+        "weights": [
+          2,
+          5,
+          8,
+          1,
+          2,
+          5,
+          5,
+          9
+        ]
+      },
+      {
+        "capacity": 20,
+        "id": "knapsack-025",
+        "values": [
+          7,
+          17,
+          4,
+          2,
+          12,
+          12,
+          16,
+          15
+        ],
+        "weights": [
+          5,
+          9,
+          2,
+          1,
+          5,
+          5,
+          6,
+          8
+        ]
+      },
+      {
+        "capacity": 20,
+        "id": "knapsack-026",
+        "values": [
+          5,
+          13,
+          4,
+          18,
+          3,
+          2,
+          13,
+          4
+        ],
+        "weights": [
+          6,
+          8,
+          6,
+          4,
+          1,
+          2,
+          6,
+          9
+        ]
+      },
+      {
+        "capacity": 20,
+        "id": "knapsack-027",
+        "values": [
+          19,
+          4,
+          4,
+          5,
+          16,
+          8,
+          10,
+          10
+        ],
+        "weights": [
+          8,
+          3,
+          4,
+          9,
+          8,
+          1,
+          5,
+          1
+        ]
+      },
+      {
+        "capacity": 20,
+        "id": "knapsack-028",
+        "values": [
+          15,
+          4,
+          11,
+          18,
+          11,
+          15,
+          2,
+          16
+        ],
+        "weights": [
+          5,
+          6,
+          9,
+          1,
+          7,
+          2,
+          7,
+          1
+        ]
+      },
+      {
+        "capacity": 20,
+        "id": "knapsack-029",
+        "values": [
+          2,
+          5,
+          19,
+          7,
+          10,
+          14,
+          3,
+          4
+        ],
+        "weights": [
+          2,
+          9,
+          8,
+          5,
+          2,
+          3,
+          2,
+          6
+        ]
+      },
+      {
+        "capacity": 20,
+        "id": "knapsack-030",
+        "values": [
+          19,
+          17,
+          13,
+          5,
+          8,
+          11,
+          8,
+          11
+        ],
+        "weights": [
+          7,
+          1,
+          8,
+          9,
+          7,
+          7,
+          5,
+          4
+        ]
+      },
+      {
+        "capacity": 20,
+        "id": "knapsack-031",
+        "values": [
+          15,
+          14,
+          12,
+          14,
+          2,
+          7,
+          4,
+          8
+        ],
+        "weights": [
+          8,
+          6,
+          4,
+          2,
+          4,
+          9,
+          8,
+          4
+        ]
+      },
+      {
+        "capacity": 20,
+        "id": "knapsack-032",
+        "values": [
+          18,
+          18,
+          17,
+          1,
+          1,
+          18,
+          11,
+          19
+        ],
+        "weights": [
+          1,
+          5,
+          1,
+          5,
+          6,
+          7,
+          7,
+          1
+        ]
+      },
+      {
+        "capacity": 20,
+        "id": "knapsack-033",
+        "values": [
+          4,
+          5,
+          1,
+          5,
+          15,
+          17,
+          5,
+          15
+        ],
+        "weights": [
+          6,
+          3,
+          6,
+          6,
+          4,
+          5,
+          8,
+          8
+        ]
+      },
+      {
+        "capacity": 20,
+        "id": "knapsack-034",
+        "values": [
+          7,
+          7,
+          5,
+          1,
+          15,
+          11,
+          5,
+          16
+        ],
+        "weights": [
+          1,
+          1,
+          3,
+          7,
+          7,
+          7,
+          2,
+          5
+        ]
+      },
+      {
+        "capacity": 20,
+        "id": "knapsack-035",
+        "values": [
+          4,
+          8,
+          16,
+          8,
+          10,
+          4,
+          9,
+          17
+        ],
+        "weights": [
+          4,
+          7,
+          6,
+          5,
+          8,
+          8,
+          2,
+          3
+        ]
+      },
+      {
+        "capacity": 20,
+        "id": "knapsack-036",
+        "values": [
+          9,
+          6,
+          17,
+          7,
+          7,
+          4,
+          2,
+          12
+        ],
+        "weights": [
+          5,
+          6,
+          8,
+          5,
+          9,
+          7,
+          1,
+          8
+        ]
+      },
+      {
+        "capacity": 20,
+        "id": "knapsack-037",
+        "values": [
+          6,
+          6,
+          19,
+          1,
+          16,
+          2,
+          15,
+          14
+        ],
+        "weights": [
+          2,
+          1,
+          4,
+          6,
+          6,
+          4,
+          4,
+          9
+        ]
+      },
+      {
+        "capacity": 20,
+        "id": "knapsack-038",
+        "values": [
+          3,
+          6,
+          10,
+          19,
+          13,
+          2,
+          5,
+          10
+        ],
+        "weights": [
+          7,
+          6,
+          9,
+          9,
+          8,
+          1,
+          1,
+          2
+        ]
+      },
+      {
+        "capacity": 20,
+        "id": "knapsack-039",
+        "values": [
+          10,
+          14,
+          7,
+          6,
+          19,
+          14,
+          10,
+          15
+        ],
+        "weights": [
+          3,
+          6,
+          3,
+          6,
+          6,
+          8,
+          4,
+          8
+        ]
+      },
+      {
+        "capacity": 20,
+        "id": "knapsack-040",
+        "values": [
+          1,
+          10,
+          4,
+          3,
+          12,
+          19,
+          4,
+          17
+        ],
+        "weights": [
+          9,
+          5,
+          1,
+          9,
+          6,
+          3,
+          6,
+          1
+        ]
+      },
+      {
+        "capacity": 20,
+        "id": "knapsack-041",
+        "values": [
+          15,
+          16,
+          7,
+          8,
+          14,
+          1,
+          8,
+          18
+        ],
+        "weights": [
+          4,
+          2,
+          6,
+          3,
+          8,
+          8,
+          6,
+          3
+        ]
+      },
+      {
+        "capacity": 20,
+        "id": "knapsack-042",
+        "values": [
+          18,
+          6,
+          11,
+          15,
+          5,
+          11,
+          9,
+          9
+        ],
+        "weights": [
+          4,
+          9,
+          2,
+          7,
+          4,
+          8,
+          5,
+          5
+        ]
+      },
+      {
+        "capacity": 20,
+        "id": "knapsack-043",
+        "values": [
+          14,
+          11,
+          1,
+          7,
+          2,
+          16,
+          10,
+          4
+        ],
+        "weights": [
+          2,
+          8,
+          5,
+          8,
+          7,
+          1,
+          9,
+          3
+        ]
+      },
+      {
+        "capacity": 20,
+        "id": "knapsack-044",
+        "values": [
+          1,
+          16,
+          3,
+          14,
+          2,
+          13,
+          12,
+          8
+        ],
+        "weights": [
+          6,
+          5,
+          9,
+          6,
+          5,
+          4,
+          1,
+          4
+        ]
+      },
+      {
+        "capacity": 20,
+        "id": "knapsack-045",
+        "values": [
+          12,
+          1,
+          19,
+          8,
+          18,
+          5,
+          15,
+          2
+        ],
+        "weights": [
+          5,
+          5,
+          9,
+          5,
+          9,
+          1,
+          1,
+          5
+        ]
+      },
+      {
+        "capacity": 20,
+        "id": "knapsack-046",
+        "values": [
+          18,
+          7,
+          17,
+          1,
+          12,
+          14,
+          4,
+          9
+        ],
+        "weights": [
+          6,
+          2,
+          6,
+          1,
+          4,
+          5,
+          9,
+          5
+        ]
+      },
+      {
+        "capacity": 20,
+        "id": "knapsack-047",
+        "values": [
+          10,
+          2,
+          19,
+          6,
+          15,
+          10,
+          4,
+          6
+        ],
+        "weights": [
+          5,
+          9,
+          9,
+          9,
+          7,
+          9,
+          4,
+          3
+        ]
+      },
+      {
+        "capacity": 20,
+        "id": "knapsack-048",
+        "values": [
+          16,
+          1,
+          3,
+          14,
+          18,
+          15,
+          19,
+          6
+        ],
+        "weights": [
+          2,
+          1,
+          4,
+          4,
+          4,
+          6,
+          9,
+          5
+        ]
+      },
+      {
+        "capacity": 20,
+        "id": "knapsack-049",
+        "values": [
+          15,
+          7,
+          1,
+          4,
+          1,
+          9,
+          11,
+          7
+        ],
+        "weights": [
+          2,
+          6,
+          8,
+          7,
+          9,
+          1,
+          9,
+          7
+        ]
+      },
+      {
+        "capacity": 20,
+        "id": "knapsack-050",
+        "values": [
+          5,
+          12,
+          18,
+          5,
+          17,
+          10,
+          3,
+          3
+        ],
+        "weights": [
+          3,
+          4,
+          7,
+          2,
+          5,
+          4,
+          4,
+          5
+        ]
+      },
+      {
+        "capacity": 20,
+        "id": "knapsack-051",
+        "values": [
+          8,
+          8,
+          10,
+          9,
+          13,
+          10,
+          6,
+          7
+        ],
+        "weights": [
+          8,
+          5,
+          9,
+          7,
+          7,
+          6,
+          4,
+          9
+        ]
+      },
+      {
+        "capacity": 20,
+        "id": "knapsack-052",
+        "values": [
+          17,
+          12,
+          10,
+          15,
+          12,
+          13,
+          17,
+          13
+        ],
+        "weights": [
+          7,
+          9,
+          6,
+          4,
+          5,
+          1,
+          4,
+          6
+        ]
+      },
+      {
+        "capacity": 20,
+        "id": "knapsack-053",
+        "values": [
+          6,
+          11,
+          18,
+          16,
+          2,
+          8,
+          6,
+          7
+        ],
+        "weights": [
+          5,
+          3,
+          4,
+          1,
+          5,
+          7,
+          6,
+          4
+        ]
+      },
+      {
+        "capacity": 20,
+        "id": "knapsack-054",
+        "values": [
+          5,
+          17,
+          5,
+          12,
+          9,
+          1,
+          7,
+          12
+        ],
+        "weights": [
+          4,
+          2,
+          2,
+          9,
+          7,
+          6,
+          1,
+          4
+        ]
+      },
+      {
+        "capacity": 20,
+        "id": "knapsack-055",
+        "values": [
+          8,
+          7,
+          11,
+          5,
+          16,
+          14,
+          2,
+          2
+        ],
+        "weights": [
+          7,
+          2,
+          5,
+          6,
+          2,
+          7,
+          6,
+          6
+        ]
+      },
+      {
+        "capacity": 20,
+        "id": "knapsack-056",
+        "values": [
+          6,
+          19,
+          12,
+          12,
+          9,
+          2,
+          1,
+          14
+        ],
+        "weights": [
+          3,
+          7,
+          1,
+          1,
+          2,
+          6,
+          9,
+          7
+        ]
+      },
+      {
+        "capacity": 20,
+        "id": "knapsack-057",
+        "values": [
+          6,
+          17,
+          2,
+          14,
+          16,
+          8,
+          2,
+          11
+        ],
+        "weights": [
+          8,
+          9,
+          3,
+          1,
+          6,
+          4,
+          3,
+          2
+        ]
+      },
+      {
+        "capacity": 20,
+        "id": "knapsack-058",
+        "values": [
+          7,
+          11,
+          18,
+          1,
+          2,
+          16,
+          5,
+          6
+        ],
+        "weights": [
+          2,
+          4,
+          1,
+          1,
+          1,
+          3,
+          2,
+          6
+        ]
+      },
+      {
+        "capacity": 20,
+        "id": "knapsack-059",
+        "values": [
+          7,
+          9,
+          19,
+          16,
+          18,
+          7,
+          18,
+          7
+        ],
+        "weights": [
+          3,
+          7,
+          2,
+          9,
+          1,
+          6,
+          4,
+          6
+        ]
+      },
+      {
+        "capacity": 20,
+        "id": "knapsack-060",
+        "values": [
+          4,
+          4,
+          13,
+          6,
+          9,
+          10,
+          4,
+          2
+        ],
+        "weights": [
+          4,
+          8,
+          3,
+          3,
+          7,
+          8,
+          8,
+          7
+        ]
+      },
+      {
+        "capacity": 20,
+        "id": "knapsack-061",
+        "values": [
+          6,
+          12,
+          12,
+          2,
+          10,
+          13,
+          9,
+          2
+        ],
+        "weights": [
+          4,
+          3,
+          9,
+          1,
+          7,
+          3,
+          3,
+          3
+        ]
+      },
+      {
+        "capacity": 20,
+        "id": "knapsack-062",
+        "values": [
+          3,
+          2,
+          19,
+          19,
+          17,
+          9,
+          12,
+          16
+        ],
+        "weights": [
+          5,
+          8,
+          5,
+          9,
+          3,
+          9,
+          4,
+          9
+        ]
+      },
+      {
+        "capacity": 20,
+        "id": "knapsack-063",
+        "values": [
+          9,
+          2,
+          3,
+          10,
+          18,
+          18,
+          13,
+          6
+        ],
+        "weights": [
+          7,
+          7,
+          3,
+          1,
+          4,
+          8,
+          1,
+          8
+        ]
+      },
+      {
+        "capacity": 20,
+        "id": "knapsack-064",
+        "values": [
+          17,
+          14,
+          9,
+          11,
+          1,
+          12,
+          12,
+          16
+        ],
+        "weights": [
+          5,
+          1,
+          2,
+          9,
+          8,
+          4,
+          2,
+          9
+        ]
+      },
+      {
+        "capacity": 20,
+        "id": "knapsack-065",
+        "values": [
+          9,
+          17,
+          8,
+          8,
+          13,
+          17,
+          11,
+          5
+        ],
+        "weights": [
+          9,
+          1,
+          5,
+          7,
+          7,
+          5,
+          2,
+          3
+        ]
+      },
+      {
+        "capacity": 20,
+        "id": "knapsack-066",
+        "values": [
+          17,
+          10,
+          14,
+          7,
+          7,
+          13,
+          4,
+          13
+        ],
+        "weights": [
+          3,
+          6,
+          2,
+          2,
+          6,
+          3,
+          3,
+          6
+        ]
+      },
+      {
+        "capacity": 20,
+        "id": "knapsack-067",
+        "values": [
+          13,
+          10,
+          16,
+          11,
+          2,
+          10,
+          8,
+          7
+        ],
+        "weights": [
+          1,
+          8,
+          8,
+          9,
+          5,
+          7,
+          8,
+          3
+        ]
+      },
+      {
+        "capacity": 20,
+        "id": "knapsack-068",
+        "values": [
+          7,
+          9,
+          13,
+          8,
+          14,
+          7,
+          18,
+          8
+        ],
+        "weights": [
+          9,
+          1,
+          2,
+          7,
+          7,
+          7,
+          5,
+          9
+        ]
+      },
+      {
+        "capacity": 20,
+        "id": "knapsack-069",
+        "values": [
+          2,
+          16,
+          12,
+          6,
+          10,
+          10,
+          19,
+          11
+        ],
+        "weights": [
+          9,
+          7,
+          3,
+          6,
+          4,
+          3,
+          8,
+          4
+        ]
+      },
+      {
+        "capacity": 20,
+        "id": "knapsack-070",
+        "values": [
+          8,
+          17,
+          11,
+          16,
+          14,
+          7,
+          1,
+          9
+        ],
+        "weights": [
+          4,
+          8,
+          1,
+          3,
+          7,
+          8,
+          5,
+          3
+        ]
+      },
+      {
+        "capacity": 20,
+        "id": "knapsack-071",
+        "values": [
+          7,
+          3,
+          9,
+          19,
+          15,
+          10,
+          7,
+          17
+        ],
+        "weights": [
+          7,
+          5,
+          1,
+          7,
+          3,
+          5,
+          4,
+          6
+        ]
+      },
+      {
+        "capacity": 20,
+        "id": "knapsack-072",
+        "values": [
+          19,
+          5,
+          15,
+          3,
+          8,
+          15,
+          12,
+          10
+        ],
+        "weights": [
+          7,
+          7,
+          1,
+          5,
+          2,
+          6,
+          2,
+          1
+        ]
+      },
+      {
+        "capacity": 20,
+        "id": "knapsack-073",
+        "values": [
+          3,
+          12,
+          14,
+          15,
+          3,
+          19,
+          13,
+          9
+        ],
+        "weights": [
+          8,
+          8,
+          8,
+          2,
+          2,
+          3,
+          1,
+          2
+        ]
+      },
+      {
+        "capacity": 20,
+        "id": "knapsack-074",
+        "values": [
+          10,
+          14,
+          14,
+          9,
+          11,
+          4,
+          2,
+          10
+        ],
+        "weights": [
+          8,
+          5,
+          9,
+          5,
+          5,
+          8,
+          2,
+          6
+        ]
+      },
+      {
+        "capacity": 20,
+        "id": "knapsack-075",
+        "values": [
+          14,
+          15,
+          1,
+          6,
+          17,
+          8,
+          8,
+          11
+        ],
+        "weights": [
+          9,
+          9,
+          1,
+          3,
+          8,
+          8,
+          9,
+          1
+        ]
+      },
+      {
+        "capacity": 20,
+        "id": "knapsack-076",
+        "values": [
+          11,
+          13,
+          6,
+          10,
+          1,
+          18,
+          2,
+          14
+        ],
+        "weights": [
+          9,
+          5,
+          6,
+          9,
+          4,
+          8,
+          7,
+          6
+        ]
+      },
+      {
+        "capacity": 20,
+        "id": "knapsack-077",
+        "values": [
+          3,
+          14,
+          3,
+          7,
+          11,
+          18,
+          8,
+          7
+        ],
+        "weights": [
+          8,
+          5,
+          5,
+          8,
+          4,
+          7,
+          5,
+          6
+        ]
+      },
+      {
+        "capacity": 20,
+        "id": "knapsack-078",
+        "values": [
+          2,
+          16,
+          1,
+          17,
+          4,
+          13,
+          1,
+          12
+        ],
+        "weights": [
+          5,
+          9,
+          7,
+          5,
+          2,
+          9,
+          4,
+          7
+        ]
+      },
+      {
+        "capacity": 20,
+        "id": "knapsack-079",
+        "values": [
+          14,
+          19,
+          2,
+          16,
+          19,
+          14,
+          16,
+          3
+        ],
+        "weights": [
+          8,
+          3,
+          1,
+          4,
+          5,
+          1,
+          7,
+          8
+        ]
+      }
+    ]
+  },
+  "kind": "paper2bench_recorded_repro_optimization",
+  "origin": {
+    "component_version": "0.2.0",
+    "dataset_sha256": "b80dfbe78df3980a3766531c310dbf43d9da68d0dd934d57c1de759ff6703207",
+    "kind": "recorded_local_synthetic_fixture",
+    "result_sha256": "8200f42573adc7e9c46acafb2b58dad9463ec5405cbbca8ed497b3b8f4b75bb7",
+    "source_bundle_sha256": "eaa0225285972542213ba68bc3dd29f7397c7032fe5c20885fcdbc9eacd15a27",
+    "spec_sha256": "3adf4734ff0447577a39105ef5db4ca9fe6763b25cf53fa9add27874dfd08ed8"
+  },
+  "recomputed": {
+    "method": "independent_exhaustive_enumeration",
+    "per_item": [
+      {
+        "feasible": true,
+        "id": "knapsack-000",
+        "objective": 47,
+        "optimal_objective": 47,
+        "score": 1.0,
+        "selection": [
+          3,
+          4,
+          5,
+          7
+        ],
+        "total_weight": 19
+      },
+      {
+        "feasible": true,
+        "id": "knapsack-001",
+        "objective": 60,
+        "optimal_objective": 60,
+        "score": 1.0,
+        "selection": [
+          0,
+          3,
+          6,
+          7
+        ],
+        "total_weight": 20
+      },
+      {
+        "feasible": true,
+        "id": "knapsack-002",
+        "objective": 63,
+        "optimal_objective": 63,
+        "score": 1.0,
+        "selection": [
+          0,
+          2,
+          3,
+          6,
+          7
+        ],
+        "total_weight": 20
+      },
+      {
+        "feasible": true,
+        "id": "knapsack-003",
+        "objective": 60,
+        "optimal_objective": 60,
+        "score": 1.0,
+        "selection": [
+          0,
+          2,
+          3,
+          6,
+          7
+        ],
+        "total_weight": 20
+      },
+      {
+        "feasible": true,
+        "id": "knapsack-004",
+        "objective": 61,
+        "optimal_objective": 61,
+        "score": 1.0,
+        "selection": [
+          1,
+          2,
+          4,
+          7
+        ],
+        "total_weight": 20
+      },
+      {
+        "feasible": true,
+        "id": "knapsack-005",
+        "objective": 68,
+        "optimal_objective": 68,
+        "score": 1.0,
+        "selection": [
+          0,
+          3,
+          4,
+          6,
+          7
+        ],
+        "total_weight": 20
+      },
+      {
+        "feasible": true,
+        "id": "knapsack-006",
+        "objective": 59,
+        "optimal_objective": 59,
+        "score": 1.0,
+        "selection": [
+          0,
+          1,
+          2,
+          5,
+          6
+        ],
+        "total_weight": 20
+      },
+      {
+        "feasible": true,
+        "id": "knapsack-007",
+        "objective": 56,
+        "optimal_objective": 56,
+        "score": 1.0,
+        "selection": [
+          2,
+          3,
+          4,
+          6
+        ],
+        "total_weight": 19
+      },
+      {
+        "feasible": true,
+        "id": "knapsack-008",
+        "objective": 39,
+        "optimal_objective": 39,
+        "score": 1.0,
+        "selection": [
+          1,
+          3,
+          4
+        ],
+        "total_weight": 20
+      },
+      {
+        "feasible": true,
+        "id": "knapsack-009",
+        "objective": 59,
+        "optimal_objective": 59,
+        "score": 1.0,
+        "selection": [
+          0,
+          1,
+          3,
+          5,
+          7
+        ],
+        "total_weight": 18
+      },
+      {
+        "feasible": true,
+        "id": "knapsack-010",
+        "objective": 82,
+        "optimal_objective": 82,
+        "score": 1.0,
+        "selection": [
+          0,
+          2,
+          5,
+          6,
+          7
+        ],
+        "total_weight": 20
+      },
+      {
+        "feasible": true,
+        "id": "knapsack-011",
+        "objective": 48,
+        "optimal_objective": 48,
+        "score": 1.0,
+        "selection": [
+          0,
+          1,
+          3,
+          4,
+          5
+        ],
+        "total_weight": 18
+      },
+      {
+        "feasible": true,
+        "id": "knapsack-012",
+        "objective": 55,
+        "optimal_objective": 55,
+        "score": 1.0,
+        "selection": [
+          0,
+          2,
+          4,
+          5,
+          6
+        ],
+        "total_weight": 18
+      },
+      {
+        "feasible": true,
+        "id": "knapsack-013",
+        "objective": 44,
+        "optimal_objective": 44,
+        "score": 1.0,
+        "selection": [
+          0,
+          2,
+          3,
+          4
+        ],
+        "total_weight": 20
+      },
+      {
+        "feasible": true,
+        "id": "knapsack-014",
+        "objective": 48,
+        "optimal_objective": 48,
+        "score": 1.0,
+        "selection": [
+          0,
+          1,
+          3,
+          5,
+          7
+        ],
+        "total_weight": 20
+      },
+      {
+        "feasible": true,
+        "id": "knapsack-015",
+        "objective": 68,
+        "optimal_objective": 68,
+        "score": 1.0,
+        "selection": [
+          1,
+          2,
+          3,
+          6,
+          7
+        ],
+        "total_weight": 20
+      },
+      {
+        "feasible": true,
+        "id": "knapsack-016",
+        "objective": 65,
+        "optimal_objective": 65,
+        "score": 1.0,
+        "selection": [
+          0,
+          2,
+          4,
+          6,
+          7
+        ],
+        "total_weight": 20
+      },
+      {
+        "feasible": true,
+        "id": "knapsack-017",
+        "objective": 32,
+        "optimal_objective": 32,
+        "score": 1.0,
+        "selection": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "total_weight": 20
+      },
+      {
+        "feasible": true,
+        "id": "knapsack-018",
+        "objective": 54,
+        "optimal_objective": 54,
+        "score": 1.0,
+        "selection": [
+          1,
+          2,
+          4,
+          6,
+          7
+        ],
+        "total_weight": 20
+      },
+      {
+        "feasible": true,
+        "id": "knapsack-019",
+        "objective": 53,
+        "optimal_objective": 53,
+        "score": 1.0,
+        "selection": [
+          1,
+          2,
+          4,
+          7
+        ],
+        "total_weight": 18
+      },
+      {
+        "feasible": true,
+        "id": "knapsack-020",
+        "objective": 72,
+        "optimal_objective": 72,
+        "score": 1.0,
+        "selection": [
+          0,
+          1,
+          3,
+          4,
+          5,
+          6
+        ],
+        "total_weight": 20
+      },
+      {
+        "feasible": true,
+        "id": "knapsack-021",
+        "objective": 70,
+        "optimal_objective": 70,
+        "score": 1.0,
+        "selection": [
+          0,
+          1,
+          2,
+          4,
+          6
+        ],
+        "total_weight": 20
+      },
+      {
+        "feasible": true,
+        "id": "knapsack-022",
+        "objective": 42,
+        "optimal_objective": 42,
+        "score": 1.0,
+        "selection": [
+          0,
+          1,
+          4,
+          6
+        ],
+        "total_weight": 18
+      },
+      {
+        "feasible": true,
+        "id": "knapsack-023",
+        "objective": 42,
+        "optimal_objective": 42,
+        "score": 1.0,
+        "selection": [
+          0,
+          1,
+          4,
+          5,
+          7
+        ],
+        "total_weight": 16
+      },
+      {
+        "feasible": true,
+        "id": "knapsack-024",
+        "objective": 69,
+        "optimal_objective": 69,
+        "score": 1.0,
+        "selection": [
+          0,
+          1,
+          3,
+          4,
+          7
+        ],
+        "total_weight": 19
+      },
+      {
+        "feasible": true,
+        "id": "knapsack-025",
+        "objective": 46,
+        "optimal_objective": 46,
+        "score": 1.0,
+        "selection": [
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "total_weight": 19
+      },
+      {
+        "feasible": true,
+        "id": "knapsack-026",
+        "objective": 47,
+        "optimal_objective": 47,
+        "score": 1.0,
+        "selection": [
+          1,
+          3,
+          4,
+          6
+        ],
+        "total_weight": 19
+      },
+      {
+        "feasible": true,
+        "id": "knapsack-027",
+        "objective": 53,
+        "optimal_objective": 53,
+        "score": 1.0,
+        "selection": [
+          0,
+          4,
+          5,
+          7
+        ],
+        "total_weight": 18
+      },
+      {
+        "feasible": true,
+        "id": "knapsack-028",
+        "objective": 75,
+        "optimal_objective": 75,
+        "score": 1.0,
+        "selection": [
+          0,
+          2,
+          3,
+          5,
+          7
+        ],
+        "total_weight": 18
+      },
+      {
+        "feasible": true,
+        "id": "knapsack-029",
+        "objective": 53,
+        "optimal_objective": 53,
+        "score": 1.0,
+        "selection": [
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "total_weight": 20
+      },
+      {
+        "feasible": true,
+        "id": "knapsack-030",
+        "objective": 60,
+        "optimal_objective": 60,
+        "score": 1.0,
+        "selection": [
+          0,
+          1,
+          2,
+          7
+        ],
+        "total_weight": 20
+      },
+      {
+        "feasible": true,
+        "id": "knapsack-031",
+        "objective": 55,
+        "optimal_objective": 55,
+        "score": 1.0,
+        "selection": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "total_weight": 20
+      },
+      {
+        "feasible": true,
+        "id": "knapsack-032",
+        "objective": 91,
+        "optimal_objective": 91,
+        "score": 1.0,
+        "selection": [
+          0,
+          1,
+          2,
+          3,
+          5,
+          7
+        ],
+        "total_weight": 20
+      },
+      {
+        "feasible": true,
+        "id": "knapsack-033",
+        "objective": 52,
+        "optimal_objective": 52,
+        "score": 1.0,
+        "selection": [
+          1,
+          4,
+          5,
+          7
+        ],
+        "total_weight": 20
+      },
+      {
+        "feasible": true,
+        "id": "knapsack-034",
+        "objective": 55,
+        "optimal_objective": 55,
+        "score": 1.0,
+        "selection": [
+          0,
+          1,
+          2,
+          4,
+          6,
+          7
+        ],
+        "total_weight": 19
+      },
+      {
+        "feasible": true,
+        "id": "knapsack-035",
+        "objective": 54,
+        "optimal_objective": 54,
+        "score": 1.0,
+        "selection": [
+          0,
+          2,
+          3,
+          6,
+          7
+        ],
+        "total_weight": 20
+      },
+      {
+        "feasible": true,
+        "id": "knapsack-036",
+        "objective": 35,
+        "optimal_objective": 35,
+        "score": 1.0,
+        "selection": [
+          0,
+          2,
+          3,
+          6
+        ],
+        "total_weight": 19
+      },
+      {
+        "feasible": true,
+        "id": "knapsack-037",
+        "objective": 62,
+        "optimal_objective": 62,
+        "score": 1.0,
+        "selection": [
+          0,
+          1,
+          2,
+          4,
+          6
+        ],
+        "total_weight": 17
+      },
+      {
+        "feasible": true,
+        "id": "knapsack-038",
+        "objective": 47,
+        "optimal_objective": 47,
+        "score": 1.0,
+        "selection": [
+          3,
+          4,
+          6,
+          7
+        ],
+        "total_weight": 20
+      },
+      {
+        "feasible": true,
+        "id": "knapsack-039",
+        "objective": 53,
+        "optimal_objective": 53,
+        "score": 1.0,
+        "selection": [
+          0,
+          1,
+          4,
+          6
+        ],
+        "total_weight": 19
+      },
+      {
+        "feasible": true,
+        "id": "knapsack-040",
+        "objective": 62,
+        "optimal_objective": 62,
+        "score": 1.0,
+        "selection": [
+          1,
+          2,
+          4,
+          5,
+          7
+        ],
+        "total_weight": 16
+      },
+      {
+        "feasible": true,
+        "id": "knapsack-041",
+        "objective": 71,
+        "optimal_objective": 71,
+        "score": 1.0,
+        "selection": [
+          0,
+          1,
+          3,
+          4,
+          7
+        ],
+        "total_weight": 20
+      },
+      {
+        "feasible": true,
+        "id": "knapsack-042",
+        "objective": 53,
+        "optimal_objective": 53,
+        "score": 1.0,
+        "selection": [
+          0,
+          2,
+          3,
+          6
+        ],
+        "total_weight": 18
+      },
+      {
+        "feasible": true,
+        "id": "knapsack-043",
+        "objective": 51,
+        "optimal_objective": 51,
+        "score": 1.0,
+        "selection": [
+          0,
+          1,
+          5,
+          6
+        ],
+        "total_weight": 20
+      },
+      {
+        "feasible": true,
+        "id": "knapsack-044",
+        "objective": 63,
+        "optimal_objective": 63,
+        "score": 1.0,
+        "selection": [
+          1,
+          3,
+          5,
+          6,
+          7
+        ],
+        "total_weight": 20
+      },
+      {
+        "feasible": true,
+        "id": "knapsack-045",
+        "objective": 57,
+        "optimal_objective": 57,
+        "score": 1.0,
+        "selection": [
+          2,
+          4,
+          5,
+          6
+        ],
+        "total_weight": 20
+      },
+      {
+        "feasible": true,
+        "id": "knapsack-046",
+        "objective": 57,
+        "optimal_objective": 57,
+        "score": 1.0,
+        "selection": [
+          0,
+          1,
+          2,
+          3,
+          5
+        ],
+        "total_weight": 20
+      },
+      {
+        "feasible": true,
+        "id": "knapsack-047",
+        "objective": 40,
+        "optimal_objective": 40,
+        "score": 1.0,
+        "selection": [
+          2,
+          4,
+          7
+        ],
+        "total_weight": 19
+      },
+      {
+        "feasible": true,
+        "id": "knapsack-048",
+        "objective": 68,
+        "optimal_objective": 68,
+        "score": 1.0,
+        "selection": [
+          0,
+          1,
+          3,
+          4,
+          6
+        ],
+        "total_weight": 20
+      },
+      {
+        "feasible": true,
+        "id": "knapsack-049",
+        "objective": 42,
+        "optimal_objective": 42,
+        "score": 1.0,
+        "selection": [
+          0,
+          1,
+          5,
+          6
+        ],
+        "total_weight": 18
+      },
+      {
+        "feasible": true,
+        "id": "knapsack-050",
+        "objective": 57,
+        "optimal_objective": 57,
+        "score": 1.0,
+        "selection": [
+          1,
+          2,
+          4,
+          5
+        ],
+        "total_weight": 20
+      },
+      {
+        "feasible": true,
+        "id": "knapsack-051",
+        "objective": 32,
+        "optimal_objective": 32,
+        "score": 1.0,
+        "selection": [
+          3,
+          4,
+          5
+        ],
+        "total_weight": 20
+      },
+      {
+        "feasible": true,
+        "id": "knapsack-052",
+        "objective": 70,
+        "optimal_objective": 70,
+        "score": 1.0,
+        "selection": [
+          3,
+          4,
+          5,
+          6,
+          7
+        ],
+        "total_weight": 20
+      },
+      {
+        "feasible": true,
+        "id": "knapsack-053",
+        "objective": 60,
+        "optimal_objective": 60,
+        "score": 1.0,
+        "selection": [
+          1,
+          2,
+          3,
+          5,
+          7
+        ],
+        "total_weight": 19
+      },
+      {
+        "feasible": true,
+        "id": "knapsack-054",
+        "objective": 55,
+        "optimal_objective": 55,
+        "score": 1.0,
+        "selection": [
+          0,
+          1,
+          2,
+          4,
+          6,
+          7
+        ],
+        "total_weight": 20
+      },
+      {
+        "feasible": true,
+        "id": "knapsack-055",
+        "objective": 48,
+        "optimal_objective": 48,
+        "score": 1.0,
+        "selection": [
+          1,
+          2,
+          4,
+          5
+        ],
+        "total_weight": 16
+      },
+      {
+        "feasible": true,
+        "id": "knapsack-056",
+        "objective": 66,
+        "optimal_objective": 66,
+        "score": 1.0,
+        "selection": [
+          1,
+          2,
+          3,
+          4,
+          7
+        ],
+        "total_weight": 18
+      },
+      {
+        "feasible": true,
+        "id": "knapsack-057",
+        "objective": 58,
+        "optimal_objective": 58,
+        "score": 1.0,
+        "selection": [
+          1,
+          3,
+          4,
+          7
+        ],
+        "total_weight": 18
+      },
+      {
+        "feasible": true,
+        "id": "knapsack-058",
+        "objective": 66,
+        "optimal_objective": 66,
+        "score": 1.0,
+        "selection": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ],
+        "total_weight": 20
+      },
+      {
+        "feasible": true,
+        "id": "knapsack-059",
+        "objective": 78,
+        "optimal_objective": 78,
+        "score": 1.0,
+        "selection": [
+          0,
+          2,
+          3,
+          4,
+          6
+        ],
+        "total_weight": 19
+      },
+      {
+        "feasible": true,
+        "id": "knapsack-060",
+        "objective": 33,
+        "optimal_objective": 33,
+        "score": 1.0,
+        "selection": [
+          0,
+          2,
+          3,
+          5
+        ],
+        "total_weight": 18
+      },
+      {
+        "feasible": true,
+        "id": "knapsack-061",
+        "objective": 50,
+        "optimal_objective": 50,
+        "score": 1.0,
+        "selection": [
+          0,
+          1,
+          4,
+          5,
+          6
+        ],
+        "total_weight": 20
+      },
+      {
+        "feasible": true,
+        "id": "knapsack-062",
+        "objective": 55,
+        "optimal_objective": 55,
+        "score": 1.0,
+        "selection": [
+          2,
+          3,
+          4
+        ],
+        "total_weight": 17
+      },
+      {
+        "feasible": true,
+        "id": "knapsack-063",
+        "objective": 62,
+        "optimal_objective": 62,
+        "score": 1.0,
+        "selection": [
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "total_weight": 17
+      },
+      {
+        "feasible": true,
+        "id": "knapsack-064",
+        "objective": 68,
+        "optimal_objective": 68,
+        "score": 1.0,
+        "selection": [
+          0,
+          1,
+          2,
+          6,
+          7
+        ],
+        "total_weight": 19
+      },
+      {
+        "feasible": true,
+        "id": "knapsack-065",
+        "objective": 66,
+        "optimal_objective": 66,
+        "score": 1.0,
+        "selection": [
+          1,
+          2,
+          4,
+          5,
+          6
+        ],
+        "total_weight": 20
+      },
+      {
+        "feasible": true,
+        "id": "knapsack-066",
+        "objective": 68,
+        "optimal_objective": 68,
+        "score": 1.0,
+        "selection": [
+          0,
+          2,
+          3,
+          5,
+          6,
+          7
+        ],
+        "total_weight": 19
+      },
+      {
+        "feasible": true,
+        "id": "knapsack-067",
+        "objective": 46,
+        "optimal_objective": 46,
+        "score": 1.0,
+        "selection": [
+          0,
+          1,
+          2,
+          7
+        ],
+        "total_weight": 20
+      },
+      {
+        "feasible": true,
+        "id": "knapsack-068",
+        "objective": 54,
+        "optimal_objective": 54,
+        "score": 1.0,
+        "selection": [
+          1,
+          2,
+          4,
+          6
+        ],
+        "total_weight": 15
+      },
+      {
+        "feasible": true,
+        "id": "knapsack-069",
+        "objective": 52,
+        "optimal_objective": 52,
+        "score": 1.0,
+        "selection": [
+          2,
+          4,
+          6,
+          7
+        ],
+        "total_weight": 19
+      },
+      {
+        "feasible": true,
+        "id": "knapsack-070",
+        "objective": 61,
+        "optimal_objective": 61,
+        "score": 1.0,
+        "selection": [
+          0,
+          1,
+          2,
+          3,
+          7
+        ],
+        "total_weight": 19
+      },
+      {
+        "feasible": true,
+        "id": "knapsack-071",
+        "objective": 60,
+        "optimal_objective": 60,
+        "score": 1.0,
+        "selection": [
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "total_weight": 20
+      },
+      {
+        "feasible": true,
+        "id": "knapsack-072",
+        "objective": 79,
+        "optimal_objective": 79,
+        "score": 1.0,
+        "selection": [
+          0,
+          2,
+          4,
+          5,
+          6,
+          7
+        ],
+        "total_weight": 19
+      },
+      {
+        "feasible": true,
+        "id": "knapsack-073",
+        "objective": 73,
+        "optimal_objective": 73,
+        "score": 1.0,
+        "selection": [
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ],
+        "total_weight": 18
+      },
+      {
+        "feasible": true,
+        "id": "knapsack-074",
+        "objective": 39,
+        "optimal_objective": 39,
+        "score": 1.0,
+        "selection": [
+          1,
+          2,
+          4
+        ],
+        "total_weight": 19
+      },
+      {
+        "feasible": true,
+        "id": "knapsack-075",
+        "objective": 44,
+        "optimal_objective": 44,
+        "score": 1.0,
+        "selection": [
+          1,
+          2,
+          4,
+          7
+        ],
+        "total_weight": 19
+      },
+      {
+        "feasible": true,
+        "id": "knapsack-076",
+        "objective": 45,
+        "optimal_objective": 45,
+        "score": 1.0,
+        "selection": [
+          1,
+          5,
+          7
+        ],
+        "total_weight": 19
+      },
+      {
+        "feasible": true,
+        "id": "knapsack-077",
+        "objective": 43,
+        "optimal_objective": 43,
+        "score": 1.0,
+        "selection": [
+          1,
+          4,
+          5
+        ],
+        "total_weight": 16
+      },
+      {
+        "feasible": true,
+        "id": "knapsack-078",
+        "objective": 38,
+        "optimal_objective": 38,
+        "score": 1.0,
+        "selection": [
+          1,
+          3,
+          4,
+          6
+        ],
+        "total_weight": 20
+      },
+      {
+        "feasible": true,
+        "id": "knapsack-079",
+        "objective": 84,
+        "optimal_objective": 84,
+        "score": 1.0,
+        "selection": [
+          1,
+          3,
+          4,
+          5,
+          6
+        ],
+        "total_weight": 20
+      }
+    ]
+  },
+  "schema_version": 1,
+  "scope": "Synthetic software fixture; no published paper reproduced. Static recorded evidence, not a live solver.",
+  "summary": {
+    "feasible_count": 80,
+    "mean_score": 1.0,
+    "sample_count": 80,
+    "task": "knapsack",
+    "verdict": "supported"
+  }
+}

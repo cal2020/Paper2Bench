@@ -8,6 +8,9 @@ build/
 *.egg
 .env
 .venv/
+.paper2bench-repro/
+.uv-cache/
+.playwright/
 env/
 venv/
 .tox/

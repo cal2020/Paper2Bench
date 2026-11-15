@@ -30,6 +30,7 @@ function Nav() {
         <div className="nav-links">
           {window.P2B_REAL_PAPER && <a href="index.html#real-paper" className="paper-nav-link">Paper run</a>}
           <a href="index.html#demo" className="demo-nav-link">Try the demo</a>
+          <a href="index.html#repro-runtime" className="repro-nav-link">Repro runtime</a>
           <a href={window.P2B_RELEASE.repository + "/blob/main/IMPLEMENTATION.md"} target="_blank" rel="noreferrer" className="guide-nav-link">Guide</a>
           <a className="icon-link" href={window.P2B_RELEASE.repository} target="_blank" rel="noreferrer" aria-label="GitHub repository" title="GitHub">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
@@ -274,6 +275,7 @@ function App() {
       <Hero />
       <RealPaperStudy />
       <ExecutionDemo />
+      <ReproWorkbench />
       <ReleaseCapabilities />
       <WalkthroughSection />
       <DiffSection />
@@ -338,7 +340,105 @@ function ExecutionDemo() {
           <details className="demo-reproduce"><summary>Run the Python fixture yourself</summary><Copyable cmd={scenario.command} /><p>Use the repository checkout and staged Docker image. The local-model probe additionally needs the named Ollama model installed. See the <a className="text-link" href={R.repository + '/blob/main/IMPLEMENTATION.md'} target="_blank" rel="noreferrer">implementation guide</a> for setup and limits.</p></details>
         </div>
       </div>
-      <div className="verification-strip reveal"><div><strong>{R.tests}</strong><span>passing tests</span></div><div><strong>3</strong><span>fixed synthetic seeds</span></div><div><strong>1 → 0</strong><span>broker call → replay calls</span></div><p>Release tests · {R.testDate}. Recorded local fixtures · {R.evidenceDate}. Synthetic fixtures establish software behavior within the stated scope, not published-paper reproduction. <a className="text-link" href="verification.json" target="_blank" rel="noreferrer">View the sanitized evidence summary ↗</a></p></div>
+      <div className="verification-strip reveal"><div><strong>{R.tests}</strong><span>recorded canonical tests</span></div><div><strong>3</strong><span>fixed synthetic seeds</span></div><div><strong>1 → 0</strong><span>broker call → replay calls</span></div><p>Canonical extension receipt · {R.testDate}. Recorded local fixtures · {R.evidenceDate}. These counts are separate from the optional repro runtime. Synthetic fixtures establish scoped software behavior, not published-paper reproduction. <a className="text-link" href="verification.json" target="_blank" rel="noreferrer">View the sanitized evidence summary ↗</a></p></div>
+    </section>
+  );
+}
+
+const REPRO_BOUNDARIES = [
+  {
+    id: 'freeze', title: 'Frozen experiments', tag: 'Identity before execution',
+    description: 'Keep source text, data, code, image, settings and evaluator attached to one immutable experiment. Resolve missing scientific settings before the run is allowed to start.',
+    steps: ['Verify exact source quotations', 'Freeze the complete specification', 'Create a new identity for changes'],
+    facts: [['Identity includes', 'Source · data · code · image · seed · evaluator'], ['Missing settings', 'Unresolved entries block freezing'], ['Result meaning', 'Execution and scientific fidelity remain separate']],
+    note: 'Matching a source quotation establishes its location. It does not establish that the implementation faithfully reproduces the method.',
+    sources: [['Frozen contracts', 'paper2bench/repro/models.py'], ['Freeze boundary', 'paper2bench/repro/engine.py']],
+    checks: 'tests/repro/test_engine.py',
+  },
+  {
+    id: 'scoring', title: 'Independent scoring', tag: 'Score outside the candidate',
+    description: 'Candidates return predictions or selected item indices. The trusted evaluator recomputes accuracy, knapsack feasibility, objective value and an exact bounded optimum from those outputs.',
+    steps: ['Validate the output contract', 'Recompute feasibility and objective', 'Retain predictions and uncertainty'],
+    facts: [['Task families', 'Numeric classification · zero-one knapsack'], ['Knapsack failures', 'Duplicate, invalid or overweight selections receive zero'], ['Oracle work', 'Input bounds limit the exact reference computation']],
+    note: 'The selected optimization report is a synthetic software fixture. A correct score on that fixture is separate from the published Adam paper experiment above.',
+    sources: [['Trusted evaluator', 'paper2bench/repro/evaluation.py'], ['Typed outputs', 'paper2bench/repro/models.py']],
+    checks: 'tests/repro/test_optimization.py',
+  },
+  {
+    id: 'workers', title: 'Fenced remote workers', tag: 'A stale worker cannot publish',
+    description: 'Each assignment has a worker identity, lease and fencing token. After replacement or cancellation, an old worker cannot overwrite the authoritative result. Worker credentials are scoped separately from operator credentials.',
+    steps: ['Claim a compatible assignment', 'Renew the current lease', 'Validate completion before scoring'],
+    facts: [['Worker input', 'Code and public task inputs; no held-out labels'], ['Publication', 'Current worker identity and fencing token required'], ['Credentials', 'Worker scope does not grant administrator routes']],
+    note: 'Remote measurements are worker declarations, not hardware attestation. Local-only experiments reject remote placement; this site never enrolls or contacts a worker.',
+    sources: [['Remote protocol', 'paper2bench/repro/remote.py'], ['Authenticated API', 'paper2bench/repro/api.py']],
+    checks: 'tests/repro/test_remote_api.py',
+  },
+  {
+    id: 'isolation', title: 'Crash and parser boundaries', tag: 'Bound work inside the container',
+    description: 'A trusted container supervisor arms its deadline before reading candidate input. The deadline survives a controller crash. PDF parsing also runs inside a bounded container rather than inside the controller process.',
+    steps: ['Stage a pinned image explicitly', 'Arm limits before untrusted input', 'Retain outcome and cleanup evidence'],
+    facts: [['Candidate code', 'No network · read-only root · UID/GID 65534'], ['Controller crash', 'The in-container deadline remains active'], ['PDF scope', 'Text-bearing PDFs; bounded pages, text and output']],
+    note: 'The supervisor retains narrowly required capabilities inside the container; candidate code has none. This single-operator boundary does not establish hostile multi-tenant isolation. OCR and equation reconstruction are unsupported.',
+    sources: [['Container supervisor', 'paper2bench/repro/runtime.py'], ['Isolated PDF parser', 'paper2bench/repro/parsers.py']],
+    checks: 'tests/repro/test_runtime.py',
+  },
+  {
+    id: 'quotas', title: 'Shared model quotas', tag: 'Reserve before dispatch',
+    description: 'Use one durable call and output-token allowance across authoring and evaluated model runs. Reserve exposure before a request; keep uncertain outcomes visible instead of silently issuing another potentially billable call.',
+    steps: ['Reserve shared quota', 'Dispatch one bounded request', 'Reconcile usage or retain uncertainty'],
+    facts: [['Shared limits', 'Provider calls and output-token allowance'], ['Ambiguous timeout', 'Unknown outcome remains in the ledger'], ['Dollar cost', 'Unknown without a verified price schedule']],
+    note: 'Quotas bound declared requests; they are not a promise about an external provider’s final invoice. Model family, hosting location and evaluated method remain separate choices.',
+    sources: [['Durable budget ledger', 'paper2bench/repro/budgets.py'], ['Provider boundary', 'paper2bench/repro/providers.py']],
+    checks: 'tests/repro/test_budgets.py',
+  },
+  {
+    id: 'studies', title: 'Multi-seed replay', tag: 'Keep every prespecified trial',
+    description: 'Freeze candidate and baseline trials for every seed before execution. The paired analysis resamples seed pairs and shared test cases; failed or incomplete trials block the primary numerical verdict.',
+    steps: ['Register the complete seed schedule', 'Keep every outcome and resource record', 'Recompute scores from a bounded bundle'],
+    facts: [['Uncertainty', 'Paired crossed bootstrap over seeds and cases'], ['Replay behavior', 'Checks artifacts and scores; never reruns candidate code'], ['Published synthetic study', 'Inconclusive; no successful-only selection']],
+    note: 'A full study bundle supports numerical replay, not publisher authentication or verified seed consumption. The selected evidence ZIP below contains reports and hashes, not that full replay bundle.',
+    sources: [['Prespecified study', 'paper2bench/repro/studies.py'], ['Portable study replay', 'paper2bench/repro/study_bundles.py']],
+    checks: 'tests/repro/test_study_bundles.py',
+  },
+];
+
+function ReproWorkbench() {
+  const R = window.P2B_RELEASE;
+  const [boundaryId, setBoundaryId] = React.useState('freeze');
+  const selected = REPRO_BOUNDARIES.find(item => item.id === boundaryId) || REPRO_BOUNDARIES[0];
+  const sourceUrl = path => R.repository + '/blob/main/' + path;
+  return (
+    <section className="section container repro-runtime" id="repro-runtime" aria-labelledby="repro-title">
+      <div className="section-head reveal"><span className="label accent">Optional reproducibility runtime</span><span className="rule" /><span className="label">paper2bench-repro</span></div>
+      <h2 className="section-title reveal" id="repro-title">A reproducibility <span className="italic-accent">workbench.</span></h2>
+      <p className="section-lede reveal">Inspect the boundaries behind a frozen experiment, a remote worker and a verifiable study. This static walkthrough never connects to a runtime, accepts credentials or dispatches work.</p>
+      <div className="repro-workbench reveal">
+        <div className="repro-selector" role="group" aria-label="Choose a reproducibility boundary">
+          {REPRO_BOUNDARIES.map((item, index) => <button key={item.id} type="button" id={'repro-select-' + item.id} aria-pressed={boundaryId === item.id} aria-controls="repro-panel" className={boundaryId === item.id ? 'repro-choice active' : 'repro-choice'} onClick={() => setBoundaryId(item.id)}><span>{String(index + 1).padStart(2, '0')}</span>{item.title}</button>)}
+        </div>
+        <article className="repro-panel" id="repro-panel" aria-labelledby="repro-panel-title">
+          <div className="demo-heading"><span className="label accent">{selected.tag}</span><span className="evidence-chip">Implementation walkthrough</span></div>
+          <h3 id="repro-panel-title">{selected.title}</h3>
+          <p className="demo-description">{selected.description}</p>
+          <ol className="demo-stages">{selected.steps.map((step, index) => <li key={step}><span>{String(index + 1).padStart(2, '0')}</span>{step}</li>)}</ol>
+          <dl className="demo-facts">{selected.facts.map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>
+          <p className="scope-note repro-panel-note">{selected.note}</p>
+          <div className="repro-source-links">{selected.sources.map(([label, path]) => <a key={path} className="text-link" href={sourceUrl(path)} target="_blank" rel="noreferrer">{label} ↗</a>)}<a className="text-link" href={sourceUrl(selected.checks)} target="_blank" rel="noreferrer">Inspect checks ↗</a></div>
+        </article>
+      </div>
+      <div className="repro-evidence reveal" aria-labelledby="repro-evidence-title">
+        <div className="repro-evidence-intro"><span className="label accent">Selected recorded assets</span><h3 id="repro-evidence-title">Evidence with its scope attached.</h3><p>These standalone runtime records are separate from the canonical test receipt and the real-paper Adam evidence. The synthetic comparison retains its inconclusive result.</p></div>
+        <div className="repro-evidence-links">
+          <a href="repro/verification-v0.2.json" target="_blank" rel="noreferrer" aria-labelledby="repro-verification-label" aria-describedby="repro-verification-detail"><strong id="repro-verification-label">Runtime verification receipt ↗</strong><span id="repro-verification-detail">Prior standalone core checks; separate test population.</span></a>
+          <a href="repro/optimization-v0.2.json" target="_blank" rel="noreferrer" aria-labelledby="repro-optimization-label" aria-describedby="repro-optimization-detail"><strong id="repro-optimization-label">Synthetic optimization report ↗</strong><span id="repro-optimization-detail">Independent feasibility and objective recomputation.</span></a>
+          <a href="repro/seeded-study-v0.2.json" target="_blank" rel="noreferrer" aria-labelledby="repro-study-label" aria-describedby="repro-study-detail"><strong id="repro-study-label">Synthetic multi-seed study ↗</strong><span id="repro-study-detail">Every paired trial retained; numerical verdict inconclusive.</span></a>
+          <a href="repro/evidence-v0.2.zip" download="paper2bench-repro-selected-evidence-v0.2.zip" aria-labelledby="repro-download-label" aria-describedby="repro-download-detail"><strong id="repro-download-label">Download selected evidence ZIP ↓</strong><span id="repro-download-detail">Sanitized reports and hashes; not a full replay bundle.</span></a>
+        </div>
+      </div>
+      <div className="repro-setup reveal">
+        <div><span className="label">From your repository checkout</span><p className="repro-python-note">Use an active Python 3.11+ virtual environment for these commands.</p><Copyable cmd="python -m pip install -e '.[repro]'" /><Copyable cmd="paper2bench-repro --state .paper2bench-repro demo --task knapsack" /></div>
+        <div className="repro-guide"><h3>Keep the existing pipeline.</h3><p>The optional runtime has its own command and state directory. The canonical <code>paper2bench</code> command and recorded paper example remain available.</p><a className="text-link" href={sourceUrl('docs/REPRODUCIBILITY.md')} target="_blank" rel="noreferrer">Read the reproducibility runtime guide ↗</a><a className="text-link" href="repro/manifest.json" target="_blank" rel="noreferrer">Inspect selected asset hashes ↗</a></div>
+      </div>
     </section>
   );
 }

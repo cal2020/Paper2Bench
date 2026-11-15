@@ -1,0 +1,103 @@
+{
+  "schema_version": 1,
+  "kind": "paper2bench_integrated_release_checks",
+  "base_commit": "b698123dc0d6f1e75d06327a90a4b9a14b9c0c90",
+  "source_scope": "Executable/configuration source and test file hashes below; this receipt does not hash itself. GitHub CI and deployment are recorded separately.",
+  "environment": {
+    "python": "3.12.14",
+    "os": "Linux",
+    "architecture": "x86_64"
+  },
+  "python_checks": {
+    "passed": 1308,
+    "subtests_passed": 93,
+    "skipped": 0,
+    "failures": 0,
+    "errors": 0,
+    "junit_cases_including_subtests": 1401,
+    "command": "P2B_DOCKER_TESTS=1 PAPER2BENCH_DOCKER_IMAGE=<staged immutable ID> PAPER2BENCH_PARSER_IMAGE=<staged parser ID> python -m pytest -q",
+    "scope": "Canonical framework plus optional repro core; actual Docker, local HTTP workers, PDF isolation and worker crash cases enabled."
+  },
+  "browser_checks": {
+    "passed": 38,
+    "failures": 0,
+    "viewports": [
+      "desktop Chromium",
+      "Pixel 7 Chromium"
+    ],
+    "scope": "Packaged static demo, original Adam paper section, new workbench, keyboard/mobile/download checks; external requests blocked."
+  },
+  "post_suite_checks": {
+    "exporter_documentation_clarification": "14 evidence-asset regressions and manifest verification passed after clarifying builtin demo requirements."
+  },
+  "control_center": {
+    "agent_lab": "Workflow and capsule saved and read back; unbound and not run.",
+    "portfolio": "Live API blocked by Cloudflare browser_signature_banned; import template prepared, no live write claimed."
+  },
+  "limitations": [
+    "Local tests do not establish current GitHub Actions results.",
+    "Static demo checks do not invoke providers or establish autonomous scientific reproduction.",
+    "New external cloud and paid-model operations were not run."
+  ],
+  "source_files_sha256": {
+    ".github/workflows/repro.yml": "96634c9917d0be7ef75e4c9d966ba43bbc6189f4f6601698298a756243fa60b9",
+    "demo-tests/playwright.config.cjs": "49a4851464ffd8172c38c4ef48b79061ebd410a6572d37a7d1ae4683c7115e64",
+    "demo-tests/specs/demo.spec.cjs": "6e526787e23432f1e39867ebcf7c3b2ea17ee3f29a0a3fd723013364d6700ecd",
+    "docs/site-app.jsx": "9ac18bba222802a02de38cb2eefc0d9f0eb3cdaf20ce592b5eea97e185cf07c0",
+    "docs/site-styles.css": "1005c840380e0db50f8eced11ac067b2d3663bf5fa27401dedad3c1f15c6c852",
+    "examples/control-center/verify_repro.py": "870493e730cc56d6a62e1b3c7366699cee376d11513a89d27b5feaa2f00199c5",
+    "examples/repro/centroid.py": "236cc004f7186a665e89d6e9a53818efc7a85154ceff57ca0fe10e442284a02e",
+    "paper2bench/repro/__init__.py": "22119b57fe5a2cf51060f5d1afae014ce9cd335b6ded7dcd729114412dce0435",
+    "paper2bench/repro/__main__.py": "935a1c1166b0c1ea35a82256345000bf2c73ded718d77773bc27a71ecce28f7d",
+    "paper2bench/repro/_cli.py": "3bce938a54607f0d449993d4e476798e3fe8d643c1b14129900bd7295206991b",
+    "paper2bench/repro/api.py": "64ddafe78c9b8acb19503cdd4a009de6d9d8e4b4700e719d5d7c74b0041aeb6d",
+    "paper2bench/repro/authoring.py": "ae440986aee8e85983edb245011562c18caa6eb15d4f8d72a5ee898c7f876617",
+    "paper2bench/repro/budgets.py": "3e80798d02ef9ca786cbc6be9605c4e373cb4022e2402a4f55282e35d4ec89e4",
+    "paper2bench/repro/bundles.py": "8f88cb29262f4b1890666e2893f47dc5321b9d315cbe1d4d5f5ee0571ab66aa5",
+    "paper2bench/repro/cli.py": "85c86ac29084280abd0ff02f5e171e606bdcaf77108fe5496bc5910b08c75bba",
+    "paper2bench/repro/comparisons.py": "c61ff5d6c6b893760d4b54e816b09e88d958c011c3db0883bf4cb8adcf267f09",
+    "paper2bench/repro/demo.py": "1b37db956bb9be47e53302e31a3e3bb82e9a4899074c4619923e4401b8e528d9",
+    "paper2bench/repro/engine.py": "bec0844494ad7840bf41ca551b1846b4c9be1721d5df01bfd23ed4c8d5d8b1ac",
+    "paper2bench/repro/evaluation.py": "66f6e164d999f6a956cd36395d515f7aba88222406eb1bb75641fb7734229643",
+    "paper2bench/repro/models.py": "e55039c06c0e1e2539f277b009fb01f2e9d02e6b1001055b9bce2fad4bd1a6b4",
+    "paper2bench/repro/parsers.py": "182a5a949f224da6c40c0b0e77cec06564e96d2f88c9aa40dcb85294e682880a",
+    "paper2bench/repro/providers.py": "52b68d35a1920c9caaeaef3190fd35d264a96d39c535d713de4cd08479ab4132",
+    "paper2bench/repro/remote.py": "13b8bb69580efd9250353366a6b322f14fa457fb2c91bbb6226eb909597e6a4d",
+    "paper2bench/repro/remote_client.py": "18ebbfabd72e2f0185919cc0f5dfa2b6651badf2a421ce39444dc0db033aeb0d",
+    "paper2bench/repro/runtime.py": "edd10bf087ce522b9ca7e295045d567f10187f60bccc9cc77ad2568cb48fa47c",
+    "paper2bench/repro/storage.py": "040a3173534c545b82a5604186cbdbeb38a170330c2cfb8c8e1add509cac5a2d",
+    "paper2bench/repro/studies.py": "4c623e7d19ec8135feee4a7ccdec5ebd0a5203a5871123bc432c31491f1ee9d0",
+    "paper2bench/repro/study_bundles.py": "5c3c1e39d4dc18c2da9760d4e64f58a06bfa9b004c870dc77ba5d0878353b36f",
+    "pyproject.toml": "21a18189f53c0f41b476f9ba3c2e01fe495928d671ec37719195e17f86094783",
+    "scripts/export_repro_demo.py": "b8145abf84f05c35207bb0258ec7b3e822707a282f556909475476e27ba0bf5a",
+    "tests/repro/__init__.py": "a5f9ab06dc964f99d9bcc956377799ae3d859537fd45159682795d577f176f02",
+    "tests/repro/conftest.py": "1dd3f549eec9268cfd628b7456348b016841c145efb7bb5627d1917f8a940caa",
+    "tests/repro/test_api.py": "2df82fe6b55c3b6c60274d3067a8f431a996a89e7c8c1e0bd2dc4701be55e444",
+    "tests/repro/test_authoring.py": "bae91d810d3702a00e80771a0a0abb32a50098cb27bb7bb9cf1d6030850dbac9",
+    "tests/repro/test_budget_engine.py": "c4c3314a764603da3c0365e73b6bae0c2934b6ed4e287b6aa26c4fbd878f12de",
+    "tests/repro/test_budgets.py": "b251bb2075f9a95747ccf585ce8940252baba20492541ad1bdfb5807a17c341b",
+    "tests/repro/test_bundles.py": "8bdbf47a18f4882abf20b4f00a6d1543399b1c1aa0d274272516dc58eada7312",
+    "tests/repro/test_cli.py": "469d34dd17d2b71332583fd01f11a582dcd593e275fd8b2292885251b1b66796",
+    "tests/repro/test_comparisons.py": "6df9d2e1e15611341369f1f74db6d8576bf9f0f0311948ed8d5744536ab75d41",
+    "tests/repro/test_end_to_end.py": "3d789e534418b6751004e9177dd46fe5a7ff7e34d45ae75aad7d1db56a25d67d",
+    "tests/repro/test_engine.py": "c078234a359294d8700cf3cdd5fb98c4727bb88f4523c21ac3dc3047e4b15a9f",
+    "tests/repro/test_entrypoint.py": "4c6a422f9009c48de974a8ddc72fb857bd2a39a94f53e13c638817247dfbe4c5",
+    "tests/repro/test_evaluation.py": "bf1bf1498a96895ad45973bd18de9cdda3365561b0b27640afcbe75690b2258d",
+    "tests/repro/test_generalization.py": "1b298ab9d3377c9ec72a6a4b4ff4b520e37ab597d46415698fd91933c8553cd0",
+    "tests/repro/test_models.py": "329a519247c53cc7cdc099c75c318005944d46a07b8ee08795deade10e66e4b9",
+    "tests/repro/test_optimization.py": "69b85eb48cb12f8aa80ccde2419abd49a954d1a7246578adedf1ef104c2ac655",
+    "tests/repro/test_optimization_authoring.py": "d92a4a06b0d5db4354dbe3eecd50566fb873186b707184d3e370ea1aabf6a26a",
+    "tests/repro/test_optimization_runtime.py": "9f92e993520859c6c58ebeff71cad0f3bda65c482bcc115808fffd59931cacde",
+    "tests/repro/test_parsers.py": "d135f5e87a9b292d4e910ef62ad77e1415e489b4e84a22e719e4a94a34a9d1a7",
+    "tests/repro/test_providers.py": "4484f66b4f7630b06ae4077d4b72d17d4de2bdf5e4e970bc79e3946ed999daa4",
+    "tests/repro/test_recovery.py": "7d3634e1f396f5ff2684099055c5bef08cfd6f5c3c5ef60e56a0f335b629a2b0",
+    "tests/repro/test_remote.py": "1fd19577ced0b4d7ac178cfd1d7e6282390e77fdabb71019648c1591c33f8a54",
+    "tests/repro/test_remote_api.py": "837de2061f6f3d862bc24f8fd36fc41136254d5ea7cb40ba2f0c1ed31feb8912",
+    "tests/repro/test_remote_client.py": "b809535625a6ab9501418fe2a839d3613e5c8ffb64a29a4006a17b6381f31026",
+    "tests/repro/test_runtime.py": "90256b67230e4907c1bdb1b5766e7e07fb97c77dc509dc5d9daaea07a725cd99",
+    "tests/repro/test_storage.py": "0affea276228ce33580090e3b2087992bfbb8c0bdd2324d84da2df92915d0bc2",
+    "tests/repro/test_studies.py": "9d9bfe947188725f52a68d2a54737bd3340ee94aa7c300fa6062e0dee1090549",
+    "tests/repro/test_study_bundles.py": "a10103dadae61cbf4ea566d4561170898ab9c270f145de50a5338814220ce0e2",
+    "tests/test_repro_demo_assets.py": "5cd4f769b6152d6ff36e90ccfd050a79074d698d562b144d90e73379a1bdc604"
+  }
+}

@@ -29,6 +29,23 @@ conclusion scoring remains separate from method fidelity and scientific
 agreement; a generated reference draft or matching conclusion is not a
 paper-reproduction result.
 
+The optional [reproducibility runtime](docs/REPRODUCIBILITY.md) adds frozen
+experiment identities, independently scored classification and knapsack tasks,
+scoped remote workers with durable completion replay, container-enforced
+deadlines and PDF parsing, shared model quotas, and multi-seed study bundles.
+It is isolated under `paper2bench.repro` and leaves the original CLI unchanged.
+Use Python 3.11+ and install `.[repro]` (or `.[repro-api]` for its control API),
+then run `paper2bench-repro demo --task knapsack`.
+
+The [demo workbench source](docs/site-app.jsx)
+explains these boundaries and links to [selected recorded software evidence](docs/repro/README.txt).
+Those synthetic fixtures are separate from the Adam paper experiment above.
+[Control Center assets](docs/CONTROL_CENTER.md) include an importable protected
+verification workflow and capsule; saving them does not execute verification.
+The [integrated release checks](docs/integration-verification.json) record the
+fresh local framework/runtime and desktop/mobile verification separately from
+the historical receipts displayed in the demo.
+
 Convert academic papers into benchmark tasks for evaluating AI coding agents.
 
 Paper2Bench offers two complementary workflows:

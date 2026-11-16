@@ -37,7 +37,15 @@ jobs:
       - name: Check build admission and artifact integrity regressions
         run: |
           python -m pip install 'pytest>=8.0'
-          python -m pytest -q tests/test_demo_build.py tests/test_release_artifact.py
+          python scripts/source_evidence.py --output "$RUNNER_TEMP/source-admission-evidence"
+      - name: Retain actual source-check evidence for main
+        if: ${{ !cancelled() && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: paper2bench-source-evidence-${{ github.sha }}
+          path: ${{ runner.temp }}/source-admission-evidence/source-evidence.json
+          if-no-files-found: error
+          retention-days: 14
       - name: Build the exact committed production demo
         run: python scripts/build_demo.py --release
       - name: Validate and package the release artifact

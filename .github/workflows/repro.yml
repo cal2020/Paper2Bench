@@ -1,8 +1,6 @@
 name: Optional reproducibility core
 
 on:
-  push:
-  pull_request:
   workflow_dispatch:
 
 permissions:

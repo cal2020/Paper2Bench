@@ -1,8 +1,6 @@
 name: Demo artifact
 
 on:
-  push:
-  pull_request:
   workflow_dispatch:
 
 permissions:
@@ -39,7 +37,7 @@ jobs:
           python -m pip install 'pytest>=8.0'
           python scripts/source_evidence.py --output "$RUNNER_TEMP/source-admission-evidence"
       - name: Retain actual source-check evidence for main
-        if: ${{ !cancelled() && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        if: ${{ !cancelled() && github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' }}
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: paper2bench-source-evidence-${{ github.sha }}

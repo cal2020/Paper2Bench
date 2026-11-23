@@ -45,7 +45,7 @@ it is not an independent attestation of scientific validity.
 ## GitHub verification and publication
 
 [Demo artifact](../../.github/workflows/demo.yml) builds with `npm ci`, validates
-the release, and runs 28 Chromium checks across desktop and mobile while outside
+the release, and runs the Chromium suite across desktop and mobile while outside
 requests are blocked. It tests computations, evidence labels, navigation, copy,
 keyboard access, theme persistence, and page overflow. Only a successful job saves
 `paper2bench-demo-FULL_COMMIT_SHA`; reports and failure traces are separate
@@ -62,10 +62,13 @@ curated method and finite scope remain explicit.
 
 GitHub builds and tests with read-only repository permissions. It receives no
 Site or model credentials and never publishes a pull request automatically.
-Publication uses the exact artifact from a successful push run for the intended
-`main` commit:
+The workflow is manual-only. For a new publication, use the artifact from
+a successful explicit **Run workflow** on `main` at the intended full SHA.
+Historical push-run artifacts can verify earlier deployments but do not apply
+to a newer source commit:
 
-1. Confirm the workflow conclusion, event, branch, and full commit SHA. Download
+1. Confirm workflow success, event `workflow_dispatch`, branch `main`, and
+   the full commit SHA. Download
    that run's matching demo artifact and verify its SHA-256 file.
 2. Extract and validate into an empty directory using
    `python3 scripts/package_demo.py --extract ARCHIVE --extract-to DIRECTORY --expected-commit FULL_SHA`.
@@ -74,6 +77,26 @@ Publication uses the exact artifact from a successful push run for the intended
    into its returned source checkout, preserving the Site's identity and access.
 4. Let the source workflow commit/push and package those exact bytes. Save and
    deploy its returned Site commit, then confirm the terminal deployment result.
+
+For a post-publication check, retain the exact public `dist` response bytes separately
+from the approved reference. Supply the exact committed `.openai/hosting.json`
+with each directory; it does not come from the public URLs. From the application
+checkout, with its Git commit objects present:
+
+```bash
+python3 scripts/verify_demo_readback.py --observed /path/to/captured-site \
+  --reference /path/to/approved-reference --expected-commit FULL_SHA
+```
+
+Both directories must pass the existing packager's source and asset checks; the
+default comparison requires exact bytes. The optional `--local-rebuild` comparison
+permits only a Node patch-version difference in the build provenance, and the
+asset manifest's corresponding provenance hash. Use it for reproducibility
+checks, not approval or attestation. Capture the Site deployment status and the
+upstream workflow result separately; this command does not establish that a
+file was publicly served, a workflow ran, or a recording was captured. An
+HTTP redirect, challenge, or injected script is not an exact byte match.
+Record that separately instead of rewriting the response to pass the check.
 
 The Site source commit and GitHub application commit are different identities;
 `dist/build-provenance.json` records the bridge. Never rebuild or modify an
